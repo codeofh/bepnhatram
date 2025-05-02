@@ -1,4 +1,3 @@
-
 import React from "react";
 import Head from "next/head";
 import { Header } from "@/components/Layout/Header";
@@ -68,7 +67,7 @@ export default function ContactPage() {
                   <MapPin size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Địa chỉ</h3>
-                    <p className="text-gray-600">123 Đường Lê Lợi, Quận 1, TP. Hồ Chí Minh</p>
+                    <p className="text-gray-600">15/15 Đống Đa, Phú Nhuận, Huế, Thành phố Huế</p>
                   </div>
                 </div>
                 
@@ -76,7 +75,7 @@ export default function ContactPage() {
                   <Phone size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Điện thoại</h3>
-                    <p className="text-gray-600">0123 456 789</p>
+                    <p className="text-gray-600">0886286032</p>
                   </div>
                 </div>
                 
@@ -84,7 +83,7 @@ export default function ContactPage() {
                   <Mail size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Email</h3>
-                    <p className="text-gray-600">info@nhahangvietnam.com</p>
+                    <p className="text-gray-600">info@bepnhatram.com</p>
                   </div>
                 </div>
                 
@@ -97,11 +96,16 @@ export default function ContactPage() {
                 </div>
               </div>
               
-              <div className="mt-8 h-64 bg-gray-200 rounded-lg">
-                {/* Map placeholder - would be replaced with actual map */}
-                <div className="h-full flex items-center justify-center text-gray-500">
-                  Bản đồ
-                </div>
+              <div className="mt-8 h-64 bg-gray-200 rounded-lg overflow-hidden">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.2641274089488!2d107.59194319999999!3d16.462158199999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3141a10027198345%3A0x96561dba360403e1!2zQuG6v3AgTmjDoCBUcsOibQ!5e0!3m2!1svi!2s!4v1746188965268!5m2!1svi!2s"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                ></iframe>
               </div>
             </div>
           </div>

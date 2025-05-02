@@ -23,7 +23,7 @@ const heroSlides = [
     id: 2,
     image: "https://images.unsplash.com/photo-1553530979-fbb9e4aee36e?q=80&w=1920&auto=format&fit=crop",
     title: "Không Gian Ấm Cúng",
-    description: "Tận hưởng bữa ��n trong không gian hiện đại nhưng vẫn đậm nét văn hóa Việt",
+    description: "Tận hưởng bữa ăn trong không gian hiện đại nhưng vẫn đậm nét văn hóa Việt",
     cta: "Đặt bàn ngay"
   },
   {
