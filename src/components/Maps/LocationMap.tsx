@@ -1,15 +1,12 @@
 import React from "react";
-import { MapPin, Clock, Phone } from "lucide-react";
+import { MapPin, Phone } from "lucide-react";
 
 export function LocationMap() {
   return (
     <section className="bg-white py-8">
       <div className="container mx-auto px-4">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold mb-2">Vị Trí Nhà Hàng</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Nhà hàng Việt Nam tọa lạc tại trung tâm thành phố, dễ dàng tiếp cận từ nhiều hướng và gần các địa điểm du lịch nổi tiếng.
-          </p>
+          <h2 className="text-2xl font-bold">Vị Trí Nhà Hàng</h2>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -30,7 +27,7 @@ export function LocationMap() {
           <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
             <h3 className="text-lg font-bold mb-4">Thông Tin Liên Hệ</h3>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-start">
                 <MapPin className="w-5 h-5 text-blue-600 mt-1 mr-3 flex-shrink-0" />
                 <div>
@@ -54,24 +51,6 @@ export function LocationMap() {
                   <p className="text-gray-600">0123 456 789</p>
                 </div>
               </div>
-
-              <div className="flex items-start">
-                <Clock className="w-5 h-5 text-blue-600 mt-1 mr-3 flex-shrink-0" />
-                <div>
-                  <h4 className="font-medium">Giờ mở cửa:</h4>
-                  <p className="text-gray-600">Thứ 2 - Thứ 6: 10:00 - 22:00</p>
-                  <p className="text-gray-600">Thứ 7 - Chủ nhật: 09:00 - 23:00</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-5">
-              <h4 className="font-medium mb-2">Phương tiện di chuyển:</h4>
-              <ul className="list-disc list-inside text-gray-600 space-y-1 text-sm">
-                <li>Xe buýt: Các tuyến 01, 14, 45 (dừng cách 50m)</li>
-                <li>Taxi/Grab: Có điểm đón trả khách trước nhà hàng</li>
-                <li>Xe máy/Ô tô: Có bãi đỗ xe rộng rãi phía sau nhà hàng</li>
-              </ul>
             </div>
           </div>
         </div>
