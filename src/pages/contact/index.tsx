@@ -9,8 +9,8 @@ export default function ContactPage() {
   return (
     <>
       <Head>
-        <title>Liên hệ | Nhà hàng Việt Nam</title>
-        <meta name="description" content="Thông tin liên hệ Nhà hàng Việt Nam" />
+        <title>Liên hệ | BẾP NHÀ TRÂM</title>
+        <meta name="description" content="Thông tin liên hệ BẾP NHÀ TRÂM" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

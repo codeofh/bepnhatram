@@ -1,5 +1,5 @@
 import React from "react";
-import { List, Apple, Coffee, Heart, GlassWater, LayoutGrid } from "lucide-react";
+import { List, Apple, Coffee, Heart, GlassWater, LayoutGrid, Beef, Drumstick, Star } from "lucide-react";
 
 interface SidebarProps {
   activeCategory: string;
@@ -9,9 +9,10 @@ interface SidebarProps {
 export function Sidebar({ activeCategory, setActiveCategory }: SidebarProps) {
   const categories = [
     { id: "all", name: "Tất cả", icon: <LayoutGrid size={20} /> },
-    { id: "appetizer", name: "Món khai vị", icon: <Apple size={20} /> },
+    { id: "special", name: "Đặc biệt", icon: <Star size={20} /> },
     { id: "main", name: "Món chính", icon: <Coffee size={20} /> },
-    { id: "dessert", name: "Món tráng miệng", icon: <Heart size={20} /> },
+    { id: "chicken", name: "Gà ủ muối", icon: <Beef size={20} /> },
+    { id: "chicken-feet", name: "Chân gà", icon: <Drumstick size={20} /> },
     { id: "drinks", name: "Đồ uống", icon: <GlassWater size={20} /> },
   ];
 

@@ -1,4 +1,3 @@
-
 import React from "react";
 import Image from "next/image";
 import { Plus } from "lucide-react";
@@ -57,6 +56,9 @@ export function MenuItem({
     main: "bg-blue-500",
     dessert: "bg-blue-500",
     drinks: "bg-blue-500",
+    chicken: "bg-blue-500",
+    "chicken-feet": "bg-blue-600",
+    special: "bg-blue-500"
   };
 
   // Category name mapping
@@ -65,6 +67,9 @@ export function MenuItem({
     main: "Món chính",
     dessert: "Món tráng miệng",
     drinks: "Đồ uống",
+    chicken: "Gà ủ muối",
+    "chicken-feet": "Chân gà",
+    special: "Đặc biệt"
   };
 
   return (

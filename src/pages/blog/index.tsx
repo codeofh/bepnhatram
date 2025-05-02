@@ -1,4 +1,3 @@
-
 import React from "react";
 import Head from "next/head";
 import { Header } from "@/components/Layout/Header";
@@ -8,8 +7,8 @@ export default function BlogPage() {
   return (
     <>
       <Head>
-        <title>Bài viết | Nhà hàng Việt Nam</title>
-        <meta name="description" content="Các bài viết về ẩm thực Việt Nam" />
+        <title>Bài viết | BẾP NHÀ TRÂM</title>
+        <meta name="description" content="Các bài viết về ẩm thực của BẾP NHÀ TRÂM" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -32,8 +31,8 @@ export default function BlogPage() {
             <div className="bg-white rounded-lg overflow-hidden shadow-sm">
               <div className="h-48 bg-gray-200"></div>
               <div className="p-4">
-                <h2 className="text-xl font-bold mb-2">Bí quyết nấu phở ngon</h2>
-                <p className="text-gray-600 mb-4">Những bí quyết để nấu một tô phở thơm ngon đúng điệu từ các đầu bếp chuyên nghiệp.</p>
+                <h2 className="text-xl font-bold mb-2">Món ngon ba miền</h2>
+                <p className="text-gray-600 mb-4">Tổng hợp các món ăn đặc sản nổi tiếng của ba miền Bắc - Trung - Nam.</p>
                 <div className="text-blue-600 font-medium">Đọc thêm</div>
               </div>
             </div>
@@ -41,8 +40,8 @@ export default function BlogPage() {
             <div className="bg-white rounded-lg overflow-hidden shadow-sm">
               <div className="h-48 bg-gray-200"></div>
               <div className="p-4">
-                <h2 className="text-xl font-bold mb-2">Món ngon ba miền</h2>
-                <p className="text-gray-600 mb-4">Tổng hợp các món ăn đặc sản nổi tiếng của ba miền Bắc - Trung - Nam.</p>
+                <h2 className="text-xl font-bold mb-2">Bí quyết nấu phở ngon</h2>
+                <p className="text-gray-600 mb-4">Những bí quyết để nấu một tô phở thơm ngon đúng điệu từ các đầu bếp chuyên nghiệp.</p>
                 <div className="text-blue-600 font-medium">Đọc thêm</div>
               </div>
             </div>

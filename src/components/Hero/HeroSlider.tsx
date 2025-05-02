@@ -14,24 +14,38 @@ import { Button } from "@/components/ui/button"
 const heroSlides = [
   {
     id: 1,
-    image: "https://images.unsplash.com/photo-1501189037839-b93cd878be33?q=80&w=1920&auto=format&fit=crop",
-    title: "Ẩm Thực Việt Nam Đặc Sắc",
-    description: "Khám phá hương vị truyền thống với các món ăn được chế biến từ nguyên liệu tươi ngon",
-    cta: "Xem thực đơn"
+    image: "https://images.unsplash.com/photo-1544025162-d76694265947?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Bò Lúc Lắc Khoai Tây",
+    description: "Thịt bò thăn mềm xào cùng khoai tây và rau củ, món ăn đậm đà đặc trưng của Bếp Nhà Trâm",
+    cta: "Đặt món ngay"
   },
   {
     id: 2,
-    image: "https://images.unsplash.com/photo-1553530979-fbb9e4aee36e?q=80&w=1920&auto=format&fit=crop",
-    title: "Không Gian Ấm Cúng",
-    description: "Tận hưởng bữa ăn trong không gian hiện đại nhưng vẫn đậm nét văn hóa Việt",
-    cta: "Đặt bàn ngay"
+    image: "https://images.unsplash.com/photo-1598866594230-a7c12756260f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Mì Ý Sốt Thịt Băm",
+    description: "Mì Ý với sốt thịt bò băm đậm đà, phô mai parmesan và các loại rau thơm tươi ngon",
+    cta: "Xem thực đơn"
   },
   {
     id: 3,
-    image: "https://images.unsplash.com/photo-1565958011703-44f9829ba187?q=80&w=1920&auto=format&fit=crop",
-    title: "Ưu Đãi Đặc Biệt",
-    description: "Khuyến mãi hấp dẫn cho thành viên mới và khách hàng thân thiết",
-    cta: "Xem ưu đãi"
+    image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Gà Ủ Muối Đặc Biệt",
+    description: "Món gà ủ muối đặc trưng của Bếp Nhà Trâm, được chế biến theo công thức gia truyền",
+    cta: "Đặt món ngay"
+  },
+  {
+    id: 4,
+    image: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Chân Gà Rút Xương",
+    description: "Chân gà rút xương được chế biến với nhiều hương vị độc đáo: sả tắc, xốt Thái, ủ muối hoa tiêu",
+    cta: "Xem thực đơn"
+  },
+  {
+    id: 5,
+    image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
+    title: "Món Đặc Biệt",
+    description: "Khám phá các món đặc biệt như nghêu trộn xốt Thái, nem chả với xốt thần thánh độc quyền",
+    cta: "Khám phá ngay"
   }
 ]
 
