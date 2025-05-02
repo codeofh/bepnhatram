@@ -14,7 +14,7 @@ export function Footer() {
           </div>
 
           <div className="space-y-3">
-            <h3 className="text-lg font-bold mb-4">Liên hệ</h3>
+            <h3 className="text-lg font-bold mb-4">Liên h���</h3>
             <div className="flex items-center text-gray-600">
               <Phone size={18} className="mr-2" />
               <span>0123 456 789</span>
@@ -29,7 +29,7 @@ export function Footer() {
             <h3 className="text-lg font-bold mb-4">Địa chỉ & Giờ mở cửa</h3>
             <div className="flex items-start text-gray-600">
               <MapPin size={18} className="mr-2 mt-1 flex-shrink-0" />
-              <span>123 Đường Lê Lợi, Quận 1, TP. Hồ Chí Minh</span>
+              <span>15/15 Đống Đa, Phú Nhuận, Huế, Thành phố Huế 490000</span>
             </div>
             <div className="flex items-center text-gray-600">
               <Clock size={18} className="mr-2" />
