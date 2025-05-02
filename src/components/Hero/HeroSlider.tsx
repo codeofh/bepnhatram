@@ -2,12 +2,12 @@
 
 import React, { useEffect } from "react"
 import Image from "next/image"
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselNext, 
-  CarouselPrevious 
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious
 } from "@/components/ui/carousel"
 import { Button } from "@/components/ui/button"
 
@@ -47,7 +47,7 @@ export function HeroSlider() {
     }
 
     api.on("select", onSelect)
-    
+
     // Auto-slide every 5 seconds
     const autoSlideInterval = setInterval(() => {
       if (api.canScrollNext()) {
@@ -65,14 +65,14 @@ export function HeroSlider() {
 
   return (
     <div className="relative w-full overflow-hidden">
-      <Carousel 
+      <Carousel
         setApi={setApi}
         opts={{ loop: true }}
         className="w-full"
       >
         <CarouselContent>
           {heroSlides.map((slide) => (
-            <CarouselItem key={slide.id} className="relative h-[400px] md:h-[500px]">
+            <CarouselItem key={slide.id} className="relative h-[250px] md:h-[350px]">
               <div className="relative w-full h-full overflow-hidden">
                 <Image
                   src={slide.image}
@@ -81,20 +81,20 @@ export function HeroSlider() {
                   priority={slide.id === 1}
                   className="object-cover object-center"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex flex-col justify-center px-10 md:px-20">
-                  <h2 className="text-white text-3xl md:text-4xl font-bold mb-4 max-w-lg">{slide.title}</h2>
-                  <p className="text-white/90 text-lg md:text-xl max-w-md mb-6">{slide.description}</p>
+                <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent flex flex-col justify-center px-8 md:px-16">
+                  <h2 className="text-white text-2xl md:text-3xl font-bold mb-3 max-w-lg">{slide.title}</h2>
+                  <p className="text-white/90 text-base md:text-lg max-w-md mb-4">{slide.description}</p>
                   <Button className="w-fit bg-blue-600 hover:bg-blue-700">{slide.cta}</Button>
                 </div>
               </div>
             </CarouselItem>
           ))}
         </CarouselContent>
-        
+
         <CarouselPrevious className="left-4 bg-white/30 hover:bg-white/50 border-none" />
         <CarouselNext className="right-4 bg-white/30 hover:bg-white/50 border-none" />
       </Carousel>
-      
+
       {/* Slide indicators */}
       <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
         {heroSlides.map((_, index) => (
