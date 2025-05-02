@@ -5,6 +5,7 @@ import { MenuGrid } from "@/components/Menu/MenuGrid";
 import { Header } from "@/components/Layout/Header";
 import { Footer } from "@/components/Layout/Footer";
 import { HeroSlider } from "@/components/Hero/HeroSlider";
+import { LocationMap } from "@/components/Maps/LocationMap";
 import { menuItems } from "@/data/menuItems";
 
 export default function Home() {
@@ -59,6 +60,8 @@ export default function Home() {
             </div>
           </div>
         </main>
+
+        <LocationMap />
 
         <Footer />
       </div>
