@@ -8,7 +8,7 @@ import { HeroSlider } from "@/components/Hero/HeroSlider";
 import { menuItems } from "@/data/menuItems";
 
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState("appetizer");
+  const [activeCategory, setActiveCategory] = useState("all");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {
