@@ -7,8 +7,8 @@ export default function NotFound() {
   return (
     <>
       <Head>
-        <title>404 - Page Not Found</title>
-        <meta name="description" content="Page not found" />
+        <title>Không tìm thấy trang | BẾP NHÀ TRÂM</title>
+        <meta name="description" content="Không tìm thấy trang yêu cầu" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
       
