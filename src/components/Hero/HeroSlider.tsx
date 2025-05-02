@@ -65,11 +65,12 @@ export function HeroSlider() {
 
   return (
     <div className="relative w-full overflow-hidden">
-      <Carousel
-        setApi={setApi}
-        opts={{ loop: true }}
-        className="w-full"
-      >
+      <div className="container mx-auto">
+        <Carousel
+          setApi={setApi}
+          opts={{ loop: true }}
+          className="w-full"
+        >
         <CarouselContent>
           {heroSlides.map((slide) => (
             <CarouselItem key={slide.id} className="relative h-[250px] md:h-[350px]">
@@ -93,10 +94,10 @@ export function HeroSlider() {
 
         <CarouselPrevious className="left-4 bg-white/30 hover:bg-white/50 border-none" />
         <CarouselNext className="right-4 bg-white/30 hover:bg-white/50 border-none" />
-      </Carousel>
+        </Carousel>
 
-      {/* Slide indicators */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+        {/* Slide indicators */}
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
         {heroSlides.map((_, index) => (
           <button
             key={index}
@@ -107,6 +108,7 @@ export function HeroSlider() {
             aria-label={`Go to slide ${index + 1}`}
           />
         ))}
+        </div>
       </div>
     </div>
   )
