@@ -1,6 +1,5 @@
-
 import React from "react";
-import { List, Apple, Coffee, Heart, GlassWater } from "lucide-react";
+import { List, Apple, Coffee, Heart, GlassWater, LayoutGrid } from "lucide-react";
 
 interface SidebarProps {
   activeCategory: string;
@@ -9,6 +8,7 @@ interface SidebarProps {
 
 export function Sidebar({ activeCategory, setActiveCategory }: SidebarProps) {
   const categories = [
+    { id: "all", name: "Tất cả", icon: <LayoutGrid size={20} /> },
     { id: "appetizer", name: "Món khai vị", icon: <Apple size={20} /> },
     { id: "main", name: "Món chính", icon: <Coffee size={20} /> },
     { id: "dessert", name: "Món tráng miệng", icon: <Heart size={20} /> },
@@ -21,7 +21,7 @@ export function Sidebar({ activeCategory, setActiveCategory }: SidebarProps) {
         <List size={24} className="mr-2" />
         <h2 className="text-xl font-bold">Danh mục</h2>
       </div>
-      
+
       <div className="space-y-2">
         {categories.map((category) => (
           <button
