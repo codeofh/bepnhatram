@@ -7,7 +7,7 @@ export function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="space-y-3">
-            <h3 className="text-lg font-bold mb-4">BẾP NHÀ Trâm</h3>
+            <h3 className="text-lg font-bold mb-4">BẾP NHÀ TRÂM</h3>
             <p className="text-gray-600 text-sm">
               Chuyên phục vụ các món ăn truyền thống Việt Nam với hương vị đậm đà, nguyên liệu tươi ngon.
             </p>
@@ -39,7 +39,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-200 mt-6 pt-6 text-center text-gray-500 text-sm">
-          <p>© {new Date().getFullYear()} BẾP NHÀ Trâm. Tất cả các quyền được bảo lưu.</p>
+          <p>© {new Date().getFullYear()} BẾP NHÀ TRÂM. Tất cả các quyền được bảo lưu.</p>
         </div>
       </div>
     </footer>

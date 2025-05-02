@@ -19,8 +19,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>BẾP NHÀ Trâm | Menu</title>
-        <meta name="description" content="Thực đơn BẾP NHÀ Trâm với các món ăn đặc sắc" />
+        <title>BẾP NHÀ TRÂM | Menu</title>
+        <meta name="description" content="Thực đơn BẾP NHÀ TRÂM với các món ăn đặc sắc" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
