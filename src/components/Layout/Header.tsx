@@ -27,11 +27,12 @@ export function Header({ toggleSidebar }: HeaderProps) {
             </Button>
             <Link href="/" className="flex items-center">
               <Image
-                src="/logo.svg"
-                alt="Nhà hàng Việt Nam"
+                src="/new-logo.jpg"
+                alt="BẾP NHÀ Trâm"
                 width={120}
                 height={40}
                 className="h-10 w-auto"
+                style={{ objectFit: 'contain' }}
               />
             </Link>
           </div>
