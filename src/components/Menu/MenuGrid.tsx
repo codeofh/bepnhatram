@@ -1,4 +1,3 @@
-
 import React from "react";
 import { MenuItem } from "./MenuItem";
 
@@ -16,9 +15,11 @@ interface MenuGridProps {
 }
 
 export function MenuGrid({ items, activeCategory }: MenuGridProps) {
-  // Filter items by active category, or show all if activeCategory is empty
+  // Filter items by active category, show all for "all" category, or show all if activeCategory is empty
   const filteredItems = activeCategory
-    ? items.filter((item) => item.category === activeCategory)
+    ? activeCategory === "all"
+      ? items
+      : items.filter((item) => item.category === activeCategory)
     : items;
 
   return (
