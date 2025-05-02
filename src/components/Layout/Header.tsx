@@ -27,7 +27,7 @@ export function Header({ toggleSidebar }: HeaderProps) {
             </Button>
             <Link href="/" className="flex items-center">
               <Image
-                src="/logo.jpg"
+                src="https://cdn.builder.io/api/v1/image/assets%2F08480922145a4de68226bc177e3fa5b5%2F6a081c8bbb874ebdb92771553778867f"
                 alt="BẾP NHÀ TRÂM"
                 width={180}
                 height={60}
