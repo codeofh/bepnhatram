@@ -123,7 +123,7 @@ export function MenuItem({
 
       <div className="p-2 sm:p-3 md:p-4 flex flex-col">
         <div className="flex-grow">
-          <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 line-clamp-1">{name}</h3>
+          <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 line-clamp-2 min-h-[2.5em]">{name}</h3>
           <div className="flex mb-1 sm:mb-2">
             {renderStars()}
           </div>

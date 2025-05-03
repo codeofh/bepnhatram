@@ -15,14 +15,14 @@ export default function Home() {
 
   return (
     <>
-      <SEO 
+      <SEO
         title={siteConfig.seo.homePageTitle}
         description={siteConfig.seo.defaultDescription}
       />
       <StructuredData type="restaurant" />
 
-      <Layout 
-        searchQuery={searchQuery} 
+      <Layout
+        searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
@@ -30,6 +30,15 @@ export default function Home() {
         <HeroSlider />
 
         <main className="flex-1 container mx-auto px-4 py-6">
+          {/* Menu Grid for Mobile - Full Width */}
+          <div className="md:hidden w-full mb-6">
+            <MenuGrid
+              items={menuItems}
+              activeCategory={activeCategory}
+              searchQuery={searchQuery}
+            />
+          </div>
+
           <div className="flex flex-col md:flex-row gap-6">
             {/* Sidebar for desktop */}
             <div className="hidden md:block md:w-1/4">
@@ -39,13 +48,15 @@ export default function Home() {
               />
             </div>
 
-            {/* Menu content */}
+            {/* Menu content for desktop */}
             <div className="w-full md:w-3/4">
-              <MenuGrid 
-                items={menuItems} 
-                activeCategory={activeCategory} 
-                searchQuery={searchQuery}
-              />
+              <div className="hidden md:block">
+                <MenuGrid
+                  items={menuItems}
+                  activeCategory={activeCategory}
+                  searchQuery={searchQuery}
+                />
+              </div>
             </div>
           </div>
         </main>

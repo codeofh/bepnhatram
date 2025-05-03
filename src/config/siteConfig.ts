@@ -29,6 +29,9 @@ export const siteConfig = {
     instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "",
     twitter: process.env.NEXT_PUBLIC_TWITTER_URL || "",
     zalo: process.env.NEXT_PUBLIC_ZALO_URL || "https://zalo.me/0886286032",
+    tiktok: process.env.NEXT_PUBLIC_TIKTOK_URL || "https://www.tiktok.com/@tramthichnauan",
+    tiktokHandle: process.env.NEXT_PUBLIC_TIKTOK_HANDLE || "@tramthichnauan",
+    messenger: process.env.NEXT_PUBLIC_MESSENGER_URL || "https://m.me/bepnhatram.1",
   },
   
   // Đặt hàng
