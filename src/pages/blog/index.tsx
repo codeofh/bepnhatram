@@ -2,13 +2,14 @@ import React from "react";
 import Head from "next/head";
 import { Header } from "@/components/Layout/Header";
 import { Footer } from "@/components/Layout/Footer";
+import { siteConfig } from "@/config/siteConfig";
 
 export default function BlogPage() {
   return (
     <>
       <Head>
-        <title>Bài viết | BẾP NHÀ TRÂM</title>
-        <meta name="description" content="Các bài viết về ẩm thực của BẾP NHÀ TRÂM" />
+        <title>Bài viết | {siteConfig.name}</title>
+        <meta name="description" content={`Các bài viết về ẩm thực của ${siteConfig.name}`} />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

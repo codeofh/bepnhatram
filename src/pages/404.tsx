@@ -2,12 +2,13 @@ import React from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
 import { Button } from "@/components/ui/button"
+import { siteConfig } from "@/config/siteConfig"
 
 export default function NotFound() {
   return (
     <>
       <Head>
-        <title>Không tìm thấy trang | BẾP NHÀ TRÂM</title>
+        <title>Không tìm thấy trang | {siteConfig.name}</title>
         <meta name="description" content="Không tìm thấy trang yêu cầu" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

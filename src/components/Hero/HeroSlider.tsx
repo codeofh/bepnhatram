@@ -10,13 +10,14 @@ import {
   CarouselPrevious
 } from "@/components/ui/carousel"
 import { Button } from "@/components/ui/button"
+import { siteConfig } from "@/config/siteConfig"
 
 const heroSlides = [
   {
     id: 1,
     image: "https://images.unsplash.com/photo-1544025162-d76694265947?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
     title: "Bò Lúc Lắc Khoai Tây",
-    description: "Thịt bò thăn mềm xào cùng khoai tây và rau củ, món ăn đậm đà đặc trưng của Bếp Nhà Trâm",
+    description: `Thịt bò thăn mềm xào cùng khoai tây và rau củ, món ăn đậm đà đặc trưng của ${siteConfig.name}`,
     cta: "Đặt món ngay"
   },
   {
@@ -30,7 +31,7 @@ const heroSlides = [
     id: 3,
     image: "https://images.unsplash.com/photo-1527477396000-e27163b481c2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80",
     title: "Gà Ủ Muối Đặc Biệt",
-    description: "Món gà ủ muối đặc trưng của Bếp Nhà Trâm, được chế biến theo công thức gia truyền",
+    description: `Món gà ủ muối đặc trưng của ${siteConfig.name}, được chế biến theo công thức gia truyền`,
     cta: "Đặt món ngay"
   },
   {
