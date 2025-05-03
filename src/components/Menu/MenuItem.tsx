@@ -125,8 +125,7 @@ export function MenuItem({
         <div className="flex-grow">
           <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 line-clamp-1">{name}</h3>
           <div className="flex mb-1 sm:mb-2">
-            <div className="hidden sm:flex">{renderStars()}</div>
-            <div className="flex sm:hidden">{renderStars().slice(0, 3)}</div>
+            {renderStars()}
           </div>
           <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">{description}</p>
         </div>
