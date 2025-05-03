@@ -11,6 +11,7 @@ interface MenuGridProps {
     image: string;
     category: string;
     rating: number;
+    displayOrder?: number;
   }[];
   activeCategory: string;
   searchQuery?: string;
@@ -43,6 +44,23 @@ export function MenuGrid({ items, activeCategory, searchQuery = "" }: MenuGridPr
       }
       
       return true;
+    })
+    // Sort by displayOrder if available
+    .sort((a, b) => {
+      // If both items have displayOrder, sort by it
+      if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+        return a.displayOrder - b.displayOrder;
+      }
+      // If only a has displayOrder, it comes first
+      if (a.displayOrder !== undefined) {
+        return -1;
+      }
+      // If only b has displayOrder, it comes first
+      if (b.displayOrder !== undefined) {
+        return 1;
+      }
+      // If neither has displayOrder, maintain original order
+      return 0;
     });
 
   return (

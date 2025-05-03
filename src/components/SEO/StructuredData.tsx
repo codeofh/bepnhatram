@@ -1,5 +1,6 @@
 import React from 'react';
 import Head from 'next/head';
+import { siteConfig } from '@/config/siteConfig';
 
 interface StructuredDataProps {
   type?: 'restaurant' | 'product' | 'article';
@@ -11,23 +12,23 @@ export function StructuredData({ type = 'restaurant', data }: StructuredDataProp
   const restaurantData = {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
-    name: 'BẾP NHÀ TRÂM',
-    image: 'https://bepnhatram.com/og-image.jpg',
-    '@id': 'https://bepnhatram.com',
-    url: 'https://bepnhatram.com',
-    telephone: '0886286032',
+    name: siteConfig.name,
+    image: `${siteConfig.url}${siteConfig.seo.ogImageUrl}`,
+    '@id': siteConfig.url,
+    url: siteConfig.url,
+    telephone: siteConfig.contact.phone,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: '15/15 Đống Đa, Phú Nhuận',
-      addressLocality: 'Huế',
-      addressRegion: 'Thừa Thiên Huế',
-      postalCode: '530000',
-      addressCountry: 'VN'
+      streetAddress: siteConfig.contact.address,
+      addressLocality: siteConfig.contact.city,
+      addressRegion: siteConfig.contact.region,
+      postalCode: siteConfig.contact.postalCode,
+      addressCountry: siteConfig.contact.countryCode
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: 16.4637,
-      longitude: 107.5909
+      latitude: parseFloat(siteConfig.maps.latitude),
+      longitude: parseFloat(siteConfig.maps.longitude)
     },
     openingHoursSpecification: {
       '@type': 'OpeningHoursSpecification',
@@ -54,12 +55,12 @@ export function StructuredData({ type = 'restaurant', data }: StructuredDataProp
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: data?.name || 'Gà Ủ Muối',
-    image: data?.image || 'https://bepnhatram.com/og-image.jpg',
-    description: data?.description || 'Món gà ủ muối đặc sắc của BẾP NHÀ TRÂM',
+    image: data?.image || `${siteConfig.url}${siteConfig.seo.ogImageUrl}`,
+    description: data?.description || `Món gà ủ muối đặc sắc của ${siteConfig.name}`,
     offers: {
       '@type': 'Offer',
       price: data?.price || '150000',
-      priceCurrency: 'VND',
+      priceCurrency: siteConfig.settings.currency,
       availability: 'https://schema.org/InStock'
     }
   };
@@ -68,13 +69,13 @@ export function StructuredData({ type = 'restaurant', data }: StructuredDataProp
   const articleData = {
     '@context': 'https://schema.org',
     '@type': 'Article',
-    headline: data?.title || 'BẾP NHÀ TRÂM - Căn bếp nhỏ nhà Trâm cùng những món ăn ngon',
-    image: data?.image || 'https://bepnhatram.com/og-image.jpg',
+    headline: data?.title || `${siteConfig.name} - ${siteConfig.description}`,
+    image: data?.image || `${siteConfig.url}${siteConfig.seo.ogImageUrl}`,
     datePublished: data?.datePublished || new Date().toISOString(),
     dateModified: data?.dateModified || new Date().toISOString(),
     author: {
       '@type': 'Person',
-      name: data?.author || 'BẾP NHÀ TRÂM'
+      name: data?.author || siteConfig.name
     }
   };
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
+import { siteConfig } from '@/config/siteConfig';
 
 interface SEOProps {
   title?: string;
@@ -10,20 +11,22 @@ interface SEOProps {
 }
 
 export function SEO({
-  title = 'BẾP NHÀ TRÂM - Món ăn ngon tại Huế',
-  description = 'BẾP NHÀ TRÂM - Căn bếp nhỏ nhà Trâm cùng những món ăn ngon. Chuyên các món gà ủ muối, chân gà và các món ăn đặc sắc khác tại Huế.',
-  image = '/og-image.jpg',
+  title,
+  description = siteConfig.seo.defaultDescription,
+  image = siteConfig.seo.ogImageUrl,
   article = false,
 }: SEOProps) {
   const router = useRouter();
-  const canonicalUrl = `https://bepnhatram.com${router.asPath}`;
-  const siteUrl = 'https://bepnhatram.com';
-  const fullImageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
+  const pageTitle = title 
+    ? siteConfig.seo.titleTemplate.replace('%s', title)
+    : siteConfig.seo.defaultTitle;
+  const canonicalUrl = `${siteConfig.url}${router.asPath}`;
+  const fullImageUrl = image.startsWith('http') ? image : `${siteConfig.url}${image}`;
   
   return (
     <Head>
       {/* Basic Meta Tags */}
-      <title>{title}</title>
+      <title>{pageTitle}</title>
       <meta name="description" content={description} />
       <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
       <link rel="canonical" href={canonicalUrl} />
@@ -32,18 +35,21 @@ export function SEO({
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={article ? 'article' : 'website'} />
       <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:title" content={title} />
+      <meta property="og:title" content={pageTitle} />
       <meta property="og:description" content={description} />
       <meta property="og:image" content={fullImageUrl} />
-      <meta property="og:site_name" content="BẾP NHÀ TRÂM" />
-      <meta property="og:locale" content="vi_VN" />
+      <meta property="og:site_name" content={siteConfig.name} />
+      <meta property="og:locale" content={siteConfig.settings.locale.replace('-', '_')} />
       
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={canonicalUrl} />
-      <meta name="twitter:title" content={title} />
+      <meta name="twitter:title" content={pageTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={fullImageUrl} />
+      {siteConfig.seo.twitterHandle && (
+        <meta name="twitter:site" content={siteConfig.seo.twitterHandle} />
+      )}
       
       {/* Favicon */}
       <link rel="icon" href="/favicon.ico" />
@@ -57,8 +63,8 @@ export function SEO({
       
       {/* Additional Meta Tags */}
       <meta name="theme-color" content="#ffffff" />
-      <meta name="keywords" content="BẾP NHÀ TRÂM, nhà hàng Huế, món ăn ngon, gà ủ muối, chân gà, đặc sản Huế, ẩm thực Huế" />
-      <meta name="author" content="BẾP NHÀ TRÂM" />
+      <meta name="keywords" content={siteConfig.seo.keywords} />
+      <meta name="author" content={siteConfig.name} />
     </Head>
   );
 }

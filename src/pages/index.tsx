@@ -7,6 +7,7 @@ import { menuItems } from "@/data/menuItems";
 import { Layout } from "@/components/Layout/Layout";
 import { SEO } from "@/components/SEO/SEO";
 import { StructuredData } from "@/components/SEO/StructuredData";
+import { siteConfig } from "@/config/siteConfig";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -15,9 +16,8 @@ export default function Home() {
   return (
     <>
       <SEO 
-        title="BẾP NHÀ TRÂM - Món ăn ngon tại Huế" 
-        description="BẾP NHÀ TRÂM - Căn bếp nhỏ nhà Trâm cùng những món ăn ngon. Chuyên các món gà ủ muối, chân gà và các món ăn đặc sắc khác tại Huế."
-        image="/og-image.jpg"
+        title={siteConfig.seo.homePageTitle}
+        description={siteConfig.seo.defaultDescription}
       />
       <StructuredData type="restaurant" />
 

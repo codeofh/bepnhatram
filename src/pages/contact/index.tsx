@@ -3,14 +3,14 @@ import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/Layout/Layout";
 import { SEO } from "@/components/SEO/SEO";
+import { siteConfig } from "@/config/siteConfig";
 
 export default function ContactPage() {
   return (
     <>
       <SEO 
-        title="Liên hệ | BẾP NHÀ TRÂM" 
-        description="Thông tin liên hệ BẾP NHÀ TRÂM. Địa chỉ: 15/15 Đống Đa, Phú Nhuận, Huế. Điện thoại: 0886286032. Email: info@bepnhatram.com"
-        image="/og-image.jpg"
+        title="Liên hệ" 
+        description={`Thông tin liên hệ ${siteConfig.name}. Địa chỉ: ${siteConfig.contact.address}. Điện thoại: ${siteConfig.contact.phone}. Email: ${siteConfig.contact.email}`}
       />
 
       <Layout>
@@ -64,7 +64,7 @@ export default function ContactPage() {
                   <MapPin size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Địa chỉ</h3>
-                    <p className="text-gray-600">15/15 Đống Đa, Phú Nhuận, Huế, Thành phố Huế</p>
+                    <p className="text-gray-600">{siteConfig.contact.address}</p>
                   </div>
                 </div>
                 
@@ -72,7 +72,7 @@ export default function ContactPage() {
                   <Phone size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Điện thoại</h3>
-                    <p className="text-gray-600">0886286032</p>
+                    <p className="text-gray-600">{siteConfig.contact.phone}</p>
                   </div>
                 </div>
                 
@@ -80,7 +80,7 @@ export default function ContactPage() {
                   <Mail size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Email</h3>
-                    <p className="text-gray-600">info@bepnhatram.com</p>
+                    <p className="text-gray-600">{siteConfig.contact.email}</p>
                   </div>
                 </div>
                 
@@ -88,14 +88,14 @@ export default function ContactPage() {
                   <Clock size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Giờ mở cửa</h3>
-                    <p className="text-gray-600">10:00 - 22:00 (Thứ 2 - Chủ nhật)</p>
+                    <p className="text-gray-600">{siteConfig.contact.openingHours}</p>
                   </div>
                 </div>
               </div>
               
               <div className="mt-8 h-64 bg-gray-200 rounded-lg overflow-hidden">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3826.2641274089488!2d107.59194319999999!3d16.462158199999998!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3141a10027198345%3A0x96561dba360403e1!2zQuG6v3AgTmjDoCBUcsOibQ!5e0!3m2!1svi!2s!4v1746188965268!5m2!1svi!2s"
+                  src={siteConfig.maps.embedUrl}
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}

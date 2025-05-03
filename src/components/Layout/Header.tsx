@@ -8,6 +8,7 @@ import { AuthDialog } from "@/components/Auth/AuthDialog";
 import { SearchModal } from "@/components/Search/SearchModal";
 import { useToastContext } from "@/contexts/ToastContext";
 import { useToast } from "@/hooks/use-toast";
+import { siteConfig } from "@/config/siteConfig";
 
 interface HeaderProps {
   toggleSidebar?: () => void;
@@ -58,7 +59,7 @@ export function Header({ toggleSidebar, searchQuery = "", setSearchQuery }: Head
             <Link href="/" className="flex items-center">
               <Image
                 src="logo-removebg.png"
-                alt="BẾP NHÀ TRÂM"
+                alt={siteConfig.name}
                 width={180}
                 height={60}
                 className="h-12 w-auto"
