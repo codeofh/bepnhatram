@@ -23,11 +23,11 @@ export function MenuItem({
   category,
   rating,
 }: MenuItemProps) {
-  const { showWarning } = useToastContext();
+  const { showCartNotification } = useToastContext();
 
   // Format price with dot separator for thousands
   const formattedPrice = `${price.toLocaleString("vi-VN")}₫`;
-  
+
   // Generate stars based on rating
   const renderStars = () => {
     const stars = [];
@@ -35,9 +35,8 @@ export function MenuItem({
       stars.push(
         <svg
           key={i}
-          className={`w-5 h-5 ${
-            i <= rating ? "text-blue-500 fill-blue-500" : "text-gray-300"
-          }`}
+          className={`w-5 h-5 ${i <= rating ? "text-blue-500 fill-blue-500" : "text-gray-300"
+            }`}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
@@ -77,7 +76,7 @@ export function MenuItem({
 
   // Function to show development notification
   const showDevelopmentNotification = () => {
-    showWarning(`Chức năng này đang được phát triển. Vui lòng quay lại sau!`, "Thông báo");
+    showCartNotification('add', name);
   };
 
   return (
@@ -95,7 +94,7 @@ export function MenuItem({
           </Badge>
         </div>
       </div>
-      
+
       <div className="p-2 sm:p-3 md:p-4">
         <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 line-clamp-1">{name}</h3>
         <div className="flex mb-1 sm:mb-2">
@@ -103,10 +102,10 @@ export function MenuItem({
           <div className="flex sm:hidden">{renderStars().slice(0, 3)}</div>
         </div>
         <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">{description}</p>
-        
+
         <div className="flex justify-between items-center">
           <span className="font-bold text-sm sm:text-base md:text-lg">{formattedPrice}</span>
-          <button 
+          <button
             className="bg-white rounded-full p-1 border border-gray-300 hover:bg-gray-50"
             onClick={showDevelopmentNotification}
           >

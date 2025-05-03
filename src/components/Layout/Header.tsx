@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { AuthDialog } from "@/components/Auth/AuthDialog";
 import { SearchModal } from "@/components/Search/SearchModal";
 import { useToastContext } from "@/contexts/ToastContext";
-import { useToast } from "@/hooks/use-toast";
 import { siteConfig } from "@/config/siteConfig";
 
 interface HeaderProps {
@@ -20,7 +19,7 @@ export function Header({ toggleSidebar, searchQuery = "", setSearchQuery }: Head
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const router = useRouter();
-  const { showInfo } = useToastContext();
+  const { showCartNotification } = useToastContext();
   const isBlogPage = router.pathname.startsWith('/blog');
   const isHomePage = router.pathname === "/";
   const isAboutPage = router.pathname === "/about" || router.pathname.startsWith('/about/');
@@ -28,16 +27,15 @@ export function Header({ toggleSidebar, searchQuery = "", setSearchQuery }: Head
 
   // Function to determine nav link classes based on active state
   const getNavLinkClasses = (isActive: boolean) => {
-    return `font-medium ${
-      isActive 
-        ? "text-blue-600 font-semibold" 
+    return `font-medium ${isActive
+        ? "text-blue-600 font-semibold"
         : "text-gray-600 hover:text-blue-600"
-    } transition-colors`;
+      } transition-colors`;
   };
 
   // Function to show development notification
   const showDevelopmentNotification = () => {
-    showInfo("Chức năng này đang được phát triển. Vui lòng quay lại sau!", "Thông báo");
+    showCartNotification('development');
   };
 
   return (
@@ -99,7 +97,7 @@ export function Header({ toggleSidebar, searchQuery = "", setSearchQuery }: Head
                   />
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                   {searchQuery && (
-                    <button 
+                    <button
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       onClick={() => setSearchQuery && setSearchQuery("")}
                     >
@@ -110,10 +108,10 @@ export function Header({ toggleSidebar, searchQuery = "", setSearchQuery }: Head
 
                 {/* Mobile search button - only on homepage */}
                 {isHomePage && (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="md:hidden" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="md:hidden"
                     onClick={() => setSearchModalOpen(true)}
                   >
                     <Search size={24} />
@@ -122,7 +120,7 @@ export function Header({ toggleSidebar, searchQuery = "", setSearchQuery }: Head
 
                 {/* Mobile search modal - only on homepage */}
                 {isHomePage && setSearchQuery && (
-                  <SearchModal 
+                  <SearchModal
                     isOpen={searchModalOpen}
                     onClose={() => setSearchModalOpen(false)}
                     searchQuery={searchQuery}
@@ -130,8 +128,8 @@ export function Header({ toggleSidebar, searchQuery = "", setSearchQuery }: Head
                   />
                 )}
 
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   onClick={showDevelopmentNotification}
                 >
