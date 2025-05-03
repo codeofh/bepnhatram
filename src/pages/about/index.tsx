@@ -1,20 +1,17 @@
 import React from "react";
-import Head from "next/head";
-import { Header } from "@/components/Layout/Header";
-import { Footer } from "@/components/Layout/Footer";
+import { Layout } from "@/components/Layout/Layout";
+import { SEO } from "@/components/SEO/SEO";
 
 export default function AboutPage() {
   return (
     <>
-      <Head>
-        <title>Giới thiệu | BẾP NHÀ TRÂM</title>
-        <meta name="description" content="Giới thiệu về BẾP NHÀ TRÂM - Nơi mang đến những món ăn ngon đậm đà hương vị Việt Nam" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+      <SEO 
+        title="Giới thiệu | BẾP NHÀ TRÂM" 
+        description="Giới thiệu về BẾP NHÀ TRÂM - Nơi mang đến những món ăn ngon đậm đà hương vị Việt Nam tại Huế. Tìm hiểu về câu chuyện, giá trị và sứ mệnh của chúng tôi."
+        image="/og-image.jpg"
+      />
 
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Header />
-        
+      <Layout>
         <main className="flex-1 container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-6">Giới thiệu về Bếp Nhà Trâm</h1>
           
@@ -47,9 +44,7 @@ export default function AboutPage() {
             </p>
           </div>
         </main>
-        
-        <Footer />
-      </div>
+      </Layout>
     </>
   );
 }

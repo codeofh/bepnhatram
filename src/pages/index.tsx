@@ -1,32 +1,32 @@
 import React, { useState } from "react";
-import Head from "next/head";
 import { Sidebar } from "@/components/Layout/Sidebar";
 import { MenuGrid } from "@/components/Menu/MenuGrid";
-import { Header } from "@/components/Layout/Header";
-import { Footer } from "@/components/Layout/Footer";
 import { HeroSlider } from "@/components/Hero/HeroSlider";
 import { LocationMap } from "@/components/Maps/LocationMap";
 import { menuItems } from "@/data/menuItems";
+import { Layout } from "@/components/Layout/Layout";
+import { SEO } from "@/components/SEO/SEO";
+import { StructuredData } from "@/components/SEO/StructuredData";
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("all");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <>
-      <Head>
-        <title>Thực đơn | BẾP NHÀ TRÂM</title>
-        <meta name="description" content="Thực đơn BẾP NHÀ TRÂM với các món ăn đặc sắc" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+      <SEO 
+        title="BẾP NHÀ TRÂM - Món ăn ngon tại Huế" 
+        description="BẾP NHÀ TRÂM - Căn bếp nhỏ nhà Trâm cùng những món ăn ngon. Chuyên các món gà ủ muối, chân gà và các món ăn đặc sắc khác tại Huế."
+        image="/og-image.jpg"
+      />
+      <StructuredData type="restaurant" />
 
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Header toggleSidebar={toggleSidebar} />
-
+      <Layout 
+        searchQuery={searchQuery} 
+        setSearchQuery={setSearchQuery}
+        activeCategory={activeCategory}
+        setActiveCategory={setActiveCategory}
+      >
         <HeroSlider />
 
         <main className="flex-1 container mx-auto px-4 py-6">
@@ -39,32 +39,19 @@ export default function Home() {
               />
             </div>
 
-            {/* Mobile sidebar */}
-            <div className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={toggleSidebar}>
-              <div className="absolute left-0 top-0 h-full w-3/4 max-w-xs bg-white" onClick={(e) => e.stopPropagation()}>
-                <div className="p-4">
-                  <Sidebar
-                    activeCategory={activeCategory}
-                    setActiveCategory={(category) => {
-                      setActiveCategory(category);
-                      setIsSidebarOpen(false);
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
             {/* Menu content */}
             <div className="w-full md:w-3/4">
-              <MenuGrid items={menuItems} activeCategory={activeCategory} />
+              <MenuGrid 
+                items={menuItems} 
+                activeCategory={activeCategory} 
+                searchQuery={searchQuery}
+              />
             </div>
           </div>
         </main>
 
         <LocationMap />
-
-        <Footer />
-      </div>
+      </Layout>
     </>
   );
 }

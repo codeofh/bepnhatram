@@ -1,22 +1,19 @@
 import React from "react";
-import Head from "next/head";
-import { Header } from "@/components/Layout/Header";
-import { Footer } from "@/components/Layout/Footer";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Layout } from "@/components/Layout/Layout";
+import { SEO } from "@/components/SEO/SEO";
 
 export default function ContactPage() {
   return (
     <>
-      <Head>
-        <title>Liên hệ | BẾP NHÀ TRÂM</title>
-        <meta name="description" content="Thông tin liên hệ BẾP NHÀ TRÂM" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+      <SEO 
+        title="Liên hệ | BẾP NHÀ TRÂM" 
+        description="Thông tin liên hệ BẾP NHÀ TRÂM. Địa chỉ: 15/15 Đống Đa, Phú Nhuận, Huế. Điện thoại: 0886286032. Email: info@bepnhatram.com"
+        image="/og-image.jpg"
+      />
 
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Header />
-        
+      <Layout>
         <main className="flex-1 container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">Liên hệ</h1>
           
@@ -110,9 +107,7 @@ export default function ContactPage() {
             </div>
           </div>
         </main>
-        
-        <Footer />
-      </div>
+      </Layout>
     </>
   );
 }

@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useToastContext } from "@/contexts/ToastContext";
 
 interface MenuItemProps {
   id: string;
@@ -22,6 +23,8 @@ export function MenuItem({
   category,
   rating,
 }: MenuItemProps) {
+  const { showSuccess } = useToastContext();
+
   // Format price with dot separator for thousands
   const formattedPrice = `${price.toLocaleString("vi-VN")}₫`;
   
@@ -72,9 +75,14 @@ export function MenuItem({
     special: "Đặc biệt"
   };
 
+  // Function to show development notification
+  const showDevelopmentNotification = () => {
+    showSuccess(`Đã thêm món "${name}" vào giỏ hàng!`);
+  };
+
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100">
-      <div className="relative h-48 w-full">
+      <div className="relative h-36 sm:h-40 md:h-48 w-full">
         <Image
           src={image}
           alt={name}
@@ -82,21 +90,27 @@ export function MenuItem({
           className="object-cover"
         />
         <div className="absolute top-2 right-2">
-          <Badge className={`${categoryColorMap[category as keyof typeof categoryColorMap]} text-white`}>
+          <Badge className={`${categoryColorMap[category as keyof typeof categoryColorMap]} text-white text-xs`}>
             {categoryNameMap[category as keyof typeof categoryNameMap]}
           </Badge>
         </div>
       </div>
       
-      <div className="p-4">
-        <h3 className="font-bold text-lg mb-1">{name}</h3>
-        <div className="flex mb-2">{renderStars()}</div>
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{description}</p>
+      <div className="p-2 sm:p-3 md:p-4">
+        <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 line-clamp-1">{name}</h3>
+        <div className="flex mb-1 sm:mb-2">
+          <div className="hidden sm:flex">{renderStars()}</div>
+          <div className="flex sm:hidden">{renderStars().slice(0, 3)}</div>
+        </div>
+        <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">{description}</p>
         
         <div className="flex justify-between items-center">
-          <span className="font-bold text-lg">{formattedPrice}</span>
-          <button className="bg-white rounded-full p-1 border border-gray-300 hover:bg-gray-50">
-            <Plus size={20} />
+          <span className="font-bold text-sm sm:text-base md:text-lg">{formattedPrice}</span>
+          <button 
+            className="bg-white rounded-full p-1 border border-gray-300 hover:bg-gray-50"
+            onClick={showDevelopmentNotification}
+          >
+            <Plus size={16} className="sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>
