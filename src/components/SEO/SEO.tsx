@@ -41,6 +41,12 @@ export function SEO({
       <meta property="og:site_name" content={siteConfig.name} />
       <meta property="og:locale" content={siteConfig.settings.locale.replace('-', '_')} />
       
+      {/* Zalo */}
+      <meta property="zalo:url" content={canonicalUrl} />
+      <meta property="zalo:title" content={pageTitle} />
+      <meta property="zalo:description" content={description} />
+      <meta property="zalo:image" content={fullImageUrl} />      
+
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={canonicalUrl} />
@@ -52,14 +58,7 @@ export function SEO({
       )}
       
       {/* Favicon */}
-      <link rel="icon" href="/favicon.ico" />
-      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-      <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-      <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-      <link rel="manifest" href="/site.webmanifest" />
-      <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5" />
-      <meta name="msapplication-TileColor" content="#da532c" />
-      <meta name="msapplication-config" content="/browserconfig.xml" />
+      <link rel="icon" href="/favicon.ico" />    
       
       {/* Additional Meta Tags */}
       <meta name="theme-color" content="#ffffff" />

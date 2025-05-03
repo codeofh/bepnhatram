@@ -28,6 +28,7 @@ export const siteConfig = {
     facebookHandle: process.env.NEXT_PUBLIC_FACEBOOK_HANDLE || "fb.com/bepnhatram.1",
     instagram: process.env.NEXT_PUBLIC_INSTAGRAM_URL || "",
     twitter: process.env.NEXT_PUBLIC_TWITTER_URL || "",
+    zalo: process.env.NEXT_PUBLIC_ZALO_URL || "https://zalo.me/0886286032",
   },
   
   // Đặt hàng
@@ -50,7 +51,7 @@ export const siteConfig = {
     defaultTitle: process.env.NEXT_PUBLIC_SEO_DEFAULT_TITLE || "BẾP NHÀ TRÂM - Món ăn ngon tại Huế",
     defaultDescription: process.env.NEXT_PUBLIC_SEO_DEFAULT_DESCRIPTION || 
       "BẾP NHÀ TRÂM - Nhà hàng chuyên các món gà ủ muối, chân gà rút xương và các món ăn đặc sản tại Huế",
-    ogImageUrl: process.env.NEXT_PUBLIC_SEO_OG_IMAGE_URL || "/og-image.jpg",
+    ogImageUrl: process.env.NEXT_PUBLIC_SEO_OG_IMAGE_URL || "/logo-removebg.png",
     twitterHandle: process.env.NEXT_PUBLIC_SEO_TWITTER_HANDLE || "@bepnhatram",
     keywords: process.env.NEXT_PUBLIC_SEO_KEYWORDS || "bếp nhà trâm, nhà hàng huế, gà ủ muối, chân gà rút xương, đặc sản huế, ẩm thực huế",
     homePageTitle: process.env.NEXT_PUBLIC_SEO_HOME_PAGE_TITLE || "Trang chủ",
