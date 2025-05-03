@@ -16,6 +16,10 @@ export const siteConfig = {
     email: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "info@bepnhatram.com",
     address: process.env.NEXT_PUBLIC_CONTACT_ADDRESS || "15/15 Đống Đa, Phú Nhuận, Huế, Thành phố Huế",
     openingHours: process.env.NEXT_PUBLIC_OPENING_HOURS || "10:00 - 22:00 (Thứ 2 - Chủ nhật)",
+    city: process.env.NEXT_PUBLIC_CONTACT_CITY || "Huế",
+    region: process.env.NEXT_PUBLIC_CONTACT_REGION || "Thừa Thiên Huế",
+    postalCode: process.env.NEXT_PUBLIC_CONTACT_POSTAL_CODE || "530000",
+    countryCode: process.env.NEXT_PUBLIC_CONTACT_COUNTRY_CODE || "VN",
   },
   
   // Mạng xã hội
@@ -48,6 +52,8 @@ export const siteConfig = {
       "BẾP NHÀ TRÂM - Nhà hàng chuyên các món gà ủ muối, chân gà rút xương và các món ăn đặc sản tại Huế",
     ogImageUrl: process.env.NEXT_PUBLIC_SEO_OG_IMAGE_URL || "/og-image.jpg",
     twitterHandle: process.env.NEXT_PUBLIC_SEO_TWITTER_HANDLE || "@bepnhatram",
+    keywords: process.env.NEXT_PUBLIC_SEO_KEYWORDS || "bếp nhà trâm, nhà hàng huế, gà ủ muối, chân gà rút xương, đặc sản huế, ẩm thực huế",
+    homePageTitle: process.env.NEXT_PUBLIC_SEO_HOME_PAGE_TITLE || "Trang chủ",
   },
   
   // Cài đặt khác
