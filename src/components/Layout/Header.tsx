@@ -37,7 +37,7 @@ export function Header({ toggleSidebar, searchQuery = "", setSearchQuery }: Head
 
   // Function to show development notification
   const showDevelopmentNotification = () => {
-    showInfo("Chức năng này đang được phát triển. Vui lòng quay lại sau!");
+    showInfo("Chức năng này đang được phát triển. Vui lòng quay lại sau!", "Thông báo");
   };
 
   return (

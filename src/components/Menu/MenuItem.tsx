@@ -23,7 +23,7 @@ export function MenuItem({
   category,
   rating,
 }: MenuItemProps) {
-  const { showSuccess } = useToastContext();
+  const { showWarning } = useToastContext();
 
   // Format price with dot separator for thousands
   const formattedPrice = `${price.toLocaleString("vi-VN")}₫`;
@@ -77,7 +77,7 @@ export function MenuItem({
 
   // Function to show development notification
   const showDevelopmentNotification = () => {
-    showSuccess(`Đã thêm món "${name}" vào giỏ hàng!`);
+    showWarning(`Chức năng này đang được phát triển. Vui lòng quay lại sau!`, "Thông báo");
   };
 
   return (
