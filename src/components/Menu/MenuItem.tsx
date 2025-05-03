@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToastContext } from "@/contexts/ToastContext";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import type { SizeOption } from "@/data/menuItems";
 
 interface MenuItemProps {
   id: string;
@@ -12,6 +14,7 @@ interface MenuItemProps {
   image: string;
   category: string;
   rating: number;
+  sizes?: SizeOption[];
 }
 
 export function MenuItem({
@@ -22,13 +25,38 @@ export function MenuItem({
   image,
   category,
   rating,
+  sizes,
 }: MenuItemProps) {
   const { showCartNotification } = useToastContext();
+  const [selectedSize, setSelectedSize] = useState<string>(sizes ? sizes[0].name : '');
+  const [currentPrice, setCurrentPrice] = useState<number>(sizes ? sizes[0].price : price);
 
   // Format price with dot separator for thousands
-  const formattedPrice = `${price.toLocaleString("vi-VN")}₫`;
+  const formattedPrice = `${currentPrice.toLocaleString("vi-VN")}₫`;
 
-  // Generate stars based on rating
+  // Category star color mapping
+  const categoryStarColors = {
+    appetizer: "text-emerald-500 fill-emerald-500", // Xanh lá - món khai vị
+    main: "text-orange-500 fill-orange-500", // Cam - món chính
+    dessert: "text-pink-500 fill-pink-500", // Hồng - món tráng miệng
+    drinks: "text-blue-500 fill-blue-500", // Xanh dương - đồ uống
+    chicken: "text-amber-500 fill-amber-500", // Vàng nâu - gà ủ muối
+    "chicken-feet": "text-red-500 fill-red-500", // Đỏ - chân gà
+    special: "text-purple-500 fill-purple-500" // Tím - món đặc biệt
+  };
+
+  // Category badge color mapping
+  const categoryColorMap = {
+    appetizer: "bg-emerald-500", // Xanh lá - món khai vị
+    main: "bg-orange-500", // Cam - món chính
+    dessert: "bg-pink-500", // Hồng - món tráng miệng
+    drinks: "bg-blue-500", // Xanh dương - đồ uống
+    chicken: "bg-amber-500", // Vàng nâu - gà ủ muối
+    "chicken-feet": "bg-red-500", // Đỏ - chân gà
+    special: "bg-purple-500" // Tím - món đặc biệt
+  };
+
+  // Generate stars based on rating with category color
   const renderStars = () => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -52,17 +80,6 @@ export function MenuItem({
     return stars;
   };
 
-  // Category badge color mapping
-  const categoryColorMap = {
-    appetizer: "bg-blue-500",
-    main: "bg-blue-500",
-    dessert: "bg-blue-500",
-    drinks: "bg-blue-500",
-    chicken: "bg-blue-500",
-    "chicken-feet": "bg-blue-600",
-    special: "bg-blue-500"
-  };
-
   // Category name mapping
   const categoryNameMap = {
     appetizer: "Món khai vị",
@@ -74,9 +91,18 @@ export function MenuItem({
     special: "Đặc biệt"
   };
 
+  const handleSizeChange = (value: string) => {
+    setSelectedSize(value);
+    const sizeOption = sizes?.find(size => size.name === value);
+    if (sizeOption) {
+      setCurrentPrice(sizeOption.price);
+    }
+  };
+
   // Function to show development notification
   const showDevelopmentNotification = () => {
-    showCartNotification('add', name);
+    const sizeSuffix = sizes ? ` (${selectedSize})` : '';
+    showCartNotification('add', `${name}${sizeSuffix}`);
   };
 
   return (
@@ -95,22 +121,45 @@ export function MenuItem({
         </div>
       </div>
 
-      <div className="p-2 sm:p-3 md:p-4">
-        <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 line-clamp-1">{name}</h3>
-        <div className="flex mb-1 sm:mb-2">
-          <div className="hidden sm:flex">{renderStars()}</div>
-          <div className="flex sm:hidden">{renderStars().slice(0, 3)}</div>
+      <div className="p-2 sm:p-3 md:p-4 flex flex-col">
+        <div className="flex-grow">
+          <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 line-clamp-1">{name}</h3>
+          <div className="flex mb-1 sm:mb-2">
+            <div className="hidden sm:flex">{renderStars()}</div>
+            <div className="flex sm:hidden">{renderStars().slice(0, 3)}</div>
+          </div>
+          <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">{description}</p>
         </div>
-        <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">{description}</p>
 
-        <div className="flex justify-between items-center">
-          <span className="font-bold text-sm sm:text-base md:text-lg">{formattedPrice}</span>
-          <button
-            className="bg-white rounded-full p-1 border border-gray-300 hover:bg-gray-50"
-            onClick={showDevelopmentNotification}
-          >
-            <Plus size={16} className="sm:w-5 sm:h-5" />
-          </button>
+        <div className="space-y-2 mt-auto">
+          {sizes && (
+            <div className="w-full">
+              <Select value={selectedSize} onValueChange={handleSizeChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Chọn kích cỡ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sizes.map((size) => (
+                    <SelectItem key={size.name} value={size.name}>
+                      {size.name} - {size.price.toLocaleString("vi-VN")}₫
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between w-full bg-gray-50/50 rounded-lg px-3 py-2">
+            <div>
+              <span className="font-bold text-sm sm:text-base md:text-lg">{formattedPrice}</span>
+            </div>
+            <button
+              className="bg-white rounded-full p-1.5 border border-gray-300 hover:bg-gray-50 flex-shrink-0"
+              onClick={showDevelopmentNotification}
+            >
+              <Plus size={18} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

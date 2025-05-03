@@ -1,14 +1,35 @@
-export const menuItems = [
+export interface SizeOption {
+  name: string;
+  price: number;
+}
+
+export interface MenuItem {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  rating: number;
+  displayOrder?: number;
+  sizes?: SizeOption[];
+}
+
+export const menuItems: MenuItem[] = [
   // Món đặc biệt
   {
     id: "26",
-    name: "Nghêu Trộn xốt Thái Phần Lớn",
-    description: "Nghêu Trộn xốt Thái Phần Lớn",
+    name: "Nghêu Trộn xốt Thái",
+    description: "Nghêu Trộn xốt Thái",
     price: 65000,
     image: "https://images.unsplash.com/photo-1576020799627-aeac74d58064?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
     category: "special",
     rating: 4,
     displayOrder: 5,
+    sizes: [
+      { name: "Nhỏ", price: 50000 },
+      { name: "Lớn", price: 65000 }
+    ]
   },
   {
     id: "28",
@@ -114,13 +135,18 @@ export const menuItems = [
   },
   {
     id: "16",
-    name: "Gà ủ muối 1/2 con",
+    name: "Gà ủ muối",
     description: "Gà ủ muối, đu đủ, cà rốt, rau răm, sốt",
     price: 185000,
     image: "https://images.unsplash.com/photo-1562967914-608f82629710?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
     category: "chicken",
     rating: 4,
     displayOrder: 220,
+    sizes: [
+      { name: "1/4 con", price: 95000 },
+      { name: "1/2 con", price: 185000 },
+      { name: "1 con", price: 265000 }
+    ]
   },
   {
     id: "17",
@@ -144,24 +170,32 @@ export const menuItems = [
   },
   {
     id: "19",
-    name: "Gà ủ muối xé trộn 1/2 con",
-    description: "Gà ủ muối xé trộn 1/2 con\nGà ủ muối, đu đủ, cà rốt, rau răm, sốt.",
+    name: "Gà ủ muối xé trộn",
+    description: "Gà ủ muối xé trộn\nGà ủ muối, đu đủ, cà rốt, rau răm, sốt.",
     price: 145000,
     image: "https://images.unsplash.com/photo-1606728035253-49e8a23146de?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
     category: "chicken",
     rating: 4,
     displayOrder: 250,
+    sizes: [
+      { name: "1/4 con", price: 80000 },
+      { name: "1/2 con", price: 145000 }
+    ]
   },
   // Chân gà
   {
     id: "20",
-    name: "Chân gà rút xương xốt Thái nhỏ",
-    description: "Chân gà rút xương xốt Thái nhỏ",
+    name: "Chân gà rút xương xốt Thái",
+    description: "Chân gà rút xương xốt Thái",
     price: 60000,
     image: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
     category: "chicken-feet",
     rating: 4,
     displayOrder: 310,
+    sizes: [
+      { name: "Nhỏ", price: 60000 },
+      { name: "Lớn", price: 75000 }
+    ]
   },
   {
     id: "21",

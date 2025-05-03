@@ -29,6 +29,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
+import { useToastContext } from "@/contexts/ToastContext"
 
 // Login form schema
 const loginSchema = z.object({
@@ -57,6 +58,7 @@ interface AuthDialogProps {
 
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [activeTab, setActiveTab] = React.useState("login")
+  const { showCartNotification } = useToastContext();
 
   // Login form
   const loginForm = useForm<LoginFormValues>({
@@ -79,14 +81,17 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   })
 
   function onLoginSubmit(data: LoginFormValues) {
-    console.log("Login data:", data)
-    // TODO: Implement actual login logic
+    showCartNotification('development', 'Chức năng đang được phát triển');
     onOpenChange(false)
   }
 
   function onSignupSubmit(data: SignupFormValues) {
-    console.log("Signup data:", data)
-    // TODO: Implement actual signup logic
+    showCartNotification('development', 'Chức năng đang được phát triển');
+    onOpenChange(false)
+  }
+
+  const handleSocialLogin = (provider: string) => {
+    showCartNotification('development', 'Chức năng đang được phát triển');
     onOpenChange(false)
   }
 
@@ -157,11 +162,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             </div>
 
             <div className="flex flex-col space-y-2">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('facebook')}>
                 <Facebook className="mr-2 h-4 w-4" />
                 Facebook
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('google')}>
                 <Mail className="mr-2 h-4 w-4" />
                 Google
               </Button>
@@ -241,11 +246,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             </div>
 
             <div className="flex flex-col space-y-2">
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('facebook')}>
                 <Facebook className="mr-2 h-4 w-4" />
                 Facebook
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('google')}>
                 <Mail className="mr-2 h-4 w-4" />
                 Google
               </Button>
