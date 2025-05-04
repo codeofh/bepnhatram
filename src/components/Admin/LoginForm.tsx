@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { siteConfig } from "@/config/siteConfig";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { User } from "firebase/auth";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
@@ -57,11 +58,11 @@ export function LoginForm() {
     setIsSocialSubmitting(provider);
     
     try {
-      let result = null;
+      let result: User | null = null;
       
-      if (provider === 'google') {
+      if (provider === 'google' && loginWithGoogle) {
         result = await loginWithGoogle();
-      } else if (provider === 'facebook') {
+      } else if (provider === 'facebook' && loginWithFacebook) {
         result = await loginWithFacebook();
       }
       
