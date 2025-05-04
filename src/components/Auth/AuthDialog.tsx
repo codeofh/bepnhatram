@@ -116,7 +116,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           </TabsList>
 
           <TabsContent value="login">
-            <Form {...loginForm}>
+             <Form {...loginForm}>
               <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
                 <FormField
                   control={loginForm.control}
@@ -161,19 +161,21 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               </div>
             </div>
 
-            <div className="flex flex-col space-y-2">
-              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('facebook')}>
+            <div className="flex space-x-2">
+               <Button
+                variant="outline" className="w-1/2" onClick={() => handleSocialLogin('facebook')}>
                 <Facebook className="mr-2 h-4 w-4" />
+
                 Facebook
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('google')}>
-                <Mail className="mr-2 h-4 w-4" />
+              <Button variant="outline" className="w-1/2" onClick={() => handleSocialLogin('google')}>
+                <Mail className="mr-2 h-4 w-4 " />
                 Google
               </Button>
             </div>
           </TabsContent>
 
-          <TabsContent value="signup">
+          <TabsContent value="signup" className="max-h-[75vh] overflow-y-auto pr-2">
             <Form {...signupForm}>
               <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
                 <FormField
@@ -244,18 +246,18 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 </span>
               </div>
             </div>
-
-            <div className="flex flex-col space-y-2">
-              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('facebook')}>
+            
+             <div className="flex space-x-2">
+              <Button variant="outline" className="w-1/2" onClick={() => handleSocialLogin('facebook')}>
                 <Facebook className="mr-2 h-4 w-4" />
                 Facebook
               </Button>
-              <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('google')}>
-                <Mail className="mr-2 h-4 w-4" />
+              <Button variant="outline" className="w-1/2" onClick={() => handleSocialLogin('google')}>
+                <Mail className="mr-2 h-4 w-4 " />
                 Google
               </Button>
             </div>
-          </TabsContent>
+           </TabsContent>
         </Tabs>
       </DialogContent>
     </Dialog>
