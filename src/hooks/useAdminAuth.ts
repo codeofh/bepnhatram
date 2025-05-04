@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface AdminUser extends User {
   isAdmin?: boolean;
@@ -18,19 +19,12 @@ export function useAdminAuth() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-
-  // Skip Firebase interactions during server-side rendering
-  const isClient = typeof window !== 'undefined';
+  const { user: authUser } = useAuthContext();
 
   useEffect(() => {
-    // Only run on client-side
-    if (!isClient) {
-      setLoading(false);
-      return () => {};
-    }
-
-    if (!auth) {
-      setError("Firebase auth is not initialized");
+    // Skip Firebase interactions during server-side rendering
+    const isClient = typeof window !== 'undefined';
+    if (!isClient || !auth) {
       setLoading(false);
       return () => {};
     }
@@ -66,14 +60,31 @@ export function useAdminAuth() {
     });
 
     return () => unsubscribe();
-  }, [isClient]);
+  }, []);
+
+  // When authUser changes (from AuthContext), check if they have admin privileges
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (authUser && db) {
+        try {
+          const userRef = doc(db, 'admins', authUser.uid);
+          const userSnap = await getDoc(userRef);
+          
+          if (!userSnap.exists()) {
+            // If social login user is not an admin, show error but don't sign them out
+            // since they might still want to use the regular site
+            setError("Tài khoản này không có quyền truy cập vào trang quản trị");
+          }
+        } catch (err) {
+          console.error("Error checking admin status for social login:", err);
+        }
+      }
+    };
+    
+    checkAdminStatus();
+  }, [authUser]);
 
   const login = async (email: string, password: string) => {
-    if (!isClient || !auth) {
-      setError("Firebase auth is not initialized");
-      return;
-    }
-    
     setError(null);
     try {
       setLoading(true);
@@ -85,11 +96,6 @@ export function useAdminAuth() {
   };
 
   const logout = async () => {
-    if (!isClient || !auth) {
-      setError("Firebase auth is not initialized");
-      return;
-    }
-    
     try {
       await signOut(auth);
       router.push('/admin');

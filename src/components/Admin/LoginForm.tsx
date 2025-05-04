@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, Mail } from "lucide-react";
+import { Lock, Mail, Facebook, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { siteConfig } from "@/config/siteConfig";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
@@ -26,7 +27,10 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const { login, error, loading } = useAdminAuth();
+  const { loginWithGoogle, loginWithFacebook } = useAuthContext();
   const [authError, setAuthError] = useState<string | null>(error);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSocialSubmitting, setIsSocialSubmitting] = useState<string | null>(null);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -38,12 +42,39 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormValues) {
     setAuthError(null);
+    setIsSubmitting(true);
     try {
       await login(data.email, data.password);
     } catch (err: any) {
       setAuthError(err.message || "Đăng nhập thất bại");
+    } finally {
+      setIsSubmitting(false);
     }
   }
+
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    setAuthError(null);
+    setIsSocialSubmitting(provider);
+    
+    try {
+      let result = null;
+      
+      if (provider === 'google') {
+        result = await loginWithGoogle();
+      } else if (provider === 'facebook') {
+        result = await loginWithFacebook();
+      }
+      
+      if (!result) {
+        setAuthError(`Đăng nhập bằng ${provider} thất bại hoặc không có quyền admin`);
+      }
+    } catch (err: any) {
+      console.error(`${provider} login error:`, err);
+      setAuthError(`Đăng nhập bằng ${provider} thất bại: ${err.message || 'Lỗi không xác định'}`);
+    } finally {
+      setIsSocialSubmitting(null);
+    }
+  };
 
   return (
     <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
@@ -106,12 +137,59 @@ export function LoginForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={loading}
+            disabled={isSubmitting || loading || isSocialSubmitting !== null}
           >
-            {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+            {isSubmitting || loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Đang đăng nhập...
+              </>
+            ) : (
+              "Đăng nhập"
+            )}
           </Button>
         </form>
       </Form>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-2 text-gray-500">
+            Hoặc đăng nhập với
+          </span>
+        </div>
+      </div>
+
+      <div className="flex space-x-2">
+        <Button
+          variant="outline"
+          className="w-1/2"
+          onClick={() => handleSocialLogin('facebook')}
+          disabled={isSubmitting || loading || isSocialSubmitting !== null}
+        >
+          {isSocialSubmitting === 'facebook' ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Facebook className="mr-2 h-4 w-4" />
+          )}
+          Facebook
+        </Button>
+        <Button
+          variant="outline"
+          className="w-1/2"
+          onClick={() => handleSocialLogin('google')}
+          disabled={isSubmitting || loading || isSocialSubmitting !== null}
+        >
+          {isSocialSubmitting === 'google' ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Mail className="mr-2 h-4 w-4" />
+          )}
+          Google
+        </Button>
+      </div>
     </div>
   );
 }
