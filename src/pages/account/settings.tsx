@@ -2,15 +2,15 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { 
-  User, 
-  ShoppingBag, 
-  Settings, 
-  Shield, 
-  Lock, 
-  Bell, 
-  Eye, 
-  EyeOff, 
+import {
+  User,
+  ShoppingBag,
+  Settings,
+  Shield,
+  Lock,
+  Bell,
+  Eye,
+  EyeOff,
   Loader2,
   AlertCircle
 } from "lucide-react";
@@ -20,14 +20,14 @@ import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Form, 
-  FormControl, 
-  FormDescription, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
 } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -89,16 +89,16 @@ export default function AccountSettingsPage() {
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
     if (!user || !user.displayName) return '?';
-    
+
     const nameParts = user.displayName.split(' ');
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
-    
+
     return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
   };
 
   const onSubmit = async (data: PasswordFormValues) => {
     setIsSubmitting(true);
-    
+
     // This would update the password in a real application
     // For now, we'll just show a success message
     setTimeout(() => {
@@ -113,7 +113,7 @@ export default function AccountSettingsPage() {
       ...prev,
       [key]: !prev[key]
     }));
-    
+
     showInfo("Tính năng đang được phát triển. Cài đặt thông báo sẽ được lưu sau.");
   };
 
@@ -194,11 +194,11 @@ export default function AccountSettingsPage() {
                         <AlertTitle>Tài khoản liên kết</AlertTitle>
                         <AlertDescription>
                           Bạn đang đăng nhập bằng tài khoản {user.providerData[0]?.providerId === 'google.com' ? 'Google' : 'Facebook'}.
-                          B���n không cần đặt mật khẩu cho tài khoản này.
+                          Bạn không cần đặt mật khẩu cho tài khoản này.
                         </AlertDescription>
                       </Alert>
                     )}
-                    
+
                     <FormField
                       control={form.control}
                       name="currentPassword"
@@ -231,7 +231,7 @@ export default function AccountSettingsPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="newPassword"
@@ -254,7 +254,7 @@ export default function AccountSettingsPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="confirmPassword"
@@ -274,7 +274,7 @@ export default function AccountSettingsPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <Button type="submit" disabled={isSubmitting}>
                       {isSubmitting ? (
                         <>
@@ -313,22 +313,22 @@ export default function AccountSettingsPage() {
                       onCheckedChange={() => handleNotificationChange('emailNotifications')}
                     />
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <label className="text-sm font-medium">Cập nhật đơn hàng</label>
-                      <p className="text-xs text-gray-500">Nhận thông báo khi đơn hàng có thay đổi trạng thái</p>
+                      <p className="text-xs text-gray-500">Nhận thông báo khi đơn hàng có thay đ���i trạng thái</p>
                     </div>
                     <Switch
                       checked={notificationSettings.orderUpdates}
                       onCheckedChange={() => handleNotificationChange('orderUpdates')}
                     />
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <label className="text-sm font-medium">Ưu đãi và khuyến mãi</label>

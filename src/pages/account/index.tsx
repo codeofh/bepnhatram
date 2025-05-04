@@ -2,16 +2,16 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  ShieldCheck, 
-  Calendar, 
-  Save, 
-  Loader2, 
-  ShoppingBag, 
-  Settings, 
+import {
+  User,
+  Mail,
+  Phone,
+  ShieldCheck,
+  Calendar,
+  Save,
+  Loader2,
+  ShoppingBag,
+  Settings,
   ChevronRight
 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -20,13 +20,13 @@ import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
 } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -79,16 +79,16 @@ export default function AccountPage() {
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
     if (!user || !user.displayName) return '?';
-    
+
     const nameParts = user.displayName.split(' ');
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
-    
+
     return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSubmitting(true);
-    
+
     // This would update the user profile in a real application
     // For now, we'll just show a success message
     setTimeout(() => {
@@ -141,7 +141,7 @@ export default function AccountPage() {
                   </Link>
                   <Link href="/account/orders" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
                     <ShoppingBag className="mr-3 h-4 w-4" />
-                    <span className="text-sm font-medium">��ơn hàng của tôi</span>
+                    <span className="text-sm font-medium">Đơn hàng của tôi</span>
                   </Link>
                   <Link href="/account/settings" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
                     <Settings className="mr-3 h-4 w-4" />
@@ -186,10 +186,10 @@ export default function AccountPage() {
                         <FormLabel>Email</FormLabel>
                         <div className="relative mt-1.5">
                           <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                          <Input 
-                            className="pl-10" 
-                            value={user?.email || ''} 
-                            disabled 
+                          <Input
+                            className="pl-10"
+                            value={user?.email || ''}
+                            disabled
                           />
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">Email không thể thay đổi</p>
@@ -218,7 +218,7 @@ export default function AccountPage() {
                         <ShieldCheck className="h-5 w-5 text-green-500" />
                         <h3 className="font-medium">Tài khoản của bạn</h3>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <div className="flex items-center justify-between py-2 px-4 bg-gray-50 rounded-md">
                           <div className="flex items-center">
@@ -227,7 +227,7 @@ export default function AccountPage() {
                           </div>
                           <span className="text-sm text-green-600 font-medium">Đã xác thực</span>
                         </div>
-                        
+
                         <div className="flex items-center justify-between py-2 px-4 bg-gray-50 rounded-md">
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-2 text-gray-500" />
@@ -278,7 +278,7 @@ export default function AccountPage() {
                   </Button>
                 </CardFooter>
               </Card>
-              
+
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">Quản lý mật khẩu</CardTitle>
