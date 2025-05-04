@@ -60,10 +60,22 @@ interface AuthDialogProps {
 
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const [activeTab, setActiveTab] = useState("login")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoginSubmitting, setIsLoginSubmitting] = useState(false)
+  const [isSignupSubmitting, setIsSignupSubmitting] = useState(false)
   const [authError, setAuthError] = useState<string | null>(null)
   const { showSuccess, showError } = useToastContext()
   const { user, register, login, loginWithGoogle, loginWithFacebook, error } = useAuthContext()
+
+  // Reset states when user changes or when the dialog opens/closes
+  useEffect(() => {
+    if (user) {
+      setIsLoginSubmitting(false)
+      setIsSignupSubmitting(false)
+      if (open) {
+        onOpenChange(false)
+      }
+    }
+  }, [user, open, onOpenChange])
 
   // Reset error when dialog opens/closes or tab changes
   useEffect(() => {
@@ -91,24 +103,24 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   })
 
   async function onLoginSubmit(data: LoginFormValues) {
-    setIsSubmitting(true)
+    setIsLoginSubmitting(true)
     setAuthError(null)
     
     try {
-      const user = await login(data.email, data.password)
-      if (user) {
-        onOpenChange(false)
+      const result = await login(data.email, data.password)
+      if (result) {
         loginForm.reset()
+        onOpenChange(false)
       }
     } catch (err) {
       console.error("Login error:", err)
     } finally {
-      setIsSubmitting(false)
+      setIsLoginSubmitting(false)
     }
   }
 
   async function onSignupSubmit(data: SignupFormValues) {
-    setIsSubmitting(true)
+    setIsSignupSubmitting(true)
     setAuthError(null)
     
     try {
@@ -118,48 +130,49 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       
       if (result) {
         showSuccess("Đăng ký tài khoản thành công!");
-        onOpenChange(false)
         signupForm.reset()
+        onOpenChange(false)
       }
     } catch (err) {
       console.error("Registration error:", err)
       setAuthError("Đăng ký thất bại. Vui lòng thử lại sau.");
     } finally {
-      setIsSubmitting(false)
+      setIsSignupSubmitting(false)
     }
   }
 
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
-    setIsSubmitting(true)
-    setAuthError(null)
-    
     try {
-      let user = null
-      
       if (provider === 'google') {
-        user = await loginWithGoogle()
+        setIsLoginSubmitting(true)
+        const result = await loginWithGoogle()
+        if (result) {
+          onOpenChange(false)
+        }
       } else if (provider === 'facebook') {
-        user = await loginWithFacebook()
-      }
-      
-      if (user) {
-        onOpenChange(false)
+        setIsLoginSubmitting(true)
+        const result = await loginWithFacebook()
+        if (result) {
+          onOpenChange(false)
+        }
       }
     } catch (err) {
       console.error(`${provider} login error:`, err)
       setAuthError(`Đăng nhập bằng ${provider} thất bại`);
     } finally {
-      setIsSubmitting(false)
+      setIsLoginSubmitting(false)
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={(newOpen) => {
-      // Reset forms when closing dialog
+      // Reset forms and states when closing dialog
       if (!newOpen) {
         loginForm.reset();
         signupForm.reset();
         setAuthError(null);
+        setIsLoginSubmitting(false);
+        setIsSignupSubmitting(false);
       }
       onOpenChange(newOpen);
     }}>
@@ -184,6 +197,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         <Tabs defaultValue="login" value={activeTab} onValueChange={(value) => {
           setActiveTab(value);
           setAuthError(null);
+          setIsLoginSubmitting(false);
+          setIsSignupSubmitting(false);
         }} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="login">Đăng nhập</TabsTrigger>
@@ -219,8 +234,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? (
+                <Button type="submit" className="w-full" disabled={isLoginSubmitting}>
+                  {isLoginSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Đang đăng nhập...
@@ -248,7 +263,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 variant="outline"
                 className="w-1/2"
                 onClick={() => handleSocialLogin('facebook')}
-                disabled={isSubmitting}
+                disabled={isLoginSubmitting}
               >
                 <Facebook className="mr-2 h-4 w-4" />
                 Facebook
@@ -257,7 +272,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 variant="outline"
                 className="w-1/2"
                 onClick={() => handleSocialLogin('google')}
-                disabled={isSubmitting}
+                disabled={isLoginSubmitting}
               >
                 <Mail className="mr-2 h-4 w-4" />
                 Google
@@ -320,8 +335,8 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={isSubmitting}>
-                  {isSubmitting ? (
+                <Button type="submit" className="w-full" disabled={isSignupSubmitting}>
+                  {isSignupSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Đang đăng ký...
@@ -349,7 +364,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 variant="outline"
                 className="w-1/2"
                 onClick={() => handleSocialLogin('facebook')}
-                disabled={isSubmitting}
+                disabled={isSignupSubmitting}
               >
                 <Facebook className="mr-2 h-4 w-4" />
                 Facebook
@@ -358,7 +373,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 variant="outline"
                 className="w-1/2"
                 onClick={() => handleSocialLogin('google')}
-                disabled={isSubmitting}
+                disabled={isSignupSubmitting}
               >
                 <Mail className="mr-2 h-4 w-4" />
                 Google
