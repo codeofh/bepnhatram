@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   Lock,
-  Globe
+  Globe,
+  User
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -186,21 +187,25 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
 
                 <div className="border-t border-gray-100 py-1">
                   <DropdownMenuItem asChild>
-                    <Link href="/account" className="w-full">
+                    <Link href="/account" className="w-full flex items-center">
+                      <User className="h-4 w-4 mr-2" />
                       Tài khoản của tôi
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/account/settings" className="w-full">
+                    <Link href="/account/settings" className="w-full flex items-center">
+                      <Lock className="h-4 w-4 mr-2" />
                       Đổi mật khẩu
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/" className="w-full">
+                    <Link href="/" className="w-full flex items-center">
+                      <Globe className="h-4 w-4 mr-2" />
                       Xem trang web
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout} className="w-full">
+                  <DropdownMenuItem onClick={handleLogout} className="w-full flex items-center">
+                    <LogOut className="h-4 w-4 mr-2" />
                     Đăng xuất
                   </DropdownMenuItem>
                 </div>
