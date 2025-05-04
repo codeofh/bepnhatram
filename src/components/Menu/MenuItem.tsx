@@ -106,7 +106,7 @@ export function MenuItem({
   };
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100">
+    <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
       <div className="relative h-36 sm:h-40 md:h-48 w-full">
         <Image
           src={image}
@@ -121,9 +121,9 @@ export function MenuItem({
         </div>
       </div>
 
-      <div className="p-2 sm:p-3 md:p-4 flex flex-col">
-        <div className="flex-grow">
-          <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 line-clamp-2 min-h-[2.5em]">{name}</h3>
+      <div className="p-2 sm:p-3 md:p-4 flex flex-col h-[200px] relative">
+        <div className="flex-grow relative">
+          <h3 className="font-bold text-sm sm:text-base md:text-lg  line-clamp-2 min-h-[2.5em]">{name}</h3>
           <div className="flex mb-1 sm:mb-2">
             {renderStars()}
           </div>
@@ -149,7 +149,8 @@ export function MenuItem({
           )}
 
           <div className="flex items-center justify-between w-full bg-gray-50/50 rounded-lg px-3 py-2">
-            <div>
+            <div className="text-orange-500 font-bold text-sm sm:text-base md:text-lg"
+            >
               <span className="font-bold text-sm sm:text-base md:text-lg">{formattedPrice}</span>
             </div>
             <button
