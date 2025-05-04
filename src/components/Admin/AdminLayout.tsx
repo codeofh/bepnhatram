@@ -1,18 +1,18 @@
 import React, { ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { 
-  LayoutDashboard, 
-  UtensilsCrossed, 
-  Tags, 
-  Settings, 
-  Users, 
+import {
+  LayoutDashboard,
+  UtensilsCrossed,
+  Tags,
+  Settings,
+  Users,
   LogOut,
   ChevronDown,
   Menu,
   X
 } from "lucide-react";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -37,8 +37,13 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, title }: AdminLayoutProps) {
   const router = useRouter();
-  const { user, logout } = useAdminAuth();
+  const { user, logout } = useAuthContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/admin');
+  };
 
   const isActive = (path: string) => {
     return router.pathname === path;
@@ -103,11 +108,10 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                     <SheetClose asChild key={item.path}>
                       <Link
                         href={item.path}
-                        className={`flex items-center p-3 mb-1 rounded-md hover:bg-gray-100 ${
-                          isActive(item.path)
+                        className={`flex items-center p-3 mb-1 rounded-md hover:bg-gray-100 ${isActive(item.path)
                             ? "bg-blue-50 text-blue-600 font-medium"
                             : "text-gray-700"
-                        }`}
+                          }`}
                       >
                         <span className="mr-3">{item.icon}</span>
                         <span>{item.name}</span>
@@ -117,7 +121,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                   <Button
                     variant="ghost"
                     className="flex items-center p-3 mb-1 rounded-md hover:bg-gray-100 justify-start font-normal"
-                    onClick={logout}
+                    onClick={handleLogout}
                   >
                     <LogOut size={20} className="mr-3" />
                     <span>Đăng xuất</span>
@@ -154,7 +158,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                 <Link href="/" passHref>
                   <DropdownMenuItem>Xem trang web</DropdownMenuItem>
                 </Link>
-                <DropdownMenuItem onClick={logout}>Đăng xuất</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -170,11 +174,10 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
               <Link
                 key={item.path}
                 href={item.path}
-                className={`flex items-center p-3 rounded-md hover:bg-gray-100 ${
-                  isActive(item.path)
+                className={`flex items-center p-3 rounded-md hover:bg-gray-100 ${isActive(item.path)
                     ? "bg-blue-50 text-blue-600 font-medium"
                     : "text-gray-700"
-                }`}
+                  }`}
               >
                 <span className="mr-3">{item.icon}</span>
                 <span>{item.name}</span>
@@ -183,7 +186,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
             <Button
               variant="ghost"
               className="flex items-center p-3 rounded-md hover:bg-gray-100 w-full justify-start font-normal"
-              onClick={logout}
+              onClick={handleLogout}
             >
               <LogOut size={20} className="mr-3" />
               <span>Đăng xuất</span>

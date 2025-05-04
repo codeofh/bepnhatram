@@ -16,7 +16,7 @@ import {
   DocumentReference,
   WithFieldValue
 } from 'firebase/firestore';
-import { db, firestoreSettings } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 
 /**
  * Hook for Firestore database operations with consistent configuration
@@ -163,7 +163,6 @@ export const useFirestore = () => {
     updateDocument,
     deleteDocument,
     getCollectionRef,
-    getDocumentRef,
-    firestoreSettings
+    getDocumentRef
   };
 };

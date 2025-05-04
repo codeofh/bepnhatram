@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { siteConfig } from "@/config/siteConfig";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { User } from "firebase/auth";
@@ -27,9 +26,8 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
-  const { login, error, loading } = useAdminAuth();
-  const { loginWithGoogle, loginWithFacebook } = useAuthContext();
-  const [authError, setAuthError] = useState<string | null>(error);
+  const { login, error: authError, loading, loginWithGoogle, loginWithFacebook } = useAuthContext();
+  const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSocialSubmitting, setIsSocialSubmitting] = useState<string | null>(null);
 
@@ -42,36 +40,36 @@ export function LoginForm() {
   });
 
   async function onSubmit(data: LoginFormValues) {
-    setAuthError(null);
+    setError(null);
     setIsSubmitting(true);
     try {
       await login(data.email, data.password);
     } catch (err: any) {
-      setAuthError(err.message || "Đăng nhập thất bại");
+      setError(err.message || "Đăng nhập thất bại");
     } finally {
       setIsSubmitting(false);
     }
   }
 
   const handleSocialLogin = async (provider: 'google' | 'facebook') => {
-    setAuthError(null);
+    setError(null);
     setIsSocialSubmitting(provider);
-    
+
     try {
       let result: User | null = null;
-      
+
       if (provider === 'google' && loginWithGoogle) {
         result = await loginWithGoogle();
       } else if (provider === 'facebook' && loginWithFacebook) {
         result = await loginWithFacebook();
       }
-      
+
       if (!result) {
-        setAuthError(`Đăng nhập bằng ${provider} thất bại hoặc không có quyền admin`);
+        setError(`Đăng nhập bằng ${provider} thất bại`);
       }
     } catch (err: any) {
       console.error(`${provider} login error:`, err);
-      setAuthError(`Đăng nhập bằng ${provider} thất bại: ${err.message || 'Lỗi không xác định'}`);
+      setError(`Đăng nhập bằng ${provider} thất bại: ${err.message || 'Lỗi không xác định'}`);
     } finally {
       setIsSocialSubmitting(null);
     }
@@ -84,9 +82,9 @@ export function LoginForm() {
         <p className="mt-2 text-gray-600">Đăng nhập vào trang quản trị</p>
       </div>
 
-      {(authError || error) && (
+      {(error || authError) && (
         <Alert variant="destructive">
-          <AlertDescription>{authError || error}</AlertDescription>
+          <AlertDescription>{error || authError}</AlertDescription>
         </Alert>
       )}
 
@@ -101,9 +99,9 @@ export function LoginForm() {
                 <FormControl>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input 
-                      placeholder="admin@example.com" 
-                      className="pl-10" 
+                    <Input
+                      placeholder="admin@example.com"
+                      className="pl-10"
                       {...field}
                     />
                   </div>
@@ -122,11 +120,11 @@ export function LoginForm() {
                 <FormControl>
                   <div className="relative">
                     <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input 
-                      type="password" 
-                      placeholder="******" 
-                      className="pl-10" 
-                      {...field} 
+                    <Input
+                      type="password"
+                      placeholder="******"
+                      className="pl-10"
+                      {...field}
                     />
                   </div>
                 </FormControl>

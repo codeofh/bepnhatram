@@ -2,11 +2,11 @@ import React, { useEffect } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { LoginForm } from "@/components/Admin/LoginForm";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
 
 export default function AdminLoginPage() {
-  const { user, loading } = useAdminAuth();
+  const { user, loading } = useAuthContext();
   const router = useRouter();
 
   useEffect(() => {

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { 
-  ShoppingCart, 
-  Users, 
-  UtensilsCrossed, 
+import {
+  ShoppingCart,
+  Users,
+  UtensilsCrossed,
   DollarSign,
   ArrowUpRight,
   ArrowDownRight,
@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
 import { menuItems } from "@/data/menuItems";
 
 export default function AdminDashboardPage() {
-  const { user, loading } = useAdminAuth();
+  const { user, loading } = useAuthContext();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 
@@ -106,9 +106,8 @@ export default function AdminDashboardPage() {
                   <span className="text-xs font-medium">
                     {stat.description}
                   </span>
-                  <span className={`ml-2 flex items-center text-xs font-medium ${
-                    stat.trend === "up" ? "text-green-500" : "text-red-500"
-                  }`}>
+                  <span className={`ml-2 flex items-center text-xs font-medium ${stat.trend === "up" ? "text-green-500" : "text-red-500"
+                    }`}>
                     {stat.change}
                     {stat.trend === "up" ? (
                       <ArrowUpRight className="h-3 w-3 ml-0.5" />
@@ -148,9 +147,8 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                     <div className="flex items-center ml-4">
-                      <div className={`flex items-center ${
-                        item.rating >= 4 ? "text-green-500" : "text-amber-500"
-                      }`}>
+                      <div className={`flex items-center ${item.rating >= 4 ? "text-green-500" : "text-amber-500"
+                        }`}>
                         {item.rating >= 4 ? (
                           <TrendingUp className="h-4 w-4 mr-1" />
                         ) : (
