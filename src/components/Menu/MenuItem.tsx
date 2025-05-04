@@ -121,7 +121,7 @@ export function MenuItem({
         </div>
       </div>
 
-      <div className="p-2 sm:p-3 md:p-4 flex flex-col h-[200px] relative">
+      <div className="p-2 sm:p-3 md:p-4 flex flex-col relative">
         <div className="flex-grow relative">
           <h3 className="font-bold text-sm sm:text-base md:text-lg  line-clamp-2 min-h-[2.5em]">{name}</h3>
           <div className="flex mb-1 sm:mb-2">
