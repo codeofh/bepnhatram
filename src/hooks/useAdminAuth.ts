@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { auth, db, isFirebaseInitialized, safeFirestoreOperation } from '@/lib/firebase';
 import {
   signInWithEmailAndPassword,
@@ -93,6 +93,13 @@ export function useAdminAuth() {
 
     // Check if we're on the debug page - special case to bypass admin check temporarily
     const isDebugPage = router.pathname === '/admin/debug';
+    const isLoginPage = router.pathname === '/admin';
+
+    // Don't check admin status on login page or if already logged out
+    if (isLoginPage) {
+      setLoading(false);
+      return () => {};
+    }
 
     const unsubscribe = onAuthStateChanged(auth!, async (authUser) => {
       if (authUser) {
@@ -105,31 +112,29 @@ export function useAdminAuth() {
             return;
           }
 
-          // If offline and not on debug page, show message
+          // If offline and not on debug page, show message and redirect
           if (!isOnline && !isDebugPage) {
             setError("Không thể xác thực quyền admin khi không có kết nối mạng");
             showError("Không thể xác thực quyền admin khi không có kết nối mạng");
+            await signOut(auth!);
+            router.push('/admin');
             setLoading(false);
             return;
           }
 
-          // Otherwise check if user is actually an admin
+          // Check if user is actually an admin
           const isAdmin = await checkAdminStatus(authUser.uid);
 
           if (isAdmin) {
             const adminUser = {...authUser, isAdmin: true} as AdminUser;
             setUser(adminUser);
           } else {
-            // User exists but is not an admin
-            if (router.pathname.startsWith('/admin') && router.pathname !== '/admin' && router.pathname !== '/admin/debug') {
-              // Don't sign out if we're just on the login page
-              if (isOnline) {
-                await signOut(auth!);
-              }
-            }
-            setUser(null);
+            // User exists but is not an admin - log them out and redirect
             setError("Bạn không có quyền truy cập vào trang quản trị");
             showError("Bạn không có quyền truy cập vào trang quản trị");
+            await signOut(auth!);
+            router.push('/admin');
+            setUser(null);
           }
         } catch (err: any) {
           console.error("Error checking admin status:", err);
@@ -140,26 +145,32 @@ export function useAdminAuth() {
             setError("Có lỗi khi kiểm tra quyền admin. Vui lòng thử lại sau.");
             showError("Có lỗi khi kiểm tra quyền admin. Vui lòng thử lại sau.");
           }
+          // On error, log out and redirect to login
+          await signOut(auth!);
+          router.push('/admin');
+          setUser(null);
         }
       } else {
+        // If not logged in and not on login page, redirect to login
+        if (!isLoginPage) {
+          router.push('/admin');
+        }
         setUser(null);
       }
       setLoading(false);
     });
 
     return () => unsubscribe();
-  }, [router.pathname, showError, isOnline]);
+  }, [router, checkAdminStatus, showError, isOnline]);
 
-  // When authUser changes (from AuthContext), check if they have admin privileges
+  // Social auth check - only run on login page to avoid unnecessary checks
   useEffect(() => {
     const checkSocialAuthAdminStatus = async () => {
-      if (authUser && db && !user && isOnline) {
+      const isLoginPage = router.pathname === '/admin';
+      if (authUser && !user && isOnline && isLoginPage) {
         try {
           const isAdmin = await checkAdminStatus(authUser.uid);
-
           if (!isAdmin) {
-            // If social login user is not an admin, show error but don't sign them out
-            // since they might still want to use the regular site
             setError("Tài khoản này không có quyền truy cập vào trang quản trị");
             showError("Tài khoản này không có quyền truy cập vào trang quản trị");
           }
@@ -172,7 +183,7 @@ export function useAdminAuth() {
     };
 
     checkSocialAuthAdminStatus();
-  }, [authUser, user, db, showError, isOnline, checkAdminStatus]);
+  }, [authUser, user, router, showError, isOnline, checkAdminStatus]);
 
   const login = async (email: string, password: string) => {
     if (!isFirebaseInitialized()) {
