@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -65,6 +65,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
   const { showSuccess, showError } = useToastContext()
   const { user, register, login, loginWithGoogle, loginWithFacebook, error } = useAuthContext()
 
+  // Reset error when dialog opens/closes or tab changes
+  useEffect(() => {
+    setAuthError(null);
+  }, [open, activeTab]);
+
   // Login form
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -107,13 +112,18 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
     setAuthError(null)
     
     try {
-      const user = await register(data.name, data.email, data.password)
-      if (user) {
+      console.log("Registration attempt with:", data.name, data.email);
+      const result = await register(data.name, data.email, data.password);
+      console.log("Registration result:", result);
+      
+      if (result) {
+        showSuccess("Đăng ký tài khoản thành công!");
         onOpenChange(false)
         signupForm.reset()
       }
     } catch (err) {
       console.error("Registration error:", err)
+      setAuthError("Đăng ký thất bại. Vui lòng thử lại sau.");
     } finally {
       setIsSubmitting(false)
     }
@@ -137,13 +147,22 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       }
     } catch (err) {
       console.error(`${provider} login error:`, err)
+      setAuthError(`Đăng nhập bằng ${provider} thất bại`);
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(newOpen) => {
+      // Reset forms when closing dialog
+      if (!newOpen) {
+        loginForm.reset();
+        signupForm.reset();
+        setAuthError(null);
+      }
+      onOpenChange(newOpen);
+    }}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-center text-xl">
@@ -162,7 +181,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           </Alert>
         )}
 
-        <Tabs defaultValue="login" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs defaultValue="login" value={activeTab} onValueChange={(value) => {
+          setActiveTab(value);
+          setAuthError(null);
+        }} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="login">Đăng nhập</TabsTrigger>
             <TabsTrigger value="signup">Đăng ký</TabsTrigger>
