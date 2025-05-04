@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { 
-  Edit, 
-  Trash2, 
-  Plus, 
+import {
+  Edit,
+  Trash2,
+  Plus,
   Save,
   MoveUp,
   MoveDown,
   GripVertical
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +41,7 @@ interface Category {
 }
 
 export default function AdminCategoriesPage() {
-  const { user, loading } = useAdminAuth();
+  const { user, loading } = useAuthContext();
   const router = useRouter();
   const { showSuccess, showError } = useToastContext();
   const [isClient, setIsClient] = useState(false);
@@ -138,11 +138,11 @@ export default function AdminCategoriesPage() {
         const updatedCategories = categories.map((c) =>
           c.id === editingCategory.id
             ? {
-                ...editingCategory,
-                // Don't allow changing ID or name of "all" category
-                id: isDefault ? "all" : editingCategory.id,
-                name: isDefault ? "Tất cả" : editingCategory.name,
-              }
+              ...editingCategory,
+              // Don't allow changing ID or name of "all" category
+              id: isDefault ? "all" : editingCategory.id,
+              name: isDefault ? "Tất cả" : editingCategory.name,
+            }
             : c
         );
         setCategories(updatedCategories);
@@ -165,15 +165,15 @@ export default function AdminCategoriesPage() {
 
     const newCategories = [...categories];
     const newIndex = direction === "up" ? index - 1 : index + 1;
-    
+
     // Swap the display orders
     const currentOrder = newCategories[index].displayOrder;
     newCategories[index].displayOrder = newCategories[newIndex].displayOrder;
     newCategories[newIndex].displayOrder = currentOrder;
-    
+
     // Sort by displayOrder
     newCategories.sort((a, b) => a.displayOrder - b.displayOrder);
-    
+
     setCategories(newCategories);
   };
 

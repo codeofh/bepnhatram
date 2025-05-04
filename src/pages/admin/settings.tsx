@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { Save, Globe, Phone, Clock, MapPin, Mail, Facebook, Instagram } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,7 +82,7 @@ type SocialSettingsValues = z.infer<typeof socialSettingsSchema>;
 type MapsSettingsValues = z.infer<typeof mapsSettingsSchema>;
 
 export default function AdminSettingsPage() {
-  const { user, loading } = useAdminAuth();
+  const { user, loading } = useAuthContext();
   const router = useRouter();
   const { showSuccess, showError } = useToastContext();
   const [isClient, setIsClient] = useState(false);
@@ -210,7 +210,7 @@ export default function AdminSettingsPage() {
                 <TabsTrigger value="social">Mạng xã hội</TabsTrigger>
                 <TabsTrigger value="maps">Bản đồ</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="general" className="py-4">
                 <Form {...generalForm}>
                   <form onSubmit={generalForm.handleSubmit(onSubmitGeneral)} className="space-y-6">

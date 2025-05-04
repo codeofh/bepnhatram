@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
 import { menuItems } from "@/data/menuItems";
 
 export default function AdminDashboardPage() {
-  const { user, loading } = useAdminAuth();
+  const { user, loading } = useAuthContext();
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 

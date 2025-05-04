@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { MenuItemForm } from "@/components/Admin/MenuItemForm";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
 import { MenuItem, menuItems } from "@/data/menuItems";
 import { Input } from "@/components/ui/input";
@@ -53,7 +53,7 @@ import {
 import { useToastContext } from "@/contexts/ToastContext";
 
 export default function AdminMenuPage() {
-  const { user, loading } = useAdminAuth();
+  const { user, loading } = useAuthContext();
   const router = useRouter();
   const { showSuccess, showError } = useToastContext();
   const [isClient, setIsClient] = useState(false);
