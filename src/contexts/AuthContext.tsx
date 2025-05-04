@@ -11,6 +11,8 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<User | null>;
   loginWithFacebook: () => Promise<User | null>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<boolean>;
+  sendVerificationEmail: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
