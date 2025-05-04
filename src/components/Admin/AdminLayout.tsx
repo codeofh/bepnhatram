@@ -169,25 +169,41 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                   <ChevronDown size={16} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/account" className="w-full">
-                    Tài khoản của tôi
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/account/settings" className="w-full">
-                    Đổi mật khẩu
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/" className="w-full">
-                    Xem trang web
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleLogout} className="w-full">
-                  Đăng xuất
-                </DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-60 p-0">
+                {/* User Profile Display */}
+                <div className="p-3 flex flex-col items-start">
+                  <div className="flex items-center mb-2">
+                    <Avatar className="h-10 w-10 bg-green-600 text-white mr-3">
+                      <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{user.displayName || user.email?.split('@')[0]}</span>
+                      <span className="text-xs text-gray-500">{user.email}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-100 py-1">
+                  <DropdownMenuItem asChild>
+                    <Link href="/account" className="w-full">
+                      Tài khoản của tôi
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/account/settings" className="w-full">
+                      Đổi mật khẩu
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/" className="w-full">
+                      Xem trang web
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} className="w-full">
+                    Đăng xuất
+                  </DropdownMenuItem>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
