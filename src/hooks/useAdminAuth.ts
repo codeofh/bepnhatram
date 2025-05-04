@@ -94,7 +94,7 @@ export function useAdminAuth() {
     // Check if we're on the debug page - special case to bypass admin check temporarily
     const isDebugPage = router.pathname === '/admin/debug';
 
-    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+    const unsubscribe = onAuthStateChanged(auth!, async (authUser) => {
       if (authUser) {
         try {
           // If we're on the debug page, allow access for any authenticated user
@@ -190,7 +190,7 @@ export function useAdminAuth() {
     setError(null);
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email, password);
+      await signInWithEmailAndPassword(auth!, email, password);
     } catch (err: any) {
       console.error("Login error:", err);
       let errorMessage = "Đăng nhập thất bại";
@@ -225,7 +225,7 @@ export function useAdminAuth() {
     }
 
     try {
-      await signOut(auth);
+      await signOut(auth!);
       router.push('/admin');
     } catch (err: any) {
       console.error("Logout error:", err);
