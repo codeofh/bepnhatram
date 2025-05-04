@@ -48,10 +48,10 @@ export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderPro
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
     if (!user || !user.displayName) return '?';
-    
+
     const nameParts = user.displayName.split(' ');
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
-    
+
     return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
   };
 
@@ -72,18 +72,18 @@ export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderPro
         <div className="flex items-center justify-between">
           {/* Left side: Logo and mobile menu button */}
           <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="md:hidden mr-2" 
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden mr-2"
               onClick={toggleSidebar}
             >
               <Menu className="h-5 w-5" />
             </Button>
             <Link href="/" className="flex items-center">
-              <Image 
-                src="/logo-removebg.png" 
-                alt="BẾP NHÀ TRÂM" 
+              <Image
+                src="/logo-removebg.png"
+                alt="BẾP NHÀ TRÂM"
                 width={180}
                 height={60}
                 className="h-12 w-auto object-contain"
@@ -95,11 +95,11 @@ export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderPro
           {/* Middle: Navigation Links (hidden on mobile) */}
           <nav className="hidden md:flex items-center space-x-6">
             {menuItems.map((item) => (
-              <Link 
-                key={item.href} 
+              <Link
+                key={item.href}
                 href={item.href}
                 className={`font-medium ${
-                  item.active 
+                  item.active
                     ? 'text-blue-600 font-semibold'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
@@ -124,18 +124,18 @@ export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderPro
             </form>
 
             {/* Search Button (Mobile) */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="md:hidden"
             >
               <Search className="h-5 w-5" />
             </Button>
 
             {/* Cart Button */}
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="ml-2"
             >
               <ShoppingCart className="h-5 w-5" />
@@ -146,41 +146,56 @@ export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderPro
               user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="ml-2">
-                      <Avatar className="h-8 w-8">
+                    <Button variant="ghost" size="icon" className="ml-2 relative">
+                      <Avatar className="h-8 w-8 bg-green-600 text-white">
                         <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
                         <AvatarFallback>{getUserInitials()}</AvatarFallback>
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>
-                      {user.displayName || user.email}
+                  <DropdownMenuContent align="end" className="w-52">
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex gap-2 items-center py-1.5">
+                        <Avatar className="h-10 w-10 bg-green-600 text-white">
+                          <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                          <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <p className="text-sm font-medium leading-none">{user.displayName || 'Người dùng'}</p>
+                          <p className="text-xs leading-snug text-muted-foreground">{user.email}</p>
+                        </div>
+                      </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Tài khoản</span>
+                    <DropdownMenuItem asChild>
+                      <Link href="/account" className="cursor-pointer">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Tài khoản</span>
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ShoppingCart className="mr-2 h-4 w-4" />
-                      <span>Đơn hàng</span>
+                    <DropdownMenuItem asChild>
+                      <Link href="/account/orders" className="cursor-pointer">
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        <span>Đơn hàng</span>
+                      </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Cài đặt</span>
+                    <DropdownMenuItem asChild>
+                      <Link href="/account/settings" className="cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Cài đặt</span>
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Đăng xuất</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="ml-2"
                   onClick={() => setAuthDialogOpen(true)}
                 >

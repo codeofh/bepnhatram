@@ -10,10 +10,14 @@ import {
   LogOut,
   ChevronDown,
   Menu,
-  X
+  X,
+  Lock,
+  Globe,
+  User
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sheet,
   SheetContent,
@@ -47,6 +51,16 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
 
   const isActive = (path: string) => {
     return router.pathname === path;
+  };
+
+  // Get user initials for avatar fallback
+  const getUserInitials = (): string => {
+    if (!user || !user.displayName) return '?';
+
+    const nameParts = user.displayName.split(' ');
+    if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
+
+    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
   };
 
   const navItems = [
@@ -145,20 +159,57 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center">
+                <Button variant="ghost" className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8 bg-green-600 text-white">
+                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                  </Avatar>
                   <span className="mr-1 hidden sm:inline-block">
                     {user.email?.split("@")[0]}
                   </span>
                   <ChevronDown size={16} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <Link href="/" passHref>
-                  <DropdownMenuItem>Xem trang web</DropdownMenuItem>
-                </Link>
-                <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
+              <DropdownMenuContent align="end" className="w-60 p-0">
+                {/* User Profile Display */}
+                <div className="p-3 flex flex-col items-start">
+                  <div className="flex items-center mb-2">
+                    <Avatar className="h-10 w-10 bg-green-600 text-white mr-3">
+                      <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{user.displayName || user.email?.split('@')[0]}</span>
+                      <span className="text-xs text-gray-500">{user.email}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-100 py-1">
+                  <DropdownMenuItem asChild>
+                    <Link href="/account" className="w-full flex items-center">
+                      <User className="h-4 w-4 mr-2" />
+                      Tài khoản của tôi
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/account/settings" className="w-full flex items-center">
+                      <Lock className="h-4 w-4 mr-2" />
+                      Đổi mật khẩu
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/" target="_blank" rel="noopener noreferrer" className="w-full flex items-center">
+                      <Globe className="h-4 w-4 mr-2" />
+                      Xem trang web
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-1" />
+                  <DropdownMenuItem onClick={handleLogout} className="w-full flex items-center">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Đăng xuất
+                  </DropdownMenuItem>
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
