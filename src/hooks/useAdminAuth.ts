@@ -19,11 +19,30 @@ export function useAdminAuth() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
+  // Skip Firebase interactions during server-side rendering
+  const isClient = typeof window !== 'undefined';
+
   useEffect(() => {
+    // Only run on client-side
+    if (!isClient) {
+      setLoading(false);
+      return () => {};
+    }
+
+    if (!auth) {
+      setError("Firebase auth is not initialized");
+      setLoading(false);
+      return () => {};
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       if (authUser) {
         try {
           // Check if user is an admin
+          if (!db) {
+            throw new Error("Firestore is not initialized");
+          }
+          
           const userRef = doc(db, 'admins', authUser.uid);
           const userSnap = await getDoc(userRef);
           
@@ -32,7 +51,7 @@ export function useAdminAuth() {
             setUser(adminUser);
           } else {
             // User exists but is not an admin
-            await signOut(auth);
+            if (auth) await signOut(auth);
             setUser(null);
             setError("Bạn không có quyền truy cập vào trang quản trị");
           }
@@ -47,9 +66,14 @@ export function useAdminAuth() {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isClient]);
 
   const login = async (email: string, password: string) => {
+    if (!isClient || !auth) {
+      setError("Firebase auth is not initialized");
+      return;
+    }
+    
     setError(null);
     try {
       setLoading(true);
@@ -61,6 +85,11 @@ export function useAdminAuth() {
   };
 
   const logout = async () => {
+    if (!isClient || !auth) {
+      setError("Firebase auth is not initialized");
+      return;
+    }
+    
     try {
       await signOut(auth);
       router.push('/admin');
