@@ -11,7 +11,8 @@ import {
   ChevronDown,
   Menu,
   X,
-  Lock
+  Lock,
+  Globe
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -178,9 +179,15 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                   </DropdownMenuItem>
                 </Link>
                 <Link href="/" passHref>
-                  <DropdownMenuItem>Xem trang web</DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Globe className="mr-2 h-4 w-4" />
+                    Xem trang web
+                  </DropdownMenuItem>
                 </Link>
-                <DropdownMenuItem onClick={handleLogout}>Đăng xuất</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Đăng xuất
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
