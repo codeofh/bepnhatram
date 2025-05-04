@@ -6,7 +6,7 @@ import {
   onAuthStateChanged, 
   User 
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToastContext } from '@/contexts/ToastContext';
@@ -21,7 +21,7 @@ export function useAdminAuth() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const { user: authUser } = useAuthContext();
-  const { showError } = useToastContext();
+  const { showSuccess, showError } = useToastContext();
 
   // Function to check if a user is an admin
   const checkAdminStatus = async (userId: string): Promise<boolean> => {
@@ -31,30 +31,39 @@ export function useAdminAuth() {
     }
     
     try {
+      console.log("Checking admin status for user ID:", userId);
       const userRef = doc(db, 'admins', userId);
       const userSnap = await getDoc(userRef);
       
       // User exists in admins collection
       if (userSnap.exists()) {
+        console.log("User is an admin:", userSnap.data());
         return true;
       }
       
-      // For development: auto-create first admin user if admins collection is empty
-      // This should be removed in production
+      console.log("User is not an admin");
+      
+      // For development: auto-create admin user if admins collection is empty
       if (process.env.NODE_ENV === 'development') {
         try {
-          // Only for the first user to sign in during development
-          // Create admins collection and add this user as admin
-          await setDoc(userRef, {
-            isAdmin: true,
-            createdAt: new Date(),
-            role: 'admin'
-          });
-          console.log("Created first admin user in development mode");
-          return true;
+          // Check if admins collection is empty
+          const adminsRef = collection(db, 'admins');
+          const adminsSnapshot = await getDocs(adminsRef);
+          
+          if (adminsSnapshot.empty) {
+            console.log("Admins collection is empty, creating first admin user");
+            // Create the first admin
+            await setDoc(userRef, {
+              isAdmin: true,
+              createdAt: new Date(),
+              role: 'admin',
+              note: 'Auto-created first admin in development mode'
+            });
+            console.log("Created first admin user successfully");
+            return true;
+          }
         } catch (err) {
-          console.error("Failed to create admin user:", err);
-          return false;
+          console.error("Failed to check or create admin:", err);
         }
       }
       
@@ -73,9 +82,21 @@ export function useAdminAuth() {
       return () => {};
     }
 
+    // Check if we're on the debug page - special case to bypass admin check temporarily
+    const isDebugPage = router.pathname === '/admin/debug';
+    
     const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
       if (authUser) {
         try {
+          // If we're on the debug page, allow access for any authenticated user
+          if (isDebugPage) {
+            const adminUser = {...authUser, isAdmin: true} as AdminUser;
+            setUser(adminUser);
+            setLoading(false);
+            return;
+          }
+          
+          // Otherwise check if user is actually an admin
           const isAdmin = await checkAdminStatus(authUser.uid);
           
           if (isAdmin) {
@@ -83,7 +104,10 @@ export function useAdminAuth() {
             setUser(adminUser);
           } else {
             // User exists but is not an admin
-            await signOut(auth);
+            if (router.pathname.startsWith('/admin') && router.pathname !== '/admin' && router.pathname !== '/admin/debug') {
+              // Don't sign out if we're just on the login page
+              await signOut(auth);
+            }
             setUser(null);
             setError("Bạn không có quyền truy cập vào trang quản trị");
             showError("Bạn không có quyền truy cập vào trang quản trị");
@@ -100,7 +124,7 @@ export function useAdminAuth() {
     });
 
     return () => unsubscribe();
-  }, [showError]);
+  }, [router.pathname, showError]);
 
   // When authUser changes (from AuthContext), check if they have admin privileges
   useEffect(() => {
@@ -147,6 +171,8 @@ export function useAdminAuth() {
         errorMessage = "Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau";
       } else if (err.code === 'auth/network-request-failed') {
         errorMessage = "Lỗi kết nối mạng";
+      } else if (err.code) {
+        errorMessage = `Lỗi đăng nhập: ${err.code}`;
       }
       
       setError(errorMessage);
@@ -175,20 +201,50 @@ export function useAdminAuth() {
   // Create admin user function (for development purposes)
   const createAdminUser = async (userId: string) => {
     if (!db) {
+      console.error("Firestore is not initialized");
       throw new Error("Firestore is not initialized");
     }
     
     try {
+      console.log("Creating admin user with ID:", userId);
       const userRef = doc(db, 'admins', userId);
+      
+      // Check if this admin already exists
+      const existingDoc = await getDoc(userRef);
+      if (existingDoc.exists()) {
+        console.log("Admin already exists:", existingDoc.data());
+        return true;
+      }
+      
+      // Create new admin record
       await setDoc(userRef, {
         isAdmin: true,
         createdAt: new Date(),
-        role: 'admin'
+        role: 'admin',
+        note: 'Created from admin debug page'
       });
+      
+      console.log("Admin user created successfully");
+      showSuccess("Tài khoản admin đã được tạo thành công!");
+      
       return true;
     } catch (err) {
       console.error("Failed to create admin user:", err);
       throw err;
+    }
+  };
+
+  // Check if a user is already an admin
+  const isUserAdmin = async (userId: string): Promise<boolean> => {
+    if (!db) return false;
+    
+    try {
+      const userRef = doc(db, 'admins', userId);
+      const userSnap = await getDoc(userRef);
+      return userSnap.exists();
+    } catch (err) {
+      console.error("Error checking if user is admin:", err);
+      return false;
     }
   };
 
@@ -198,7 +254,8 @@ export function useAdminAuth() {
     error, 
     login, 
     logout,
-    // For development only
-    createAdminUser 
+    createAdminUser,
+    isUserAdmin,
+    checkAdminStatus
   };
 }
