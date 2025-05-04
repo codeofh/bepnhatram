@@ -199,11 +199,12 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/" className="w-full flex items-center">
+                    <Link href="/" target="_blank" rel="noopener noreferrer" className="w-full flex items-center">
                       <Globe className="h-4 w-4 mr-2" />
                       Xem trang web
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator className="my-1" />
                   <DropdownMenuItem onClick={handleLogout} className="w-full flex items-center">
                     <LogOut className="h-4 w-4 mr-2" />
                     Đăng xuất
