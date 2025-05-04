@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app';
 import { Toaster } from "@/components/ui/toaster";
 import { ToastContextProvider } from '@/contexts/ToastContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { OfflineWarning } from '@/components/ui/offline-warning';
 import '@/styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -26,6 +27,7 @@ export default function App({ Component, pageProps }: AppProps) {
       <AuthProvider>
         <Component {...pageProps} />
         <Toaster />
+        <OfflineWarning />
       </AuthProvider>
     </ToastContextProvider>
   );

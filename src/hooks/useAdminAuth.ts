@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { auth, db, isFirebaseInitialized } from '@/lib/firebase';
+import { auth, db, isFirebaseInitialized, safeFirestoreOperation } from '@/lib/firebase';
 import { 
   signInWithEmailAndPassword, 
   signOut, 
@@ -10,6 +10,7 @@ import { doc, getDoc, setDoc, collection, getDocs } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useToastContext } from '@/contexts/ToastContext';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 interface AdminUser extends User {
   isAdmin?: boolean;
@@ -22,6 +23,7 @@ export function useAdminAuth() {
   const router = useRouter();
   const { user: authUser } = useAuthContext();
   const { showSuccess, showError } = useToastContext();
+  const { isOnline } = useNetworkStatus();
 
   // Function to check if a user is an admin
   const checkAdminStatus = async (userId: string): Promise<boolean> => {
@@ -32,44 +34,50 @@ export function useAdminAuth() {
     
     try {
       console.log("Checking admin status for user ID:", userId);
-      const userRef = doc(db, 'admins', userId);
-      const userSnap = await getDoc(userRef);
       
-      // User exists in admins collection
-      if (userSnap.exists()) {
-        console.log("User is an admin:", userSnap.data());
-        return true;
-      }
-      
-      console.log("User is not an admin");
-      
-      // For development: auto-create admin user if admins collection is empty
-      if (process.env.NODE_ENV === 'development') {
-        try {
-          // Check if admins collection is empty
-          const adminsRef = collection(db, 'admins');
-          const adminsSnapshot = await getDocs(adminsRef);
-          
-          if (adminsSnapshot.empty) {
-            console.log("Admins collection is empty, creating first admin user");
-            // Create the first admin
-            await setDoc(userRef, {
-              isAdmin: true,
-              createdAt: new Date(),
-              role: 'admin',
-              note: 'Auto-created first admin in development mode'
-            });
-            console.log("Created first admin user successfully");
-            return true;
-          }
-        } catch (err) {
-          console.error("Failed to check or create admin:", err);
+      return await safeFirestoreOperation(async () => {
+        const userRef = doc(db, 'admins', userId);
+        const userSnap = await getDoc(userRef);
+        
+        // User exists in admins collection
+        if (userSnap.exists()) {
+          console.log("User is an admin:", userSnap.data());
+          return true;
         }
-      }
-      
-      return false;
+        
+        console.log("User is not an admin");
+        
+        // For development: auto-create admin user if admins collection is empty
+        if (process.env.NODE_ENV === 'development') {
+          try {
+            // Check if admins collection is empty
+            const adminsRef = collection(db, 'admins');
+            const adminsSnapshot = await getDocs(adminsRef);
+            
+            if (adminsSnapshot.empty) {
+              console.log("Admins collection is empty, creating first admin user");
+              // Create the first admin
+              await setDoc(userRef, {
+                isAdmin: true,
+                createdAt: new Date(),
+                role: 'admin',
+                note: 'Auto-created first admin in development mode'
+              });
+              console.log("Created first admin user successfully");
+              return true;
+            }
+          } catch (err) {
+            console.error("Failed to check or create admin:", err);
+          }
+        }
+        
+        return false;
+      }, false); // Default to not admin if offline
     } catch (err) {
       console.error("Error checking admin status:", err);
+      if (!isOnline) {
+        showError("Không thể kiểm tra quyền admin khi không có kết nối mạng");
+      }
       throw err;
     }
   };
@@ -96,6 +104,14 @@ export function useAdminAuth() {
             return;
           }
           
+          // If offline and not on debug page, show message
+          if (!isOnline && !isDebugPage) {
+            setError("Không thể xác thực quyền admin khi không có kết nối mạng");
+            showError("Không thể xác thực quyền admin khi không có kết nối mạng");
+            setLoading(false);
+            return;
+          }
+          
           // Otherwise check if user is actually an admin
           const isAdmin = await checkAdminStatus(authUser.uid);
           
@@ -106,16 +122,23 @@ export function useAdminAuth() {
             // User exists but is not an admin
             if (router.pathname.startsWith('/admin') && router.pathname !== '/admin' && router.pathname !== '/admin/debug') {
               // Don't sign out if we're just on the login page
-              await signOut(auth);
+              if (isOnline) {
+                await signOut(auth);
+              }
             }
             setUser(null);
             setError("Bạn không có quyền truy cập vào trang quản trị");
             showError("Bạn không có quyền truy cập vào trang quản trị");
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error("Error checking admin status:", err);
-          setError("Có lỗi khi kiểm tra quyền admin. Vui lòng thử lại sau.");
-          showError("Có lỗi khi kiểm tra quyền admin. Vui lòng thử lại sau.");
+          if (err.message?.includes('offline') || err.code === 'unavailable') {
+            setError("Không thể kiểm tra quyền admin khi không có kết nối mạng");
+            showError("Không thể kiểm tra quyền admin khi không có kết nối mạng");
+          } else {
+            setError("Có lỗi khi kiểm tra quyền admin. Vui lòng thử lại sau.");
+            showError("Có lỗi khi kiểm tra quyền admin. Vui lòng thử lại sau.");
+          }
         }
       } else {
         setUser(null);
@@ -124,12 +147,12 @@ export function useAdminAuth() {
     });
 
     return () => unsubscribe();
-  }, [router.pathname, showError]);
+  }, [router.pathname, showError, isOnline]);
 
   // When authUser changes (from AuthContext), check if they have admin privileges
   useEffect(() => {
     const checkSocialAuthAdminStatus = async () => {
-      if (authUser && db && !user) {
+      if (authUser && db && !user && isOnline) {
         try {
           const isAdmin = await checkAdminStatus(authUser.uid);
           
@@ -148,12 +171,18 @@ export function useAdminAuth() {
     };
     
     checkSocialAuthAdminStatus();
-  }, [authUser, user, db, showError]);
+  }, [authUser, user, db, showError, isOnline]);
 
   const login = async (email: string, password: string) => {
     if (!isFirebaseInitialized()) {
       setError("Firebase không được khởi tạo");
       showError("Firebase không được khởi tạo");
+      return;
+    }
+    
+    if (!isOnline) {
+      setError("Không thể đăng nhập khi không có kết nối mạng");
+      showError("Không thể đăng nhập khi không có kết nối mạng");
       return;
     }
     
@@ -188,6 +217,12 @@ export function useAdminAuth() {
       return;
     }
     
+    if (!isOnline) {
+      setError("Không thể đăng xuất hoàn toàn khi không có kết nối mạng");
+      showError("Không thể đăng xuất hoàn toàn khi không có kết nối mạng");
+      return;
+    }
+    
     try {
       await signOut(auth);
       router.push('/admin');
@@ -203,6 +238,10 @@ export function useAdminAuth() {
     if (!db) {
       console.error("Firestore is not initialized");
       throw new Error("Firestore is not initialized");
+    }
+    
+    if (!isOnline) {
+      throw new Error("Không thể tạo ngư��i dùng admin khi không có kết nối mạng");
     }
     
     try {
@@ -236,12 +275,14 @@ export function useAdminAuth() {
 
   // Check if a user is already an admin
   const isUserAdmin = async (userId: string): Promise<boolean> => {
-    if (!db) return false;
+    if (!db || !isOnline) return false;
     
     try {
-      const userRef = doc(db, 'admins', userId);
-      const userSnap = await getDoc(userRef);
-      return userSnap.exists();
+      return await safeFirestoreOperation(async () => {
+        const userRef = doc(db, 'admins', userId);
+        const userSnap = await getDoc(userRef);
+        return userSnap.exists();
+      }, false);
     } catch (err) {
       console.error("Error checking if user is admin:", err);
       return false;
@@ -256,6 +297,7 @@ export function useAdminAuth() {
     logout,
     createAdminUser,
     isUserAdmin,
-    checkAdminStatus
+    checkAdminStatus,
+    isOnline
   };
 }
