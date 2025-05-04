@@ -10,10 +10,12 @@ import {
   LogOut,
   ChevronDown,
   Menu,
-  X
+  X,
+  Lock
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Sheet,
   SheetContent,
@@ -47,6 +49,16 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
 
   const isActive = (path: string) => {
     return router.pathname === path;
+  };
+
+  // Get user initials for avatar fallback
+  const getUserInitials = (): string => {
+    if (!user || !user.displayName) return '?';
+
+    const nameParts = user.displayName.split(' ');
+    if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
+
+    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
   };
 
   const navItems = [
@@ -145,7 +157,11 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
           {user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center">
+                <Button variant="ghost" className="flex items-center gap-2">
+                  <Avatar className="h-8 w-8 bg-green-600 text-white">
+                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                  </Avatar>
                   <span className="mr-1 hidden sm:inline-block">
                     {user.email?.split("@")[0]}
                   </span>
@@ -155,6 +171,12 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <Link href="/account/settings" passHref>
+                  <DropdownMenuItem>
+                    <Lock className="mr-2 h-4 w-4" />
+                    Đổi mật khẩu
+                  </DropdownMenuItem>
+                </Link>
                 <Link href="/" passHref>
                   <DropdownMenuItem>Xem trang web</DropdownMenuItem>
                 </Link>
