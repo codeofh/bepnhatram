@@ -169,23 +169,23 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                   <ChevronDown size={16} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Tài khoản của tôi</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <Link href="/account/settings" passHref>
-                  <DropdownMenuItem>
-                    <Lock className="mr-2 h-4 w-4" />
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/account" className="w-full">
+                    Tài khoản của tôi
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/account/settings" className="w-full">
                     Đổi mật khẩu
-                  </DropdownMenuItem>
-                </Link>
-                <Link href="/" passHref>
-                  <DropdownMenuItem>
-                    <Globe className="mr-2 h-4 w-4" />
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/" className="w-full">
                     Xem trang web
-                  </DropdownMenuItem>
-                </Link>
-                <DropdownMenuItem onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="w-full">
                   Đăng xuất
                 </DropdownMenuItem>
               </DropdownMenuContent>
