@@ -124,7 +124,7 @@ export function useAdminAuth() {
             if (router.pathname.startsWith('/admin') && router.pathname !== '/admin' && router.pathname !== '/admin/debug') {
               // Don't sign out if we're just on the login page
               if (isOnline) {
-                await signOut(auth);
+                await signOut(auth!);
               }
             }
             setUser(null);
