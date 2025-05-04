@@ -1,13 +1,21 @@
-import React, { useState } from "react";
-import Image from "next/image";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/router";
-import { ShoppingCart, Search, Menu, User, X } from "lucide-react";
+import { Search, Menu, ShoppingCart, User, LogOut, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AuthDialog } from "@/components/Auth/AuthDialog";
-import { SearchModal } from "@/components/Search/SearchModal";
-import { useToastContext } from "@/contexts/ToastContext";
-import { siteConfig } from "@/config/siteConfig";
+import { useAuthContext } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface HeaderProps {
   toggleSidebar?: () => void;
@@ -15,137 +23,177 @@ interface HeaderProps {
   setSearchQuery?: (query: string) => void;
 }
 
-export function Header({ toggleSidebar, searchQuery = "", setSearchQuery }: HeaderProps) {
-  const [authDialogOpen, setAuthDialogOpen] = useState(false);
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
+export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderProps) {
   const router = useRouter();
-  const { showCartNotification } = useToastContext();
-  const isBlogPage = router.pathname.startsWith('/blog');
-  const isHomePage = router.pathname === "/";
-  const isAboutPage = router.pathname === "/about" || router.pathname.startsWith('/about/');
-  const isContactPage = router.pathname === "/contact" || router.pathname.startsWith('/contact/');
+  const [authDialogOpen, setAuthDialogOpen] = useState(false);
+  const { user, logout } = useAuthContext();
+  const [mounted, setMounted] = useState(false);
 
-  // Function to determine nav link classes based on active state
-  const getNavLinkClasses = (isActive: boolean) => {
-    return `font-medium ${isActive
-        ? "text-blue-600 font-semibold"
-        : "text-gray-600 hover:text-blue-600"
-      } transition-colors`;
+  // Handle client-side hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (setSearchQuery && searchQuery) {
+      // Implement search functionality
+    }
   };
 
-  // Function to show development notification
-  const showDevelopmentNotification = () => {
-    showCartNotification('development');
+  const handleLogout = async () => {
+    await logout();
   };
+
+  // Get user initials for avatar fallback
+  const getUserInitials = (): string => {
+    if (!user || !user.displayName) return '?';
+    
+    const nameParts = user.displayName.split(' ');
+    if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
+    
+    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+  };
+
+  const isHomePage = router.pathname === '/';
+  const isAboutPage = router.pathname === '/about';
+  const isContactPage = router.pathname === '/contact';
+
+  // Menu items for navigation
+  const menuItems = [
+    { href: '/', label: 'Món ăn', active: isHomePage },
+    { href: '/about', label: 'Giới thiệu', active: isAboutPage },
+    { href: '/contact', label: 'Liên hệ', active: isContactPage },
+  ];
 
   return (
-    <header className="bg-white shadow-sm py-3">
-      <div className="container mx-auto px-4">
+    <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
+      <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          {/* Logo and Brand */}
+          {/* Left side: Logo and mobile menu button */}
           <div className="flex items-center">
-            {!isBlogPage && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden mr-2"
-                onClick={toggleSidebar}
-              >
-                <Menu size={24} />
-              </Button>
-            )}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden mr-2" 
+              onClick={toggleSidebar}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
             <Link href="/" className="flex items-center">
-              <Image
-                src="logo-removebg.png"
-                alt={siteConfig.name}
+              <Image 
+                src="/logo-removebg.png" 
+                alt="BẾP NHÀ TRÂM" 
                 width={180}
                 height={60}
-                className="h-12 w-auto"
-                style={{ objectFit: 'contain', background: 'transparent' }}
+                className="h-12 w-auto object-contain"
                 priority
               />
             </Link>
           </div>
 
-          {/* Navigation */}
+          {/* Middle: Navigation Links (hidden on mobile) */}
           <nav className="hidden md:flex items-center space-x-6">
-            {!isBlogPage && (
-              <Link href="/" className={getNavLinkClasses(isHomePage)}>
-                Món ăn
+            {menuItems.map((item) => (
+              <Link 
+                key={item.href} 
+                href={item.href}
+                className={`font-medium ${
+                  item.active 
+                    ? 'text-blue-600 font-semibold'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {item.label}
               </Link>
-            )}
-            <Link href="/about" className={getNavLinkClasses(isAboutPage)}>
-              Giới thiệu
-            </Link>
-            <Link href="/contact" className={getNavLinkClasses(isContactPage)}>
-              Liên hệ
-            </Link>
+            ))}
           </nav>
 
-          {/* Search and Cart */}
-          <div className="flex items-center space-x-4">
-            {!isBlogPage && (
-              <>
-                {/* Desktop search - always visible on desktop */}
-                <div className="relative hidden md:block">
-                  <input
-                    type="text"
-                    placeholder="Tìm kiếm món ăn..."
-                    className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
-                  />
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                  {searchQuery && (
-                    <button
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                      onClick={() => setSearchQuery && setSearchQuery("")}
-                    >
-                      <X size={16} />
-                    </button>
-                  )}
-                </div>
+          {/* Right side: Search, Cart, User buttons */}
+          <div className="flex items-center">
+            {/* Search Form */}
+            <form onSubmit={handleSearch} className="hidden md:block relative mr-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                type="text"
+                placeholder="Tìm kiếm món ăn..."
+                className="pl-10 pr-10 w-64 h-9 rounded-lg"
+                value={searchQuery || ''}
+                onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+              />
+            </form>
 
-                {/* Mobile search button - only on homepage */}
-                {isHomePage && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="md:hidden"
-                    onClick={() => setSearchModalOpen(true)}
-                  >
-                    <Search size={24} />
-                  </Button>
-                )}
-
-                {/* Mobile search modal - only on homepage */}
-                {isHomePage && setSearchQuery && (
-                  <SearchModal
-                    isOpen={searchModalOpen}
-                    onClose={() => setSearchModalOpen(false)}
-                    searchQuery={searchQuery}
-                    setSearchQuery={setSearchQuery}
-                  />
-                )}
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={showDevelopmentNotification}
-                >
-                  <ShoppingCart size={24} />
-                </Button>
-              </>
-            )}
-
-            <Button variant="ghost" size="icon" onClick={() => setAuthDialogOpen(true)}>
-              <User size={24} />
+            {/* Search Button (Mobile) */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="md:hidden"
+            >
+              <Search className="h-5 w-5" />
             </Button>
 
-            <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
+            {/* Cart Button */}
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="ml-2"
+            >
+              <ShoppingCart className="h-5 w-5" />
+            </Button>
+
+            {/* User Button / Profile */}
+            {mounted && (
+              user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="ml-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                        <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>
+                      {user.displayName || user.email}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Tài khoản</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      <span>Đơn hàng</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Cài đặt</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Đăng xuất</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="ml-2"
+                  onClick={() => setAuthDialogOpen(true)}
+                >
+                  <User className="h-5 w-5" />
+                </Button>
+              )
+            )}
           </div>
         </div>
       </div>
+
+      {/* Auth Dialog */}
+      <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
     </header>
   );
 }
