@@ -14,6 +14,12 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:68632177652:web:e7b70bdf3e974eea4167a1"
 };
 
+// Firestore settings to improve connection stability
+const firestoreSettings = {
+  experimentalForceLongPolling: true,
+  useFetchStreams: false,
+};
+
 // Initialize Firebase services with error handling and SSR safety
 let app;
 let auth;
@@ -32,7 +38,22 @@ try {
 
     // Initialize Firebase services
     auth = getAuth(app);
+    
+    // Initialize Firestore with the custom settings
     db = getFirestore(app);
+    
+    // Apply Firestore settings
+    if (db) {
+      const { setFirestoreSettings } = require('firebase/firestore');
+      try {
+        setFirestoreSettings(db, firestoreSettings);
+        console.log("Firestore settings applied: using long polling");
+      } catch (settingsError) {
+        // Fallback for older Firebase versions where setFirestoreSettings might not exist
+        console.warn("Could not apply Firestore settings directly, will apply during each operation", settingsError);
+      }
+    }
+    
     storage = getStorage(app);
 
     // Enable Firebase emulators in development environment
@@ -53,7 +74,7 @@ try {
 }
 
 // Export initialized services or null values for SSR
-export { app, auth, db, storage };
+export { app, auth, db, storage, firestoreSettings };
 
 // Utility function to check if Firebase is initialized
 export const isFirebaseInitialized = () => {
