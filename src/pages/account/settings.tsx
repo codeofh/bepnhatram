@@ -39,21 +39,37 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useToastContext } from "@/contexts/ToastContext";
 import { siteConfig } from "@/config/siteConfig";
 
-// Form schema for password change
-const passwordFormSchema = z.object({
-  currentPassword: z.string().min(6, {
-    message: "Mật khẩu hiện tại phải có ít nhất 6 ký tự.",
-  }),
-  newPassword: z.string().min(6, {
-    message: "Mật khẩu mới phải có ít nhất 6 ký tự.",
-  }),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Mật khẩu xác nhận không khớp",
-  path: ["confirmPassword"],
-});
+// Dynamic form schema for password change or setup based on auth provider
+const createPasswordFormSchema = (isSocialUser: boolean) => {
+  // Base schema with new password and confirmation
+  const baseSchema = {
+    newPassword: z.string().min(6, {
+      message: "Mật khẩu mới phải có ít nhất 6 ký tự.",
+    }),
+    confirmPassword: z.string(),
+  };
 
-type PasswordFormValues = z.infer<typeof passwordFormSchema>;
+  // Add current password field only for email/password users
+  const fullSchema = isSocialUser
+    ? baseSchema
+    : {
+        ...baseSchema,
+        currentPassword: z.string().min(6, {
+          message: "Mật khẩu hiện tại phải có ít nhất 6 ký tự.",
+        }),
+      };
+
+  return z.object(fullSchema).refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Mật khẩu xác nhận không khớp",
+    path: ["confirmPassword"],
+  });
+};
+
+type PasswordFormValues = {
+  currentPassword?: string;
+  newPassword: string;
+  confirmPassword: string;
+};
 
 export default function AccountSettingsPage() {
   const router = useRouter();
@@ -68,9 +84,12 @@ export default function AccountSettingsPage() {
     promotions: false,
   });
 
-  // Setup form
+  // Determine if user is from social login
+  const isSocialUser = user?.providerData && user.providerData[0]?.providerId !== 'password';
+
+  // Setup form with dynamic schema
   const form = useForm<PasswordFormValues>({
-    resolver: zodResolver(passwordFormSchema),
+    resolver: zodResolver(createPasswordFormSchema(!!isSocialUser)),
     defaultValues: {
       currentPassword: "",
       newPassword: "",
@@ -179,10 +198,12 @@ export default function AccountSettingsPage() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Lock className="h-5 w-5 text-blue-600" />
-                  <CardTitle>Đổi mật khẩu</CardTitle>
+                  <CardTitle>{isSocialUser ? "Thiết lập mật khẩu" : "Đổi mật khẩu"}</CardTitle>
                 </div>
                 <CardDescription>
-                  Cập nhật mật khẩu đăng nhập của bạn
+                  {isSocialUser
+                    ? "Thiết lập mật khẩu để có thể đăng nhập bằng email và mật khẩu"
+                    : "Cập nhật mật khẩu đăng nhập của bạn"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -194,43 +215,45 @@ export default function AccountSettingsPage() {
                         <AlertTitle>Tài khoản liên kết</AlertTitle>
                         <AlertDescription>
                           Bạn đang đăng nhập bằng tài khoản {user.providerData[0]?.providerId === 'google.com' ? 'Google' : 'Facebook'}.
-                          Bạn không cần đặt mật khẩu cho tài khoản này.
+                          Bạn có thể thiết lập mật khẩu để đăng nhập bằng email và mật khẩu trong tương lai.
                         </AlertDescription>
                       </Alert>
                     )}
 
-                    <FormField
-                      control={form.control}
-                      name="currentPassword"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mật khẩu hiện tại</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <Input
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Nhập mật khẩu hiện tại"
-                                {...field}
-                              />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="absolute right-1 top-1 h-8 w-8 p-0"
-                                onClick={() => setShowPassword(!showPassword)}
-                              >
-                                {showPassword ? (
-                                  <EyeOff className="h-4 w-4" />
-                                ) : (
-                                  <Eye className="h-4 w-4" />
-                                )}
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    {!isSocialUser && (
+                      <FormField
+                        control={form.control}
+                        name="currentPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Mật khẩu hiện tại</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="Nhập mật khẩu hiện tại"
+                                  {...field}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-1 top-1 h-8 w-8 p-0"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4" />
+                                  ) : (
+                                    <Eye className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
 
                     <FormField
                       control={form.control}
@@ -279,10 +302,10 @@ export default function AccountSettingsPage() {
                       {isSubmitting ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Đang cập nhật...
+                          Đang {isSocialUser ? "thiết lập" : "cập nhật"}...
                         </>
                       ) : (
-                        "Cập nhật mật khẩu"
+                        isSocialUser ? "Thiết lập mật khẩu" : "Cập nhật mật khẩu"
                       )}
                     </Button>
                   </form>
@@ -319,7 +342,7 @@ export default function AccountSettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <label className="text-sm font-medium">Cập nhật đơn hàng</label>
-                      <p className="text-xs text-gray-500">Nhận thông báo khi đơn hàng có thay đ���i trạng thái</p>
+                      <p className="text-xs text-gray-500">Nhận thông báo khi đơn hàng có thay đổi trạng thái</p>
                     </div>
                     <Switch
                       checked={notificationSettings.orderUpdates}
