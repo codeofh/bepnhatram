@@ -1,6 +1,10 @@
 // Import the functions you need from the SDKs
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
+import { 
+  getAuth, 
+  connectAuthEmulator, 
+  Auth 
+} from "firebase/auth";
 import { 
   getFirestore, 
   connectFirestoreEmulator, 
@@ -8,9 +12,14 @@ import {
   CACHE_SIZE_UNLIMITED,
   initializeFirestore,
   persistentLocalCache,
-  persistentMultipleTabManager
+  persistentMultipleTabManager,
+  Firestore
 } from "firebase/firestore";
-import { getStorage, connectStorageEmulator } from "firebase/storage";
+import { 
+  getStorage, 
+  connectStorageEmulator, 
+  FirebaseStorage 
+} from "firebase/storage";
 
 // Firebase configuration with environment variables and fallbacks
 const firebaseConfig = {
@@ -30,10 +39,10 @@ const firestoreSettings = {
 };
 
 // Initialize Firebase services with error handling and SSR safety
-let app;
-let auth;
-let db;
-let storage;
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
+let storage: FirebaseStorage | null = null;
 let networkStatus = {
   isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
   wasEverOffline: false
@@ -109,9 +118,9 @@ try {
     if (process.env.NODE_ENV === "development" && process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true") {
       try {
         const emulatorHost = process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST || "localhost";
-        connectAuthEmulator(auth, `http://${emulatorHost}:9099`);
-        connectFirestoreEmulator(db, emulatorHost, 8080);
-        connectStorageEmulator(storage, emulatorHost, 9199);
+        if (auth) connectAuthEmulator(auth, `http://${emulatorHost}:9099`);
+        if (db) connectFirestoreEmulator(db, emulatorHost, 8080);
+        if (storage) connectStorageEmulator(storage, emulatorHost, 9199);
         console.log("Firebase emulators connected");
       } catch (emulatorError) {
         console.error("Error connecting to Firebase emulators:", emulatorError);
@@ -126,17 +135,17 @@ try {
 export { app, auth, db, storage, firestoreSettings, networkStatus };
 
 // Utility function to check if Firebase is initialized
-export const isFirebaseInitialized = () => {
-  return typeof window !== "undefined" && app && auth && db && storage;
+export const isFirebaseInitialized = (): boolean => {
+  return typeof window !== "undefined" && app !== null && auth !== null && db !== null && storage !== null;
 };
 
 // Utility function to check if we're online and can perform Firestore operations
-export const canPerformFirestoreOperations = () => {
+export const canPerformFirestoreOperations = (): boolean => {
   return isFirebaseInitialized() && networkStatus.isOnline;
 };
 
 // Function to attempt a Firestore operation with offline fallback
-export const safeFirestoreOperation = async (operation, fallback = null) => {
+export const safeFirestoreOperation = async <T>(operation: () => Promise<T>, fallback: T = null as unknown as T): Promise<T> => {
   try {
     if (!isFirebaseInitialized()) {
       console.warn("Firebase not initialized, cannot perform operation");
@@ -144,7 +153,7 @@ export const safeFirestoreOperation = async (operation, fallback = null) => {
     }
     
     return await operation();
-  } catch (error) {
+  } catch (error: any) {
     // Check if it's an offline error
     if (error.message?.includes('offline') || error.code === 'unavailable' || error.code === 'failed-precondition') {
       console.warn("Operation failed due to network issues:", error);
