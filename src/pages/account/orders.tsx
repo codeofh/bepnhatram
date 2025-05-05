@@ -2,123 +2,70 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import {
-  User,
-  ShoppingBag,
-  Settings,
-  ChevronDown,
-  Clock,
+import { 
+  User, 
+  ShoppingBag, 
+  Settings, 
+  ChevronDown, 
+  Clock, 
   Search,
   X,
   PackageOpen,
-  ShoppingCart
+  ShoppingCart,
+  AlertTriangle
 } from "lucide-react";
-import { useOrders } from "@/hooks/useOrders";
-import { Order } from "@/types/order";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { Layout } from "@/components/Layout/Layout";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useOrders } from "@/hooks/useOrders";
+import { siteConfig } from "@/config/siteConfig";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Badge } from "@/components/ui/badge";
-import { Layout } from "@/components/Layout/Layout";
-import { useAuthContext } from "@/contexts/AuthContext";
-import { siteConfig } from "@/config/siteConfig";
-
-// Sample order data for display purposes
-const sampleOrders = [
-  {
-    id: "ORD-123456",
-    date: "2023-07-15",
-    total: 350000,
-    status: "completed",
-    items: [
-      {
-        id: "1",
-        name: "Gà ủ muối hoa tiêu 1/4 con",
-        quantity: 1,
-        price: 95000
-      },
-      {
-        id: "6",
-        name: "Mì Ý sốt thịt băm",
-        quantity: 2,
-        price: 85000
-      },
-      {
-        id: "12",
-        name: "Nước me đá",
-        quantity: 1,
-        price: 35000
-      }
-    ]
-  },
-  {
-    id: "ORD-123457",
-    date: "2023-08-22",
-    total: 165000,
-    status: "completed",
-    items: [
-      {
-        id: "2",
-        name: "Cá hồi áp chảo",
-        quantity: 1,
-        price: 165000
-      }
-    ]
-  }
-];
-
-// Order status mapping
-const orderStatusMap: Record<string, { color: string, label: string }> = {
-  "pending": { color: "bg-yellow-100 text-yellow-800", label: "Chờ xác nhận" },
-  "processing": { color: "bg-blue-100 text-blue-800", label: "Đang chuẩn bị" },
-  "shipping": { color: "bg-purple-100 text-purple-800", label: "Đang giao" },
-  "completed": { color: "bg-green-100 text-green-800", label: "Đã hoàn thành" },
-  "cancelled": { color: "bg-red-100 text-red-800", label: "Đã hủy" }
-};
 
 export default function OrdersPage() {
   const router = useRouter();
-  const { user, loading } = useAuthContext();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const { getUserOrders } = useOrders();
+  const { user, loading: authLoading } = useAuthContext();
+  const { getUserOrders, loading: ordersLoading } = useOrders();
+  const [orders, setOrders] = useState<any[]>([]);
   const [isClient, setIsClient] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedOrders, setExpandedOrders] = useState<string[]>([]);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
 
   // Handle client-side hydration and fetch orders
   useEffect(() => {
     setIsClient(true);
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       router.push('/');
-    } else if (user) {
-      // Fetch orders from Firebase
-      const fetchOrders = async () => {
-        try {
-          const userOrders = await getUserOrders();
-          setOrders(userOrders);
-        } catch (error) {
-          console.error("Error fetching orders:", error);
-        }
-      };
-
+    } else if (user && !hasFetched) {
       fetchOrders();
     }
-  }, [user, loading, router, getUserOrders]);
+  }, [user, authLoading, router, hasFetched]);
+
+  // Fetch orders
+  const fetchOrders = async () => {
+    setFetchError(null);
+    try {
+      const userOrders = await getUserOrders();
+      setOrders(userOrders);
+      setHasFetched(true);
+    } catch (error: any) {
+      console.error("Error fetching orders:", error);
+      setFetchError(error.message || "Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.");
+      setHasFetched(true);
+    }
+  };
 
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
@@ -132,9 +79,9 @@ export default function OrdersPage() {
 
   // Toggle order expansion
   const toggleOrderExpansion = (orderId: string) => {
-    setExpandedOrders(prev =>
-      prev.includes(orderId)
-        ? prev.filter(id => id !== orderId)
+    setExpandedOrders(prev => 
+      prev.includes(orderId) 
+        ? prev.filter(id => id !== orderId) 
         : [...prev, orderId]
     );
   };
@@ -142,7 +89,7 @@ export default function OrdersPage() {
   // Format date in Vietnamese format from Timestamp
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
-
+    
     const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -161,15 +108,24 @@ export default function OrdersPage() {
   // Filter orders by status and search query
   const filteredOrders = orders.filter(order => {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesSearch = searchQuery === '' ||
+    const matchesSearch = searchQuery === '' || 
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.items.some((item: any) =>
+      order.items.some((item: any) => 
         item.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     return matchesStatus && matchesSearch;
   });
 
-  if (loading || !isClient) {
+  // Order status mapping
+  const orderStatusMap: Record<string, { color: string, label: string }> = {
+    "pending": { color: "bg-yellow-100 text-yellow-800", label: "Chờ xác nhận" },
+    "processing": { color: "bg-blue-100 text-blue-800", label: "Đang chuẩn bị" },
+    "shipping": { color: "bg-purple-100 text-purple-800", label: "Đang giao" },
+    "completed": { color: "bg-green-100 text-green-800", label: "Đã hoàn thành" },
+    "cancelled": { color: "bg-red-100 text-red-800", label: "Đã hủy" }
+  };
+
+  if (authLoading || !isClient) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -272,7 +228,30 @@ export default function OrdersPage() {
                 </div>
 
                 {/* Orders list */}
-                {filteredOrders.length > 0 ? (
+                {fetchError ? (
+                  <div className="text-center py-12 space-y-3">
+                    <AlertTriangle className="h-12 w-12 mx-auto text-red-500" />
+                    <h3 className="text-lg font-medium text-gray-900">Lỗi khi tải dữ liệu</h3>
+                    <p className="text-gray-500 max-w-md mx-auto">{fetchError}</p>
+                    <Button onClick={fetchOrders} className="mt-4">
+                      Thử lại
+                    </Button>
+                  </div>
+                ) : ordersLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                  </div>
+                ) : filteredOrders.length === 0 ? (
+                  <div className="text-center py-12 space-y-3">
+                    <ShoppingCart className="h-12 w-12 mx-auto text-gray-300" />
+                    <h3 className="text-lg font-medium text-gray-900">Không có đơn hàng nào</h3>
+                    <p className="text-gray-500">
+                      {searchQuery || statusFilter !== 'all'
+                        ? 'Không tìm thấy đơn hàng phù hợp với bộ lọc'
+                        : 'Bạn chưa có đơn hàng nào trong lịch sử'}
+                    </p>
+                  </div>
+                ) : (
                   <div className="space-y-4">
                     {filteredOrders.map((order) => (
                       <Collapsible
@@ -283,14 +262,31 @@ export default function OrdersPage() {
                       >
                         <div className="p-4 bg-gray-50">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div className="mt-4 pt-3 border-t">
-                              <div className="flex justify-between items-center">
-                                <Link href={`/account/order/${order.id}`} className="text-sm text-blue-600 hover:underline">
-                                  Xem chi tiết
-                                </Link>
-                                <span className="font-bold text-lg">{formatPrice(order.total)}</span>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-medium">{order.orderCode || order.id}</h3>
+                                <Badge className={orderStatusMap[order.status].color}>
+                                  {orderStatusMap[order.status].label}
+                                </Badge>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                                <Clock className="h-4 w-4" />
+                                <span>{formatDate(order.createdAt)}</span>
                               </div>
                             </div>
+                            <div className="flex items-center gap-3">
+                              <span className="font-medium">{formatCurrency(order.total)}</span>
+                              <CollapsibleTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
+                                    expandedOrders.includes(order.id) ? 'rotate-180' : ''
+                                  }`} />
+                                  <span className="sr-only">Chi tiết</span>
+                                </Button>
+                              </CollapsibleTrigger>
+                            </div>
+                          </div>
+                        </div>
 
                         <CollapsibleContent>
                           <div className="p-4 border-t">
@@ -303,13 +299,10 @@ export default function OrdersPage() {
                                       <PackageOpen className="h-4 w-4 text-gray-500" />
                                     </div>
                                     <div>
-                                  <p className="text-sm font-medium">{item.name}</p>
-                                  <p className="text-xs text-gray-500">
-                                    Số lượng: {item.quantity}
-                                    {item.selectedSize ? ` - ${item.selectedSize}` : ''}
-                                  </p>
+                                      <p className="text-sm font-medium">{item.name}</p>
+                                      <p className="text-xs text-gray-500">
                                         Số lượng: {item.quantity}
-                                        {item.selectedSize && ` - ${item.selectedSize}`}
+                                        {item.selectedSize ? ` - ${item.selectedSize}` : ''}
                                       </p>
                                     </div>
                                   </div>
@@ -317,7 +310,7 @@ export default function OrdersPage() {
                                 </div>
                               ))}
                             </div>
-
+                            
                             <div className="mt-4 pt-3 border-t">
                               <div className="flex justify-between items-center">
                                 <Link href={`/account/order/${order.id}`} className="text-sm text-blue-600 hover:underline">
@@ -331,19 +324,6 @@ export default function OrdersPage() {
                       </Collapsible>
                     ))}
                   </div>
-                ) : (
-                  <div className="text-center py-12 space-y-3">
-                    <ShoppingCart className="h-12 w-12 mx-auto text-gray-300" />
-                    <h3 className="text-lg font-medium text-gray-900">Chưa có đơn hàng nào</h3>
-                    {searchQuery ? (
-                      <p className="text-gray-500">Không tìm thấy đơn hàng nào phù hợp với tìm kiếm của bạn</p>
-                    ) : (
-                      <p className="text-gray-500">Bạn chưa có đơn hàng nào trong lịch sử</p>
-                    )}
-                    <Button className="mt-3" asChild>
-                      <Link href="/">Khám phá thực đơn</Link>
-                    </Button>
-                  </div>
                 )}
               </CardContent>
             </Card>
@@ -353,3 +333,11 @@ export default function OrdersPage() {
     </Layout>
   );
 }
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
