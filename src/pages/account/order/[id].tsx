@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import Link from 'next/link';
-import { ChevronLeft, Clock, CheckCircle2, Package, Truck, XCircle, ExternalLink } from 'lucide-react';
+import { ChevronLeft, Clock, CheckCircle2, Package, Truck, XCircle, ExternalLink, AlertTriangle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/Layout/Layout';
@@ -29,12 +29,15 @@ export default function OrderDetailPage() {
   const { getOrder, updateOrderStatus, loading: orderLoading } = useOrders();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
 
   // Fetch thông tin đơn hàng
   useEffect(() => {
     async function fetchOrderDetails() {
-      if (id && typeof id === 'string') {
+      if (id && typeof id === 'string' && !hasFetched) {
         setLoading(true);
+        setFetchError(null);
         try {
           const orderData = await getOrder(id);
           if (orderData) {
@@ -43,10 +46,12 @@ export default function OrderDetailPage() {
             // Nếu không tìm thấy đơn hàng hoặc không có quyền xem
             router.push('/account/orders');
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Lỗi khi lấy thông tin đơn hàng:", error);
+          setFetchError(error.message || "Không thể tải thông tin đơn hàng. Vui lòng thử lại sau.");
         } finally {
           setLoading(false);
+          setHasFetched(true);
         }
       }
     }
@@ -56,7 +61,12 @@ export default function OrderDetailPage() {
     } else if (!authLoading && !user) {
       router.push('/');
     }
-  }, [id, user, authLoading, getOrder, router]);
+  }, [id, user, authLoading, getOrder, router, hasFetched]);
+
+  // Hàm để tải lại dữ liệu khi cần
+  const reloadOrderData = () => {
+    setHasFetched(false);
+  };
 
   // Format thời gian từ timestamp
   const formatDate = (timestamp: any) => {
@@ -139,14 +149,38 @@ export default function OrderDetailPage() {
     );
   }
 
-  if (!order) {
+  if (fetchError) {
+    return (
+      <Layout>
+        <div className="container py-8 px-4">
+          <Alert variant="destructive" className="max-w-2xl mx-auto">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Lỗi khi tải thông tin đơn hàng</AlertTitle>
+            <AlertDescription>
+              {fetchError}
+            </AlertDescription>
+          </Alert>
+          <div className="flex justify-center mt-4 gap-4">
+            <Button asChild variant="outline">
+              <Link href="/account/orders">Quay lại danh sách đơn hàng</Link>
+            </Button>
+            <Button onClick={reloadOrderData}>
+              Thử lại
+            </Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!order && !loading) {
     return (
       <Layout>
         <div className="container py-8 px-4">
           <Alert variant="destructive" className="max-w-2xl mx-auto">
             <AlertTitle>Không tìm thấy đơn hàng</AlertTitle>
             <AlertDescription>
-              Không thể tìm thấy thông tin đơn hàng hoặc bạn không có quyền xem đơn hàng này.
+              Không thể tìm thấy thông tin đơn hàng hoặc b��n không có quyền xem đơn hàng này.
             </AlertDescription>
           </Alert>
           <div className="flex justify-center mt-4">

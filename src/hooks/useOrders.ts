@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { 
-  collection, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy, 
-  addDoc, 
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  addDoc,
   updateDoc,
   serverTimestamp,
   Timestamp
@@ -30,7 +30,7 @@ export function useOrders() {
   const createOrder = async (orderData: CreateOrderData): Promise<string | null> => {
     setLoading(true);
     setError(null);
-    
+
     try {
       if (!db) {
         throw new Error("Firestore chưa được khởi tạo");
@@ -53,7 +53,7 @@ export function useOrders() {
       // Thêm vào Firestore
       const ordersCollection = collection(db, 'orders');
       const docRef = await addDoc(ordersCollection, newOrder);
-      
+
       // Cập nhật ID
       await updateDoc(docRef, {
         id: docRef.id
@@ -69,13 +69,13 @@ export function useOrders() {
     } catch (err: any) {
       console.error('Lỗi khi tạo đơn hàng:', err);
       setError(`Đặt hàng thất bại: ${err.message}`);
-      
+
       toast({
         title: "Đặt hàng thất bại",
         description: err.message,
         variant: "destructive",
       });
-      
+
       return null;
     } finally {
       setLoading(false);
@@ -86,32 +86,50 @@ export function useOrders() {
   const getOrder = async (orderId: string): Promise<Order | null> => {
     setLoading(true);
     setError(null);
-    
+
     try {
       if (!db) {
         throw new Error("Firestore chưa được khởi tạo");
       }
 
       const orderDoc = await getDoc(doc(db, 'orders', orderId));
-      
+
       if (!orderDoc.exists()) {
-        setError("Không tìm thấy đơn hàng");
-        return null;
+        const errMsg = "Không tìm thấy đơn hàng";
+        setError(errMsg);
+        throw new Error(errMsg);
       }
-      
+
       // Nếu đơn hàng thuộc về người dùng khác và người dùng hiện tại không phải admin
       // thì không cho phép xem
       const orderData = orderDoc.data() as Order;
       if (orderData.userId && user?.uid !== orderData.userId) {
-        setError("Bạn không có quyền xem đơn hàng này");
-        return null;
+        const errMsg = "Bạn không có quyền xem đơn hàng này";
+        setError(errMsg);
+        throw new Error(errMsg);
       }
-      
+
       return orderData;
     } catch (err: any) {
       console.error('Lỗi khi lấy đơn hàng:', err);
-      setError(`Không thể lấy thông tin đơn hàng: ${err.message}`);
-      return null;
+
+      // Xử lý các loại lỗi phổ biến từ Firestore
+      let errorMessage = err.message || "Không thể lấy thông tin đơn hàng";
+
+      if (err.code === 'permission-denied') {
+        errorMessage = 'Bạn không có quyền truy cập vào dữ liệu này';
+      } else if (err.code === 'unavailable' || err.code === 'failed-precondition') {
+        errorMessage = 'Kết nối tới máy chủ bị gián đoạn. Vui lòng kiểm tra kết nối internet của bạn và thử lại';
+      } else if (err.code === 'resource-exhausted') {
+        errorMessage = 'Đã vượt quá giới hạn truy vấn cho phép. Vui lòng thử lại sau ít phút';
+      } else if (err.code === 'not-found') {
+        errorMessage = 'Không tìm thấy dữ liệu đơn hàng';
+      } else if (err.code === 'cancelled') {
+        errorMessage = 'Yêu cầu đã bị hủy';
+      }
+
+      setError(errorMessage);
+      throw new Error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -121,7 +139,7 @@ export function useOrders() {
   const getUserOrders = async (): Promise<Order[]> => {
     setLoading(true);
     setError(null);
-    
+
     try {
       if (!user) {
         setError("Bạn cần đăng nhập để xem đơn hàng");
@@ -137,9 +155,9 @@ export function useOrders() {
         where('userId', '==', user.uid),
         orderBy('createdAt', 'desc')
       );
-      
+
       const snapshot = await getDocs(ordersQuery);
-      
+
       return snapshot.docs.map(doc => doc.data() as Order);
     } catch (err: any) {
       console.error('Lỗi khi lấy danh sách đơn hàng:', err);
@@ -154,7 +172,7 @@ export function useOrders() {
   const updateOrderStatus = async (orderId: string, status: OrderStatus, reason?: string): Promise<boolean> => {
     setLoading(true);
     setError(null);
-    
+
     try {
       if (!user) {
         throw new Error("Bạn cần đăng nhập để cập nhật đơn hàng");
@@ -166,59 +184,59 @@ export function useOrders() {
 
       const orderRef = doc(db, 'orders', orderId);
       const orderDoc = await getDoc(orderRef);
-      
+
       if (!orderDoc.exists()) {
         throw new Error("Không tìm thấy đơn hàng");
       }
-      
+
       const orderData = orderDoc.data() as Order;
-      
+
       // Chỉ cho phép người dùng cập nhật đơn hàng của chính họ
       // hoặc là admin (sẽ bổ sung logic kiểm tra admin sau)
       if (orderData.userId && orderData.userId !== user.uid) {
         throw new Error("Bạn không có quyền cập nhật đơn hàng này");
       }
-      
+
       // Chuẩn bị dữ liệu cập nhật
       const updateData: any = {
         status,
         updatedAt: serverTimestamp()
       };
-      
+
       // Nếu hủy đơn hàng, thêm lý do
       if (status === 'cancelled' && reason) {
         updateData.cancellationReason = reason;
       }
-      
+
       // Nếu trạng thái là shipping, cập nhật thời gian giao hàng
       if (status === 'shipping') {
         updateData['shipping.shippedAt'] = Timestamp.now();
       }
-      
+
       // Nếu trạng thái là completed, cập nhật thời gian hoàn thành
       if (status === 'completed') {
         updateData['shipping.deliveredAt'] = Timestamp.now();
       }
-      
+
       await updateDoc(orderRef, updateData);
-      
+
       toast({
         title: "Cập nhật thành công",
         description: `Đơn hàng #${orderId} đã được cập nhật thành ${status}`,
         variant: "success",
       });
-      
+
       return true;
     } catch (err: any) {
       console.error('Lỗi khi cập nhật trạng thái đơn hàng:', err);
       setError(`Không thể cập nhật trạng thái đơn hàng: ${err.message}`);
-      
+
       toast({
         title: "Cập nhật thất bại",
         description: err.message,
         variant: "destructive",
       });
-      
+
       return false;
     } finally {
       setLoading(false);
@@ -229,7 +247,7 @@ export function useOrders() {
   const updatePaymentStatus = async (orderId: string, status: 'pending' | 'completed' | 'failed', transactionId?: string): Promise<boolean> => {
     setLoading(true);
     setError(null);
-    
+
     try {
       if (!user) {
         throw new Error("Bạn cần đăng nhập để cập nhật thanh toán");
@@ -241,43 +259,43 @@ export function useOrders() {
 
       const orderRef = doc(db, 'orders', orderId);
       const orderDoc = await getDoc(orderRef);
-      
+
       if (!orderDoc.exists()) {
         throw new Error("Không tìm thấy đơn hàng");
       }
-      
+
       const updateData: any = {
         'payment.status': status,
         updatedAt: serverTimestamp()
       };
-      
+
       if (status === 'completed') {
         updateData['payment.paidAt'] = Timestamp.now();
       }
-      
+
       if (transactionId) {
         updateData['payment.transactionId'] = transactionId;
       }
-      
+
       await updateDoc(orderRef, updateData);
-      
+
       toast({
         title: "Cập nhật thanh toán thành công",
         description: `Trạng thái thanh toán đã được cập nhật thành ${status}`,
         variant: "success",
       });
-      
+
       return true;
     } catch (err: any) {
       console.error('Lỗi khi cập nhật trạng thái thanh toán:', err);
       setError(`Không thể cập nhật trạng thái thanh toán: ${err.message}`);
-      
+
       toast({
         title: "Cập nhật thất bại",
         description: err.message,
         variant: "destructive",
       });
-      
+
       return false;
     } finally {
       setLoading(false);
