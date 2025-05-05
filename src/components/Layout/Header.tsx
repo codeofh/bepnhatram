@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthDialog } from "@/components/Auth/AuthDialog";
 import { CartDropdown } from "@/components/Cart/CartDropdown";
+import { SearchModal } from "@/components/Search/SearchModal";
 import { useAuthContext } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -22,9 +23,17 @@ interface HeaderProps {
   toggleSidebar?: () => void;
   searchQuery?: string;
   setSearchQuery?: (query: string) => void;
+  isSearchModalOpen?: boolean;
+  setIsSearchModalOpen?: (isOpen: boolean) => void;
 }
 
-export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderProps) {
+export function Header({
+  toggleSidebar,
+  searchQuery,
+  setSearchQuery,
+  isSearchModalOpen = false,
+  setIsSearchModalOpen
+}: HeaderProps) {
   const router = useRouter();
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
   const { user, logout } = useAuthContext();
@@ -37,8 +46,19 @@ export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderPro
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (setSearchQuery && searchQuery) {
-      // Implement search functionality
+    // Just use the searchQuery as is - it's already being updated on change
+    // The MenuGrid component will filter based on the searchQuery
+  };
+
+  const openSearchModal = () => {
+    if (setIsSearchModalOpen) {
+      setIsSearchModalOpen(true);
+    }
+  };
+
+  const closeSearchModal = () => {
+    if (setIsSearchModalOpen) {
+      setIsSearchModalOpen(false);
     }
   };
 
@@ -129,6 +149,7 @@ export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderPro
               variant="ghost"
               size="icon"
               className="md:hidden"
+              onClick={openSearchModal}
             >
               <Search className="h-5 w-5" />
             </Button>
@@ -206,6 +227,14 @@ export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderPro
 
       {/* Auth Dialog */}
       <AuthDialog open={authDialogOpen} onOpenChange={setAuthDialogOpen} />
+
+      {/* Search Modal (Mobile) */}
+      <SearchModal
+        isOpen={isSearchModalOpen || false}
+        onClose={closeSearchModal}
+        searchQuery={searchQuery || ''}
+        setSearchQuery={setSearchQuery || (() => {})}
+      />
     </header>
   );
 }
