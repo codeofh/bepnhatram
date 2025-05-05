@@ -25,34 +25,20 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-    if (!loading && !user) {
-      router.push("/admin");
-    }
-  }, [user, loading, router]);
-
-  if (loading || !isClient) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
   const { getOrderStats } = useAdminOrders();
   const [orderStats, setOrderStats] = useState<any>(null);
   const [loadingStats, setLoadingStats] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
+    if (!loading && !user) {
+      router.push("/admin");
+    }
+    
     if (user) {
       fetchOrderStats();
     }
-  }, [user]);
+  }, [user, loading, router]);
 
   const fetchOrderStats = async () => {
     setLoadingStats(true);
@@ -70,6 +56,18 @@ export default function AdminDashboardPage() {
   const formatCurrency = (amount: number) => {
     return amount ? amount.toLocaleString('vi-VN') + 'đ' : '0đ';
   };
+
+  if (loading || !isClient) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   // Stats with real order data if available
   const stats = [
@@ -284,43 +282,6 @@ export default function AdminDashboardPage() {
                   Chưa có dữ liệu đơn hàng
                 </div>
               )}
-            </CardContent>
-          </Card>
-              <div className="space-y-4">
-                {[
-                  { name: "Đặc biệt", id: "special", color: "bg-purple-500" },
-                  { name: "Món chính", id: "main", color: "bg-orange-500" },
-                  { name: "Gà ủ muối", id: "chicken", color: "bg-amber-500" },
-                  { name: "Chân gà", id: "chicken-feet", color: "bg-red-500" },
-                  { name: "Đồ uống", id: "drinks", color: "bg-blue-500" },
-                ].map((category) => {
-                  const count = menuItems.filter(
-                    (item) => item.category === category.id
-                  ).length;
-                  const percentage = Math.round(
-                    (count / menuItems.length) * 100
-                  );
-
-                  return (
-                    <div key={category.id}>
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium">
-                          {category.name}
-                        </span>
-                        <span className="text-sm text-gray-500">
-                          {count} món ({percentage}%)
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <div
-                          className={`h-2.5 rounded-full ${category.color}`}
-                          style={{ width: `${percentage}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
             </CardContent>
           </Card>
         </div>
