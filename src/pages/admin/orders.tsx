@@ -115,6 +115,7 @@ export default function AdminOrdersPage() {
           const term = searchTerm.toLowerCase().trim();
           filtered = filtered.filter(order =>
             order.id.toLowerCase().includes(term) ||
+            (order.orderCode && order.orderCode.toLowerCase().includes(term)) ||
             order.customer.name.toLowerCase().includes(term) ||
             order.customer.email?.toLowerCase().includes(term) ||
             order.customer.phone.toLowerCase().includes(term)

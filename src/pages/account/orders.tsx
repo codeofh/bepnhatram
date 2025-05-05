@@ -115,6 +115,7 @@ export default function OrdersPage() {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     const matchesSearch = searchQuery === '' ||
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (order.orderCode && order.orderCode.toLowerCase().includes(searchQuery.toLowerCase())) ||
       order.items.some((item: any) =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
