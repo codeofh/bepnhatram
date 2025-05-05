@@ -2,27 +2,28 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { 
-  Eye, 
-  Clock, 
-  ArrowUpDown, 
-  ChevronDown, 
-  Search, 
-  Filter, 
-  ShoppingCart 
+import {
+  Eye,
+  Clock,
+  ArrowUpDown,
+  ChevronDown,
+  Search,
+  Filter,
+  ShoppingCart,
+  AlertTriangle
 } from "lucide-react";
 
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { OrderStatusBadge } from "@/components/Admin/OrderStatusBadge";
 import { OrderFilters } from "@/components/Admin/OrderFilters";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
 import {
   Card,
@@ -41,35 +42,41 @@ export default function AdminOrdersPage() {
   const { user, loading: authLoading } = useAuthContext();
   const { getAllOrders, loading: ordersLoading } = useAdminOrders();
   const [isClient, setIsClient] = useState(false);
-  
+
   // State cho filter
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  
+
   // State cho orders
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [isFiltering, setIsFiltering] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
     if (!authLoading && !user) {
       router.push("/admin");
-    } else if (user) {
+    } else if (user && !hasFetched) {
       fetchOrders();
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, hasFetched]);
 
   // Fetch orders
   const fetchOrders = async () => {
+    setFetchError(null);
     try {
       const data = await getAllOrders();
       setOrders(data);
       setFilteredOrders(data);
-    } catch (error) {
+      setHasFetched(true);
+    } catch (error: any) {
       console.error("Error fetching orders:", error);
+      setFetchError(error.message || "Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.");
+      setHasFetched(true);
     }
   };
 
@@ -80,40 +87,40 @@ export default function AdminOrdersPage() {
       // Nếu đã có sẵn orders, lọc ở client
       if (orders.length > 0) {
         let filtered = [...orders];
-        
+
         // Lọc theo status
         if (selectedStatus !== 'all') {
           filtered = filtered.filter(order => order.status === selectedStatus);
         }
-        
+
         // Lọc theo thời gian
         if (startDate) {
           const startTimestamp = startDate.getTime() / 1000;
-          filtered = filtered.filter(order => 
+          filtered = filtered.filter(order =>
             order.createdAt.seconds >= startTimestamp
           );
         }
-        
+
         if (endDate) {
           const endDateCopy = new Date(endDate);
           endDateCopy.setHours(23, 59, 59, 999);
           const endTimestamp = endDateCopy.getTime() / 1000;
-          filtered = filtered.filter(order => 
+          filtered = filtered.filter(order =>
             order.createdAt.seconds <= endTimestamp
           );
         }
-        
+
         // Lọc theo từ khóa tìm kiếm
         if (searchTerm && searchTerm.trim() !== '') {
           const term = searchTerm.toLowerCase().trim();
-          filtered = filtered.filter(order => 
-            order.id.toLowerCase().includes(term) || 
+          filtered = filtered.filter(order =>
+            order.id.toLowerCase().includes(term) ||
             order.customer.name.toLowerCase().includes(term) ||
             order.customer.email?.toLowerCase().includes(term) ||
             order.customer.phone.toLowerCase().includes(term)
           );
         }
-        
+
         setFilteredOrders(filtered);
       } else {
         // Fetch lại từ server với filters
@@ -136,7 +143,7 @@ export default function AdminOrdersPage() {
   // Format date
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '-';
-    
+
     const date = new Date(timestamp.seconds * 1000);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -180,7 +187,7 @@ export default function AdminOrdersPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <OrderFilters 
+            <OrderFilters
               searchTerm={searchTerm}
               setSearchTerm={setSearchTerm}
               selectedStatus={selectedStatus}
@@ -200,6 +207,15 @@ export default function AdminOrdersPage() {
             {ordersLoading || isFiltering ? (
               <div className="flex justify-center py-8">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+              </div>
+            ) : fetchError ? (
+              <div className="text-center py-12 space-y-3">
+                <AlertTriangle className="h-12 w-12 mx-auto text-red-500" />
+                <h3 className="text-lg font-medium text-gray-900">Lỗi khi tải dữ liệu</h3>
+                <p className="text-gray-500 max-w-md mx-auto">{fetchError}</p>
+                <Button onClick={() => fetchOrders()} className="mt-4">
+                  Thử lại
+                </Button>
               </div>
             ) : filteredOrders.length === 0 ? (
               <div className="text-center py-12 space-y-3">
