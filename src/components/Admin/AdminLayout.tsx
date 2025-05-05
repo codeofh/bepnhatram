@@ -123,11 +123,6 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                       priority
                     />
                   </Link>
-                  <SheetClose asChild>
-                    <Button variant="ghost" size="icon">
-                      <X size={18} />
-                    </Button>
-                  </SheetClose>
                 </div>
                 <nav className="flex flex-col p-2">
                   {navItems.map((item) => (
