@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { CheckCircle, Home, Package, ArrowRight } from 'lucide-react';
+import { CheckCircle, Home, Package, ArrowRight, AlertTriangle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/Layout/Layout';
 import { SEO } from '@/components/SEO/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useOrders } from '@/hooks/useOrders';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Order } from '@/types/order';
@@ -17,43 +18,75 @@ export default function OrderSuccessPage() {
   const { user } = useAuthContext();
   const { getOrder } = useOrders();
   const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Start with false to prevent immediate loading
+  const [error, setError] = useState<string | null>(null);
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
 
-  // Fetch thông tin đơn hàng
+  // Chỉ fetch dữ liệu đơn hàng khi router đã sẵn sàng và chỉ fetch một lần
   useEffect(() => {
+    // Hàm an toàn để fetch thông tin đơn hàng
     async function fetchOrderDetails() {
-      if (orderId && typeof orderId === 'string') {
-        setLoading(true);
-        try {
-          const orderData = await getOrder(orderId);
-          if (orderData) {
-            setOrder(orderData);
-          }
-        } catch (error) {
-          console.error("Lỗi khi lấy thông tin đơn hàng:", error);
-        } finally {
-          setLoading(false);
+      // Chỉ fetch nếu chưa từng fetch và có orderId
+      if (hasAttemptedFetch || !orderId || typeof orderId !== 'string') {
+        return;
+      }
+
+      setLoading(true);
+      setHasAttemptedFetch(true); // Đánh dấu đã thử fetch
+
+      try {
+        const orderData = await getOrder(orderId);
+        
+        if (orderData) {
+          setOrder(orderData);
+        } else {
+          setError("Không tìm thấy thông tin đơn hàng");
         }
+      } catch (error: any) {
+        console.error("Lỗi khi lấy thông tin đơn hàng:", error);
+        setError(error.message || "Đã xảy ra lỗi khi tải thông tin đơn hàng");
+      } finally {
+        setLoading(false);
       }
     }
 
-    if (orderId) {
+    // Chỉ gọi fetch khi router đã sẵn sàng và chưa từng fetch
+    if (router.isReady && !hasAttemptedFetch) {
       fetchOrderDetails();
     }
-  }, [orderId, getOrder]);
+  }, [router.isReady, orderId, getOrder, hasAttemptedFetch]);
+
+  // Hiển thị nội dung mặc định nếu đợi quá lâu
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+        if (!order) {
+          setError("Không thể tải thông tin đơn hàng. Vui lòng kiểm tra trong mục đơn hàng của bạn.");
+        }
+      }
+    }, 5000); // Timeout sau 5 giây
+
+    return () => clearTimeout(timer);
+  }, [loading, order]);
 
   // Format thời gian từ timestamp
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
 
-    const date = new Date(timestamp.seconds * 1000);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      const date = new Date(timestamp.seconds * 1000);
+      return date.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      console.error("Error formatting date:", e);
+      return 'N/A';
+    }
   };
 
   return (
@@ -82,13 +115,26 @@ export default function OrderSuccessPage() {
               <div className="flex justify-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               </div>
+            ) : error ? (
+              <Alert variant="destructive" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Lỗi</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : !orderId ? (
+              <Alert className="mb-4">
+                <AlertTitle>Thông báo</AlertTitle>
+                <AlertDescription>
+                  Đơn hàng của bạn đã được tạo, nhưng hệ thống không thể hiển thị chi tiết đơn hàng lúc này.
+                </AlertDescription>
+              </Alert>
             ) : order ? (
               <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-medium">Mã đơn hàng:</h3>
-                      <span className="font-bold">{order.orderCode || order.id}</span>
-                    </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium">Mã đơn hàng:</h3>
+                    <span className="font-bold">{order.orderCode || order.id}</span>
+                  </div>
                   <div className="flex justify-between items-center mt-1">
                     <h3 className="font-medium">Ngày đặt hàng:</h3>
                     <span>{formatDate(order.createdAt)}</span>
@@ -96,10 +142,10 @@ export default function OrderSuccessPage() {
                   <div className="flex justify-between items-center mt-1">
                     <h3 className="font-medium">Tổng tiền:</h3>
                     <span className="font-bold text-orange-500">
-                      {order.total.toLocaleString('vi-VN')}₫
+                      {order.total?.toLocaleString('vi-VN')}₫
                     </span>
                   </div>
-                  {order.payment.method === 'bank_transfer' && (
+                  {order.payment?.method === 'bank_transfer' && (
                     <div className="mt-3 p-3 bg-blue-50 rounded-md text-sm">
                       <p className="font-medium mb-1">Vui lòng chuyển khoản theo thông tin:</p>
                       <p>Ngân hàng: <span className="font-medium">Vietcombank</span></p>
@@ -112,14 +158,14 @@ export default function OrderSuccessPage() {
                   )}
                 </div>
 
-                  <div className="text-sm text-gray-600">
-                    <h3 className="font-medium text-gray-900 mb-1">Giao đến:</h3>
-                    <p>{order.customer.name} | {order.customer.phone}</p>
-                    <p>{order.customer.address}</p>
-                    {order.customer.email && (
-                      <p className="text-gray-500 text-xs mt-1">Email: {order.customer.email}</p>
-                    )}
-                  </div>
+                <div className="text-sm text-gray-600">
+                  <h3 className="font-medium text-gray-900 mb-1">Giao đến:</h3>
+                  <p>{order.customer?.name || 'N/A'} | {order.customer?.phone || 'N/A'}</p>
+                  <p>{order.customer?.address || 'N/A'}</p>
+                  {order.customer?.email && (
+                    <p className="text-gray-500 text-xs mt-1">Email: {order.customer.email}</p>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="text-center py-4 text-gray-500">

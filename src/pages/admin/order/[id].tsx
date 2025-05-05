@@ -275,7 +275,7 @@ export default function AdminOrderDetailPage() {
                           <DialogHeader>
                             <DialogTitle>Cập nhật trạng thái đơn hàng</DialogTitle>
                             <DialogDescription>
-                              Thay đổi trạng thái đơn hàng #{order.id}
+                              Thay đổi trạng thái đơn hàng #{order.orderCode || order.id}
                             </DialogDescription>
                           </DialogHeader>
 

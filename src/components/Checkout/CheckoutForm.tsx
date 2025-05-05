@@ -110,7 +110,19 @@ export function CheckoutForm() {
         clearCart();
 
         // Chuyển hướng đến trang đặt hàng thành công
-        router.push(`/order-success?orderId=${orderId}`);
+        // Sử dụng router.push kết hợp với timeout để đảm bảo navigation hoạt động đúng
+        try {
+          setTimeout(() => {
+            router.push({
+              pathname: '/order-success',
+              query: { orderId }
+            });
+          }, 100);
+        } catch (navError) {
+          console.error("Lỗi khi chuyển hướng:", navError);
+          // Fallback nếu chuyển hướng thất bại
+          window.location.href = `/order-success?orderId=${orderId}`;
+        }
       }
     } catch (error) {
       console.error("Lỗi khi đặt hàng:", error);

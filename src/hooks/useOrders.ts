@@ -18,6 +18,33 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { Order, CreateOrderData, OrderStatus } from '@/types/order';
 
+// Utility function to sanitize data for Firestore
+// Firebase doesn't allow undefined values, convert them to null
+const sanitizeForFirestore = (data: any): any => {
+  if (data === undefined) {
+    return null;
+  }
+  
+  if (data === null || typeof data !== 'object') {
+    return data;
+  }
+  
+  if (Array.isArray(data)) {
+    return data.map(item => sanitizeForFirestore(item));
+  }
+  
+  const sanitizedData: Record<string, any> = {};
+  
+  for (const key in data) {
+    if (Object.prototype.hasOwnProperty.call(data, key)) {
+      const value = data[key];
+      sanitizedData[key] = sanitizeForFirestore(value);
+    }
+  }
+  
+  return sanitizedData;
+};
+
 // Hook để thao tác với đơn hàng
 export function useOrders() {
   const { user } = useAuthContext();
@@ -40,7 +67,7 @@ export function useOrders() {
       const now = new Date();
       const year = now.getFullYear().toString().slice(-2); // Lấy 2 chữ số cuối của năm
       const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Tháng định dạng 2 chữ số
-      const day = now.getDate().toString().padStart(2, '0'); // Ngày định dạng 2 chữ số
+      const day = now.getDate().toString().padStart(2, '0'); // Ngày định dạng 2 ch�� số
       const datePrefix = `${year}${month}${day}`;
 
       // Tạo 8 ký tự ngẫu nhiên từ A-Z và 0-9
@@ -53,14 +80,17 @@ export function useOrders() {
       // Mã đơn hàng đầy đủ
       const orderCode = `${datePrefix}${randomChars}`;
 
+      // Sanitize order data to prevent undefined values
+      const sanitizedOrderData = sanitizeForFirestore(orderData);
+
       // Thêm vào Firestore
       const ordersCollection = collection(db, 'orders');
       const docRef = await addDoc(ordersCollection, {
         userId: user ? user.uid : null,
-        ...orderData,
+        ...sanitizedOrderData,
         status: 'pending' as OrderStatus,
         payment: {
-          ...orderData.payment,
+          ...(sanitizedOrderData.payment || {}),
           status: 'pending',
           paidAt: null
         },
@@ -191,7 +221,7 @@ export function useOrders() {
 
     try {
       if (!user) {
-        throw new Error("Bạn cần đăng nhập để cập nh���t đơn h��ng");
+        throw new Error("Bạn cần đăng nhập để cập nhật đơn hàng");
       }
 
       if (!db) {
@@ -202,7 +232,7 @@ export function useOrders() {
       const orderDoc = await getDoc(orderRef);
 
       if (!orderDoc.exists()) {
-        throw new Error("Không tìm thấy đơn hàng");
+        throw new Error("Không t��m thấy đơn hàng");
       }
 
       const orderData = orderDoc.data() as Order;
@@ -277,7 +307,7 @@ export function useOrders() {
       const orderDoc = await getDoc(orderRef);
 
       if (!orderDoc.exists()) {
-        throw new Error("Không tìm th��y đơn hàng");
+        throw new Error("Không tìm thấy đơn hàng");
       }
 
       const updateData: any = {
@@ -296,7 +326,7 @@ export function useOrders() {
       await updateDoc(orderRef, updateData);
 
       toast({
-        title: "Cập nhật thanh toán thành công",
+        title: "Cập nh��t thanh toán thành công",
         description: `Trạng thái thanh toán đã được cập nhật thành ${status}`,
         variant: "success",
       });
