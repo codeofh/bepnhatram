@@ -7,7 +7,7 @@ import { ChevronLeft, Clock, CheckCircle2, Package, Truck, XCircle, ExternalLink
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/Layout/Layout';
 import { SEO } from '@/components/SEO/SEO';
-import { 
+import {
   Card,
   CardContent,
   CardHeader,
@@ -29,7 +29,7 @@ export default function OrderDetailPage() {
   const { getOrder, updateOrderStatus, loading: orderLoading } = useOrders();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Fetch thông tin đơn hàng
   useEffect(() => {
     async function fetchOrderDetails() {
@@ -61,7 +61,7 @@ export default function OrderDetailPage() {
   // Format thời gian từ timestamp
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
-    
+
     const date = new Date(timestamp.seconds * 1000);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -77,10 +77,10 @@ export default function OrderDetailPage() {
     if (!order || !window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
       return;
     }
-    
+
     const reason = prompt('Vui lòng nhập lý do hủy đơn hàng:');
     if (reason === null) return; // User clicked Cancel on prompt
-    
+
     const success = await updateOrderStatus(order.id, 'cancelled', reason);
     if (success) {
       // Reload order data
@@ -93,37 +93,37 @@ export default function OrderDetailPage() {
 
   // Status configuration
   const orderStatusConfig: Record<OrderStatus, { label: string, color: string, icon: React.ReactNode }> = {
-    pending: { 
-      label: 'Chờ xác nhận', 
-      color: 'bg-yellow-100 text-yellow-800 border-yellow-200', 
-      icon: <Clock className="h-4 w-4" /> 
+    pending: {
+      label: 'Chờ xác nhận',
+      color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      icon: <Clock className="h-4 w-4" />
     },
-    processing: { 
-      label: 'Đang chuẩn bị', 
-      color: 'bg-blue-100 text-blue-800 border-blue-200', 
-      icon: <Package className="h-4 w-4" /> 
+    processing: {
+      label: 'Đang chuẩn bị',
+      color: 'bg-blue-100 text-blue-800 border-blue-200',
+      icon: <Package className="h-4 w-4" />
     },
-    shipping: { 
-      label: 'Đang giao', 
-      color: 'bg-purple-100 text-purple-800 border-purple-200', 
-      icon: <Truck className="h-4 w-4" /> 
+    shipping: {
+      label: 'Đang giao',
+      color: 'bg-purple-100 text-purple-800 border-purple-200',
+      icon: <Truck className="h-4 w-4" />
     },
-    completed: { 
-      label: 'Đã hoàn thành', 
-      color: 'bg-green-100 text-green-800 border-green-200', 
-      icon: <CheckCircle2 className="h-4 w-4" /> 
+    completed: {
+      label: 'Đã hoàn thành',
+      color: 'bg-green-100 text-green-800 border-green-200',
+      icon: <CheckCircle2 className="h-4 w-4" />
     },
-    cancelled: { 
-      label: 'Đã hủy', 
-      color: 'bg-red-100 text-red-800 border-red-200', 
-      icon: <XCircle className="h-4 w-4" /> 
+    cancelled: {
+      label: 'Đã hủy',
+      color: 'bg-red-100 text-red-800 border-red-200',
+      icon: <XCircle className="h-4 w-4" />
     }
   };
 
   // Payment method mapping
   const paymentMethodMap: Record<string, string> = {
     cod: 'Thanh toán khi nhận hàng',
-    bank_transfer: 'Chuyển khoản ngân h��ng',
+    bank_transfer: 'Chuyển khoản ngân hàng',
     momo: 'Ví MoMo',
     vnpay: 'VNPay'
   };
@@ -167,7 +167,7 @@ export default function OrderDetailPage() {
         title={`Đơn hàng #${order.id}`}
         description="Chi tiết đơn hàng của bạn tại BẾP NHÀ TRÂM"
       />
-      
+
       <div className="container py-8 px-4">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
@@ -177,10 +177,10 @@ export default function OrderDetailPage() {
                 <span>Quay lại danh sách đơn hàng</span>
               </Link>
             </Button>
-            
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4">
               <h1 className="text-2xl font-bold">Đơn hàng #{order.id}</h1>
-              <Badge 
+              <Badge
                 className={`${status.color} mt-2 sm:mt-0 flex items-center gap-1 px-3 py-1 border`}
                 variant="outline"
               >
@@ -189,7 +189,7 @@ export default function OrderDetailPage() {
               </Badge>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             {/* Order Details */}
             <Card className="md:col-span-2">
@@ -199,7 +199,7 @@ export default function OrderDetailPage() {
                   Đặt hàng lúc: {formatDate(order.createdAt)}
                 </CardDescription>
               </CardHeader>
-              
+
               <CardContent>
                 <Table>
                   <TableHeader>
@@ -232,9 +232,9 @@ export default function OrderDetailPage() {
                     ))}
                   </TableBody>
                 </Table>
-                
+
                 <Separator className="my-4" />
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-500">Tạm tính:</span>
@@ -243,8 +243,8 @@ export default function OrderDetailPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-500">Phí vận chuyển:</span>
                     <span>
-                      {order.shipping.fee === 0 
-                        ? 'Miễn phí' 
+                      {order.shipping.fee === 0
+                        ? 'Miễn phí'
                         : `${order.shipping.fee.toLocaleString('vi-VN')}₫`}
                     </span>
                   </div>
@@ -255,11 +255,11 @@ export default function OrderDetailPage() {
                     </span>
                   </div>
                 </div>
-                
+
                 {order.status === 'pending' && (
                   <div className="mt-6">
-                    <Button 
-                      variant="destructive" 
+                    <Button
+                      variant="destructive"
                       onClick={handleCancelOrder}
                       disabled={orderLoading}
                     >
@@ -269,7 +269,7 @@ export default function OrderDetailPage() {
                 )}
               </CardContent>
             </Card>
-            
+
             {/* Customer & Delivery Info */}
             <div className="space-y-6">
               {/* Payment Information */}
@@ -290,7 +290,7 @@ export default function OrderDetailPage() {
                       {order.payment.status === 'completed' ? 'Đã thanh toán' : 'Chưa thanh toán'}
                     </Badge>
                   </div>
-                  
+
                   {order.payment.method === 'bank_transfer' && order.payment.status !== 'completed' && (
                     <div className="mt-3 p-3 bg-blue-50 rounded-md text-xs">
                       <p className="font-medium mb-1">Thông tin chuyển khoản:</p>
@@ -304,7 +304,7 @@ export default function OrderDetailPage() {
                   )}
                 </CardContent>
               </Card>
-              
+
               {/* Customer Information */}
               <Card>
                 <CardHeader className="pb-3">
@@ -325,7 +325,7 @@ export default function OrderDetailPage() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               {/* Shipping Information */}
               <Card>
                 <CardHeader className="pb-3">
@@ -339,7 +339,7 @@ export default function OrderDetailPage() {
                       <br />{order.customer.district}, {order.customer.city}
                     </div>
                   </div>
-                  
+
                   {order.customer.notes && (
                     <div className="mt-2">
                       <span className="text-gray-500">Ghi chú:</span>
@@ -348,11 +348,152 @@ export default function OrderDetailPage() {
                   )}
                 </CardContent>
               </Card>
-              
-              {/* Order Status Timeline - Can be implemented in future updates */}
+
+              {/* Order Status Timeline */}
+              <Card className="mt-6">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base">Trạng thái đơn hàng</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="relative">
+                    {/* Timeline visualization */}
+                    <div className="absolute left-[18px] top-[26px] h-[calc(100%-50px)] w-[2px] bg-gray-200"></div>
+
+                    {/* Timeline steps */}
+                    <div className="space-y-8">
+                      {/* Step 1: Pending */}
+                      <div className="flex items-start">
+                        <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 ${
+                          order.status === 'pending'
+                            ? 'border-yellow-500 bg-yellow-100 text-yellow-600'
+                            : order.status === 'cancelled'
+                              ? 'border-gray-200 bg-gray-100 text-gray-400'
+                              : 'border-green-500 bg-green-100 text-green-600'
+                        }`}>
+                          {order.status !== 'cancelled' && (order.status === 'pending' ? (
+                            <Clock className="h-5 w-5" />
+                          ) : (
+                            <CheckCircle2 className="h-5 w-5" />
+                          ))}
+                          {order.status === 'cancelled' && <XCircle className="h-5 w-5" />}
+                        </div>
+                        <div className="ml-4 space-y-1">
+                          <p className="text-sm font-medium">Đơn hàng đã được tiếp nhận</p>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(order.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Step 2: Processing */}
+                      <div className="flex items-start">
+                        <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 ${
+                          order.status === 'processing'
+                            ? 'border-blue-500 bg-blue-100 text-blue-600'
+                            : order.status === 'cancelled' || order.status === 'pending'
+                              ? 'border-gray-200 bg-gray-100 text-gray-400'
+                              : 'border-green-500 bg-green-100 text-green-600'
+                        }`}>
+                          {order.status !== 'cancelled' && order.status !== 'pending' && (order.status === 'processing' ? (
+                            <Package className="h-5 w-5" />
+                          ) : (
+                            <CheckCircle2 className="h-5 w-5" />
+                          ))}
+                          {(order.status === 'cancelled' || order.status === 'pending') && <Package className="h-5 w-5" />}
+                        </div>
+                        <div className="ml-4 space-y-1">
+                          <p className={`text-sm font-medium ${
+                            order.status === 'cancelled' || order.status === 'pending'
+                              ? 'text-gray-400' : ''
+                          }`}>Đang chuẩn bị món ăn</p>
+                          {['processing', 'shipping', 'completed'].includes(order.status) && (
+                            <p className="text-xs text-gray-500">
+                              {order.updatedAt && formatDate(order.updatedAt)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Step 3: Shipping */}
+                      <div className="flex items-start">
+                        <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 ${
+                          order.status === 'shipping'
+                            ? 'border-purple-500 bg-purple-100 text-purple-600'
+                            : ['cancelled', 'pending', 'processing'].includes(order.status)
+                              ? 'border-gray-200 bg-gray-100 text-gray-400'
+                              : 'border-green-500 bg-green-100 text-green-600'
+                        }`}>
+                          {order.status !== 'cancelled' && !['pending', 'processing'].includes(order.status) && (
+                            order.status === 'shipping' ? (
+                              <Truck className="h-5 w-5" />
+                            ) : (
+                              <CheckCircle2 className="h-5 w-5" />
+                            )
+                          )}
+                          {(['cancelled', 'pending', 'processing'].includes(order.status)) && <Truck className="h-5 w-5" />}
+                        </div>
+                        <div className="ml-4 space-y-1">
+                          <p className={`text-sm font-medium ${
+                            ['cancelled', 'pending', 'processing'].includes(order.status)
+                              ? 'text-gray-400' : ''
+                          }`}>Đang giao hàng</p>
+                          {['shipping', 'completed'].includes(order.status) && order.shipping.shippedAt && (
+                            <p className="text-xs text-gray-500">
+                              {formatDate(order.shipping.shippedAt)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Step 4: Completed */}
+                      <div className="flex items-start">
+                        <div className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 ${
+                          order.status === 'completed'
+                            ? 'border-green-500 bg-green-100 text-green-600'
+                            : 'border-gray-200 bg-gray-100 text-gray-400'
+                        }`}>
+                          <CheckCircle2 className="h-5 w-5" />
+                        </div>
+                        <div className="ml-4 space-y-1">
+                          <p className={`text-sm font-medium ${
+                            order.status !== 'completed' ? 'text-gray-400' : ''
+                          }`}>Giao hàng thành công</p>
+                          {order.status === 'completed' && order.shipping.deliveredAt && (
+                            <p className="text-xs text-gray-500">
+                              {formatDate(order.shipping.deliveredAt)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Special case for cancelled order */}
+                      {order.status === 'cancelled' && (
+                        <div className="mt-4 pt-4 border-t border-dashed border-red-200">
+                          <div className="flex items-start">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-red-500 bg-red-100 text-red-600">
+                              <XCircle className="h-5 w-5" />
+                            </div>
+                            <div className="ml-4 space-y-1">
+                              <p className="text-sm font-medium text-red-600">Đơn hàng đã bị hủy</p>
+                              <p className="text-xs text-gray-500">
+                                {order.updatedAt && formatDate(order.updatedAt)}
+                              </p>
+                              {order.cancellationReason && (
+                                <p className="text-xs text-gray-500 italic">
+                                  Lý do: {order.cancellationReason}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </div>
-          
+
           {order.status === 'cancelled' && order.cancellationReason && (
             <Alert variant="destructive" className="mb-6">
               <AlertTitle>Đơn hàng đã bị hủy</AlertTitle>
@@ -361,12 +502,12 @@ export default function OrderDetailPage() {
               </AlertDescription>
             </Alert>
           )}
-          
+
           <div className="flex justify-between">
             <Button asChild>
               <Link href="/account/orders">Quay lại danh sách đơn hàng</Link>
             </Button>
-            
+
             {order.status !== 'cancelled' && (
               <Button variant="outline" asChild>
                 <Link href="/">
