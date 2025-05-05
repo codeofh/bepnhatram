@@ -114,9 +114,14 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
               <SheetContent side="left" className="p-0 w-64">
                 <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                   <Link href="/" className="flex items-center">
-                    <span className="text-lg font-bold">
-                      {siteConfig.name} - Admin
-                    </span>
+                    <Image
+                      src="/logo-removebg.png"
+                      alt={siteConfig.name}
+                      width={120}
+                      height={40}
+                      className="h-8 w-auto object-contain"
+                      priority
+                    />
                   </Link>
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon">
