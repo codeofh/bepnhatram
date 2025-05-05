@@ -106,7 +106,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
           <div className="flex items-center">
             {/* Mobile menu trigger */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild className="lg:hidden mr-2">
+              <SheetTrigger asChild className="mr-2">
                 <Button variant="ghost" size="icon">
                   <Menu size={20} />
                 </Button>
@@ -230,7 +230,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
       {/* Main container */}
       <div className="flex flex-1">
         {/* Sidebar - Desktop */}
-        <aside className="w-64 border-r border-gray-200 bg-white hidden lg:block">
+        <aside className={`w-64 border-r border-gray-200 bg-white ${isMobileMenuOpen ? 'hidden' : 'hidden lg:block'}`}>
           <nav className="p-4 space-y-1">
             {navItems.map((item) => (
               <Link
