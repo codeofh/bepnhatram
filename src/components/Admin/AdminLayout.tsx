@@ -13,7 +13,8 @@ import {
   X,
   Lock,
   Globe,
-  User
+  User,
+  ShoppingBag
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
