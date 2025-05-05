@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { 
-  User, 
-  ShoppingBag, 
-  Settings, 
-  ChevronDown, 
-  Clock, 
+import {
+  User,
+  ShoppingBag,
+  Settings,
+  ChevronDown,
+  Clock,
   Search,
   X,
   PackageOpen,
@@ -79,9 +79,9 @@ export default function OrdersPage() {
 
   // Toggle order expansion
   const toggleOrderExpansion = (orderId: string) => {
-    setExpandedOrders(prev => 
-      prev.includes(orderId) 
-        ? prev.filter(id => id !== orderId) 
+    setExpandedOrders(prev =>
+      prev.includes(orderId)
+        ? prev.filter(id => id !== orderId)
         : [...prev, orderId]
     );
   };
@@ -89,7 +89,7 @@ export default function OrdersPage() {
   // Format date in Vietnamese format from Timestamp
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
-    
+
     const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -105,12 +105,18 @@ export default function OrdersPage() {
     return `${price.toLocaleString("vi-VN")}₫`;
   };
 
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return amount.toLocaleString('vi-VN') + '₫';
+  };
+
   // Filter orders by status and search query
   const filteredOrders = orders.filter(order => {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.items.some((item: any) => 
+      (order.orderCode && order.orderCode.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      order.items.some((item: any) =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     return matchesStatus && matchesSearch;
@@ -275,7 +281,7 @@ export default function OrdersPage() {
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="font-medium">{formatCurrency(order.total)}</span>
+                              <span className="font-medium">{formatPrice(order.total)}</span>
                               <CollapsibleTrigger asChild>
                                 <Button variant="ghost" size="sm">
                                   <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
@@ -310,7 +316,7 @@ export default function OrdersPage() {
                                 </div>
                               ))}
                             </div>
-                            
+
                             <div className="mt-4 pt-3 border-t">
                               <div className="flex justify-between items-center">
                                 <Link href={`/account/order/${order.id}`} className="text-sm text-blue-600 hover:underline">
