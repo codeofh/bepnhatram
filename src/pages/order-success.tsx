@@ -87,7 +87,7 @@ export default function OrderSuccessPage() {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex justify-between items-center">
                       <h3 className="font-medium">Mã đơn hàng:</h3>
-                      <span className="font-bold">{order.id}</span>
+                      <span className="font-bold">{order.orderCode || order.id}</span>
                     </div>
                   <div className="flex justify-between items-center mt-1">
                     <h3 className="font-medium">Ngày đặt hàng:</h3>

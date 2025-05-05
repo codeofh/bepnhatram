@@ -51,10 +51,11 @@ export function useOrders() {
       }
 
       // Mã đơn hàng đầy đủ
-      const orderId = `${datePrefix}${randomChars}`;
+      const orderCode = `${datePrefix}${randomChars}`;
 
-      // Tạo đơn hàng với dữ liệu cơ bản
-      const newOrder = {
+      // Thêm vào Firestore
+      const ordersCollection = collection(db, 'orders');
+      const docRef = await addDoc(ordersCollection, {
         userId: user ? user.uid : null,
         ...orderData,
         status: 'pending' as OrderStatus,
@@ -63,14 +64,15 @@ export function useOrders() {
           status: 'pending',
           paidAt: null
         },
-        id: orderId, // Gán id trước khi lưu
+        orderCode: orderCode, // Mã đơn hàng hiển thị
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
-      };
+      });
 
-      // Thêm vào Firestore
-      const ordersCollection = collection(db, 'orders');
-      const docRef = await addDoc(ordersCollection, newOrder);
+      // Cập nhật thêm ID Firestore vào đơn hàng
+      await updateDoc(docRef, {
+        id: docRef.id
+      });
 
       // Cập nhật ID có tiền tố
       await updateDoc(docRef, {
@@ -79,11 +81,12 @@ export function useOrders() {
 
       toast({
         title: "Đặt hàng thành công",
-        description: `Mã đơn hàng: ${orderId}`,
+        description: `Mã đơn hàng: ${orderCode}`,
         variant: "success",
       });
 
-      return orderId;
+      // Trả về ID của Firestore để sử dụng cho navigation
+      return docRef.id;
     } catch (err: any) {
       console.error('Lỗi khi tạo đơn hàng:', err);
       setError(`Đặt hàng thất bại: ${err.message}`);
@@ -193,7 +196,7 @@ export function useOrders() {
 
     try {
       if (!user) {
-        throw new Error("Bạn cần đăng nhập để cập nhật đơn h��ng");
+        throw new Error("Bạn cần đăng nhập để cập nh���t đơn h��ng");
       }
 
       if (!db) {
@@ -279,7 +282,7 @@ export function useOrders() {
       const orderDoc = await getDoc(orderRef);
 
       if (!orderDoc.exists()) {
-        throw new Error("Không tìm thấy đơn hàng");
+        throw new Error("Không tìm th��y đơn hàng");
       }
 
       const updateData: any = {

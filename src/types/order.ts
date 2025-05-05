@@ -53,6 +53,7 @@ export interface ShippingInfo {
 // Interface cho đơn hàng
 export interface Order {
   id: string;
+  orderCode: string; // Mã đơn hàng dạng yyMMdd + 8 ký tự ngẫu nhiên
   userId: string | null; // Có thể là null nếu người dùng không đăng nhập
   items: CartItem[];
   subtotal: number;
