@@ -58,14 +58,26 @@ export function ToastContextProvider({ children }: { children: ReactNode }) {
     showToast(message, title, 'info');
   };
 
-  const showCartNotification = (action: 'development' | 'add', itemName?: string) => {
+  const showCartNotification = (action: 'development' | 'add' | 'remove' | 'update', itemName?: string) => {
     switch (action) {
       case 'development':
         showWarning('Chức năng đang được phát triển. Vui lòng quay lại sau!', 'Thông báo');
         break;
       case 'add':
         if (itemName) {
-          showWarning(`Chức năng đang được phát triển. Vui lòng quay lại sau!`, 'Thông báo');
+          showSuccess(`Đã thêm ${itemName} vào giỏ hàng`, 'Thành công');
+        }
+        break;
+      case 'remove':
+        if (itemName) {
+          showInfo(`Đã xóa ${itemName} khỏi giỏ hàng`, 'Thông báo');
+        } else {
+          showInfo(`Đã xóa sản phẩm khỏi giỏ hàng`, 'Thông báo');
+        }
+        break;
+      case 'update':
+        if (itemName) {
+          showSuccess(`Đã cập nhật số lượng ${itemName} trong giỏ hàng`, 'Thành công');
         }
         break;
     }

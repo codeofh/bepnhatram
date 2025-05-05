@@ -13,7 +13,8 @@ import {
   X,
   Lock,
   Globe,
-  User
+  User,
+  ShoppingBag
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -68,6 +69,11 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
       name: "Dashboard",
       path: "/admin/dashboard",
       icon: <LayoutDashboard size={20} />,
+    },
+    {
+      name: "Đơn hàng",
+      path: "/admin/orders",
+      icon: <ShoppingBag size={20} />,
     },
     {
       name: "Menu",

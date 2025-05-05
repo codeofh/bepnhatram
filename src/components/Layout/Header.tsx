@@ -6,6 +6,7 @@ import { Search, Menu, ShoppingCart, User, LogOut, Settings } from "lucide-react
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthDialog } from "@/components/Auth/AuthDialog";
+import { CartDropdown } from "@/components/Cart/CartDropdown";
 import { useAuthContext } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -132,14 +133,10 @@ export function Header({ toggleSidebar, searchQuery, setSearchQuery }: HeaderPro
               <Search className="h-5 w-5" />
             </Button>
 
-            {/* Cart Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="ml-2"
-            >
-              <ShoppingCart className="h-5 w-5" />
-            </Button>
+            {/* Cart Dropdown */}
+            <div className="ml-2">
+              <CartDropdown />
+            </div>
 
             {/* User Button / Profile */}
             {mounted && (
