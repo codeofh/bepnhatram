@@ -36,12 +36,22 @@ export function useOrders() {
         throw new Error("Firestore chưa được khởi tạo");
       }
 
-      // Tạo mã đơn hàng với tiền tố yyMMdd
+      // Tạo mã đơn hàng với tiền tố yyMMdd + 8 ký tự ngẫu nhiên từ A-Z và 0-9
       const now = new Date();
       const year = now.getFullYear().toString().slice(-2); // Lấy 2 chữ số cuối của năm
       const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Tháng định dạng 2 chữ số
       const day = now.getDate().toString().padStart(2, '0'); // Ngày định dạng 2 chữ số
       const datePrefix = `${year}${month}${day}`;
+
+      // Tạo 8 ký tự ngẫu nhiên từ A-Z và 0-9
+      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let randomChars = '';
+      for (let i = 0; i < 8; i++) {
+        randomChars += characters.charAt(Math.floor(Math.random() * characters.length));
+      }
+
+      // Mã đơn hàng đầy đủ
+      const orderId = `${datePrefix}${randomChars}`;
 
       // Tạo đơn hàng với dữ liệu cơ bản
       const newOrder = {
@@ -53,6 +63,7 @@ export function useOrders() {
           status: 'pending',
           paidAt: null
         },
+        id: orderId, // Gán id trước khi lưu
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
@@ -60,9 +71,6 @@ export function useOrders() {
       // Thêm vào Firestore
       const ordersCollection = collection(db, 'orders');
       const docRef = await addDoc(ordersCollection, newOrder);
-
-      // Tạo mã đơn hàng có tiền tố ngày tháng
-      const orderId = `${datePrefix}-${docRef.id}`;
 
       // Cập nhật ID có tiền tố
       await updateDoc(docRef, {
