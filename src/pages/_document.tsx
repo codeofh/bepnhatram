@@ -5,18 +5,19 @@ export default function Document() {
     <Html lang="vi">
       <Head>
         {/* Softgen AI monitoring script */}
-        <script 
+
+        {/* <script 
           src="https://cdn.softgen.ai/script.js" 
           async 
           data-softgen-monitoring="true"
-        />
-        
+        /> */}
+
         {/* Character Set */}
         <meta charSet="utf-8" />
-        
+
         {/* IE Compatibility */}
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        
+
         {/* Preconnect to important domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
