@@ -306,7 +306,7 @@ export default function OrdersPage() {
                                   <p className="text-sm font-medium">{item.name}</p>
                                   <p className="text-xs text-gray-500">
                                     Số lượng: {item.quantity}
-                                    {item.selectedSize && ` - ${item.selectedSize}`}
+                                    {item.selectedSize ? ` - ${item.selectedSize}` : ''}
                                   </p>
                                         Số lượng: {item.quantity}
                                         {item.selectedSize && ` - ${item.selectedSize}`}
