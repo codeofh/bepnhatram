@@ -209,12 +209,12 @@ export default function AdminOrderDetailPage() {
     <>
       <Head>
         <title>
-          {order ? `Chi tiết đơn hàng #${order.id}` : 'Đơn hàng'} - {siteConfig.name} Admin
+          {order ? `Chi tiết đơn hàng #${order.orderCode || order.id}` : 'Đơn hàng'} - {siteConfig.name} Admin
         </title>
         <meta name="description" content="Chi tiết đơn hàng" />
       </Head>
 
-      <AdminLayout title={order ? `Chi tiết đơn hàng #${order.id}` : 'Đơn hàng'}>
+      <AdminLayout title={order ? `Chi tiết đơn hàng #${order.orderCode || order.id}` : 'Đơn hàng'}>
         <div className="mb-6">
           <Button variant="outline" asChild>
             <Link href="/admin/orders" className="flex items-center gap-1">
@@ -257,7 +257,7 @@ export default function AdminOrderDetailPage() {
               <CardHeader className="pb-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <CardTitle className="text-xl">Đơn hàng #{order.id}</CardTitle>
+                    <CardTitle className="text-xl">Đơn hàng #{order.orderCode || order.id}</CardTitle>
                     <CardDescription>
                       Đặt hàng lúc: {formatDate(order.createdAt)}
                     </CardDescription>
@@ -492,7 +492,7 @@ export default function AdminOrderDetailPage() {
 
                     {order.shipping.shippedAt && (
                       <div className="space-y-1">
-                        <h3 className="text-sm font-medium text-gray-500">Thời gian gửi hàng</h3>
+                        <h3 className="text-sm font-medium text-gray-500">Thời gian g���i hàng</h3>
                         <p>{formatDate(order.shipping.shippedAt)}</p>
                       </div>
                     )}
