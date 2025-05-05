@@ -166,10 +166,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(CART_ITEMS_KEY);
     }
-    toast({
-      title: "Giỏ hàng đã được xóa",
-      description: "Tất cả sản phẩm đã được xóa khỏi giỏ hàng",
-      variant: "default",
+    toast("Giỏ hàng đã được xóa", {
+      description: "Tất cả sản phẩm đã được xóa khỏi giỏ hàng"
     });
   };
 
