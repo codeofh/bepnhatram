@@ -18,22 +18,22 @@ export default function CartPage() {
 
   // Format price with dot separator for thousands
   const formattedSubtotal = `${subtotal.toLocaleString("vi-VN")}₫`;
-  
+
   // Ship fee based on subtotal
   const shipFee = subtotal > 200000 ? 0 : 30000;
   const formattedShipFee = `${shipFee.toLocaleString("vi-VN")}₫`;
-  
+
   // Total
   const total = subtotal + shipFee;
   const formattedTotal = `${total.toLocaleString("vi-VN")}₫`;
 
   return (
     <Layout>
-      <SEO 
+      <SEO
         title="Giỏ hàng"
         description="Giỏ hàng của bạn tại BẾP NHÀ TRÂM"
       />
-      
+
       <div className="container py-8 px-4">
         <div className="flex items-center mb-6">
           <h1 className="text-2xl font-bold">Giỏ hàng của bạn</h1>
@@ -65,8 +65,8 @@ export default function CartPage() {
                 <CardHeader className="px-4 md:px-6 py-4 border-b">
                   <div className="flex justify-between items-center">
                     <CardTitle className="text-lg">Chi tiết giỏ hàng</CardTitle>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={clearCart}
                       className="flex items-center gap-1 text-xs h-8"
@@ -120,7 +120,12 @@ export default function CartPage() {
                   </div>
                 </CardContent>
                 <CardFooter className="px-4 md:px-6 py-4 flex flex-col gap-2">
-                  <Button className="w-full" size="lg" asChild>
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    asChild
+                    disabled={isEmpty}
+                  >
                     <Link href="/checkout">
                       Tiến hành thanh toán
                     </Link>

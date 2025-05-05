@@ -2,28 +2,30 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { 
-  User, 
-  ShoppingBag, 
-  Settings, 
-  ChevronDown, 
-  Clock, 
+import {
+  User,
+  ShoppingBag,
+  Settings,
+  ChevronDown,
+  Clock,
   Search,
   X,
   PackageOpen,
   ShoppingCart
 } from "lucide-react";
+import { useOrders } from "@/hooks/useOrders";
+import { Order } from "@/types/order";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
 } from "@/components/ui/select";
 import {
   Collapsible,
@@ -91,7 +93,8 @@ const orderStatusMap: Record<string, { color: string, label: string }> = {
 export default function OrdersPage() {
   const router = useRouter();
   const { user, loading } = useAuthContext();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const { getUserOrders } = useOrders();
   const [isClient, setIsClient] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -102,28 +105,36 @@ export default function OrdersPage() {
     setIsClient(true);
     if (!loading && !user) {
       router.push('/');
-    } else {
-      // In a real app, fetch orders from Firebase
-      // For now, use sample data
-      setOrders(sampleOrders);
+    } else if (user) {
+      // Fetch orders from Firebase
+      const fetchOrders = async () => {
+        try {
+          const userOrders = await getUserOrders();
+          setOrders(userOrders);
+        } catch (error) {
+          console.error("Error fetching orders:", error);
+        }
+      };
+
+      fetchOrders();
     }
-  }, [user, loading, router]);
+  }, [user, loading, router, getUserOrders]);
 
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
     if (!user || !user.displayName) return '?';
-    
+
     const nameParts = user.displayName.split(' ');
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
-    
+
     return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
   };
 
   // Toggle order expansion
   const toggleOrderExpansion = (orderId: string) => {
-    setExpandedOrders(prev => 
-      prev.includes(orderId) 
-        ? prev.filter(id => id !== orderId) 
+    setExpandedOrders(prev =>
+      prev.includes(orderId)
+        ? prev.filter(id => id !== orderId)
         : [...prev, orderId]
     );
   };
@@ -146,9 +157,9 @@ export default function OrdersPage() {
   // Filter orders by status and search query
   const filteredOrders = orders.filter(order => {
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.items.some((item: any) => 
+      order.items.some((item: any) =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     return matchesStatus && matchesSearch;
@@ -270,14 +281,14 @@ export default function OrdersPage() {
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div>
                               <div className="flex items-center gap-2">
-                                <h3 className="font-medium">{order.id}</h3>
+                                <h3 className="font-medium">{order.id.slice(-6)}</h3>
                                 <Badge className={orderStatusMap[order.status].color}>
                                   {orderStatusMap[order.status].label}
                                 </Badge>
                               </div>
                               <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
                                 <Clock className="h-4 w-4" />
-                                <span>{formatDate(order.date)}</span>
+                                <span>{formatDate(order.createdAt)}</span>
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
@@ -306,17 +317,22 @@ export default function OrdersPage() {
                                     </div>
                                     <div>
                                       <p className="text-sm font-medium">{item.name}</p>
-                                      <p className="text-xs text-gray-500">Số lượng: {item.quantity}</p>
+                                      <p className="text-xs text-gray-500">
+                                        Số lượng: {item.quantity}
+                                        {item.selectedSize && ` - ${item.selectedSize}`}
+                                      </p>
                                     </div>
                                   </div>
                                   <span className="text-sm">{formatPrice(item.price * item.quantity)}</span>
                                 </div>
                               ))}
                             </div>
-                            
+
                             <div className="mt-4 pt-3 border-t">
                               <div className="flex justify-between items-center">
-                                <span className="font-medium">Tổng cộng</span>
+                                <Link href={`/account/order/${order.id}`} className="text-sm text-blue-600 hover:underline">
+                                  Xem chi tiết
+                                </Link>
                                 <span className="font-bold text-lg">{formatPrice(order.total)}</span>
                               </div>
                             </div>

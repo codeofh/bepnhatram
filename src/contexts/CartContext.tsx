@@ -35,10 +35,10 @@ const CART_ID_KEY = 'bnt_cart_id';
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [cartId, setCartId] = useState<string>('');
-  
+
   // Tổng số lượng sản phẩm trong giỏ hàng
   const itemCount = items.reduce((total, item) => total + item.quantity, 0);
-  
+
   // Tổng giá trị giỏ hàng
   const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
 
@@ -85,13 +85,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Thêm sản phẩm vào giỏ hàng
   const addItem = (item: MenuItem, quantity = 1, selectedSize?: string) => {
     setItems((prevItems) => {
-      const sizeOption = selectedSize && item.sizes 
-        ? item.sizes.find(size => size.name === selectedSize) 
+      const sizeOption = selectedSize && item.sizes
+        ? item.sizes.find(size => size.name === selectedSize)
         : undefined;
-      
+
       const price = sizeOption ? sizeOption.price : item.price;
       const itemId = `${item.id}${selectedSize ? `-${selectedSize}` : ''}`;
-      
+
       // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
       const existingItemIndex = prevItems.findIndex(
         cartItem => cartItem.id === itemId
@@ -104,7 +104,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           ...updatedItems[existingItemIndex],
           quantity: updatedItems[existingItemIndex].quantity + quantity
         };
-        
+
         toast.success(`Đã cập nhật số lượng ${item.name}${selectedSize ? ` (${selectedSize})` : ''} trong giỏ hàng`);
         return updatedItems;
       } else {
@@ -118,7 +118,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           selectedSize,
           originalItem: item
         };
-        
+
         toast.success(`Đã thêm ${item.name}${selectedSize ? ` (${selectedSize})` : ''} vào giỏ hàng`);
         return [...prevItems, newItem];
       }
@@ -128,18 +128,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Xóa sản phẩm khỏi giỏ hàng
   const removeItem = (itemId: string, selectedSize?: string) => {
     const id = selectedSize ? `${itemId}-${selectedSize}` : itemId;
-    
+
     setItems((prevItems) => {
       const updatedItems = prevItems.filter(item => item.id !== id);
-      
+
       // Nếu giỏ hàng trống, xóa khỏi localStorage
       if (updatedItems.length === 0 && typeof window !== 'undefined') {
         localStorage.removeItem(CART_ITEMS_KEY);
       }
-      
+
       return updatedItems;
     });
-    
+
     toast.info("Đã xóa sản phẩm khỏi giỏ hàng");
   };
 
@@ -152,9 +152,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     const id = selectedSize ? `${itemId}-${selectedSize}` : itemId;
-    
-    setItems((prevItems) => 
-      prevItems.map(item => 
+
+    setItems((prevItems) =>
+      prevItems.map(item =>
         item.id === id ? { ...item, quantity } : item
       )
     );
@@ -166,7 +166,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(CART_ITEMS_KEY);
     }
-    toast.info("Đã xóa toàn bộ giỏ hàng");
+    toast({
+      title: "Giỏ hàng đã được xóa",
+      description: "Tất cả sản phẩm đã được xóa khỏi giỏ hàng",
+      variant: "default",
+    });
   };
 
   return (
@@ -188,10 +192,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 // Custom hook để sử dụng CartContext
 export function useCartContext() {
   const context = useContext(CartContext);
-  
+
   if (context === undefined) {
     throw new Error('useCartContext must be used within a CartProvider');
   }
-  
+
   return context;
 }
