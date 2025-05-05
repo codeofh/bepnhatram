@@ -74,11 +74,6 @@ export function useOrders() {
         id: docRef.id
       });
 
-      // Cập nhật ID có tiền tố
-      await updateDoc(docRef, {
-        id: orderId
-      });
-
       toast({
         title: "Đặt hàng thành công",
         description: `Mã đơn hàng: ${orderCode}`,
