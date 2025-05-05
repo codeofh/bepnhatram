@@ -285,6 +285,7 @@ export default function AdminDashboardPage() {
                 </div>
               )}
             </CardContent>
+          </Card>
               <div className="space-y-4">
                 {[
                   { name: "Đặc biệt", id: "special", color: "bg-purple-500" },
