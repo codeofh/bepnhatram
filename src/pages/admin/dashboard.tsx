@@ -9,11 +9,14 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  ShoppingBag,
+  Clock
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useAdminOrders } from "@/hooks/useAdminOrders";
 import { siteConfig } from "@/config/siteConfig";
 import { menuItems } from "@/data/menuItems";
 
@@ -41,31 +44,58 @@ export default function AdminDashboardPage() {
     return null;
   }
 
-  // Demo stats
+  const { getOrderStats } = useAdminOrders();
+  const [orderStats, setOrderStats] = useState<any>(null);
+  const [loadingStats, setLoadingStats] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchOrderStats();
+    }
+  }, [user]);
+
+  const fetchOrderStats = async () => {
+    setLoadingStats(true);
+    try {
+      const stats = await getOrderStats();
+      setOrderStats(stats);
+    } catch (error) {
+      console.error("Error fetching order stats:", error);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  // Format currency
+  const formatCurrency = (amount: number) => {
+    return amount ? amount.toLocaleString('vi-VN') + 'đ' : '0đ';
+  };
+
+  // Stats with real order data if available
   const stats = [
     {
       title: "Tổng doanh thu",
-      value: "15,200,000đ",
-      description: "Tháng này",
-      change: "+15%",
+      value: orderStats ? formatCurrency(orderStats.totalRevenue) : "0đ",
+      description: "Tất cả thời gian",
+      change: orderStats ? `${orderStats.completed} đơn` : "0 đơn",
       trend: "up",
       icon: <DollarSign className="h-5 w-5 text-green-500" />,
     },
     {
       title: "Đơn hàng mới",
-      value: "48",
-      description: "Trong tuần",
-      change: "+8%",
+      value: orderStats ? orderStats.pending.toString() : "0",
+      description: "Chờ xử lý",
+      change: orderStats ? `${orderStats.total} tổng số` : "0 tổng số",
       trend: "up",
-      icon: <ShoppingCart className="h-5 w-5 text-blue-500" />,
+      icon: <Clock className="h-5 w-5 text-yellow-500" />,
     },
     {
-      title: "Người dùng mới",
-      value: "12",
-      description: "Trong tháng",
-      change: "-3%",
-      trend: "down",
-      icon: <Users className="h-5 w-5 text-purple-500" />,
+      title: "Đơn đang giao",
+      value: orderStats ? (orderStats.processing + orderStats.shipping).toString() : "0",
+      description: "Đang xử lý & giao",
+      change: orderStats ? `${orderStats.completed} hoàn thành` : "0 hoàn thành",
+      trend: "up",
+      icon: <ShoppingBag className="h-5 w-5 text-blue-500" />,
     },
     {
       title: "Món ăn",
@@ -166,12 +196,95 @@ export default function AdminDashboardPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Thống kê danh mục</CardTitle>
+              <CardTitle>Thống kê đơn hàng</CardTitle>
               <CardDescription>
-                Số lượng món ăn theo danh mục
+                Số lượng đơn hàng theo trạng thái
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {loadingStats ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                </div>
+              ) : orderStats ? (
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm font-medium">Chờ xác nhận</span>
+                      <span className="text-sm text-gray-500">
+                        {orderStats.pending} đơn ({Math.round((orderStats.pending / orderStats.total) * 100) || 0}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="h-2.5 rounded-full bg-yellow-500"
+                        style={{ width: `${Math.round((orderStats.pending / orderStats.total) * 100) || 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm font-medium">Đang chuẩn bị</span>
+                      <span className="text-sm text-gray-500">
+                        {orderStats.processing} đơn ({Math.round((orderStats.processing / orderStats.total) * 100) || 0}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="h-2.5 rounded-full bg-blue-500"
+                        style={{ width: `${Math.round((orderStats.processing / orderStats.total) * 100) || 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm font-medium">Đang giao</span>
+                      <span className="text-sm text-gray-500">
+                        {orderStats.shipping} đơn ({Math.round((orderStats.shipping / orderStats.total) * 100) || 0}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="h-2.5 rounded-full bg-purple-500"
+                        style={{ width: `${Math.round((orderStats.shipping / orderStats.total) * 100) || 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm font-medium">Hoàn thành</span>
+                      <span className="text-sm text-gray-500">
+                        {orderStats.completed} đơn ({Math.round((orderStats.completed / orderStats.total) * 100) || 0}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="h-2.5 rounded-full bg-green-500"
+                        style={{ width: `${Math.round((orderStats.completed / orderStats.total) * 100) || 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm font-medium">Đã hủy</span>
+                      <span className="text-sm text-gray-500">
+                        {orderStats.cancelled} đơn ({Math.round((orderStats.cancelled / orderStats.total) * 100) || 0}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <div
+                        className="h-2.5 rounded-full bg-red-500"
+                        style={{ width: `${Math.round((orderStats.cancelled / orderStats.total) * 100) || 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  Chưa có dữ liệu đơn hàng
+                </div>
+              )}
+            </CardContent>
               <div className="space-y-4">
                 {[
                   { name: "Đặc biệt", id: "special", color: "bg-purple-500" },

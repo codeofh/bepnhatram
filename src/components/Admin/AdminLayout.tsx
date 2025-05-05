@@ -70,6 +70,11 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
       icon: <LayoutDashboard size={20} />,
     },
     {
+      name: "Đơn hàng",
+      path: "/admin/orders",
+      icon: <ShoppingBag size={20} />,
+    },
+    {
       name: "Menu",
       path: "/admin/menu",
       icon: <UtensilsCrossed size={20} />,
