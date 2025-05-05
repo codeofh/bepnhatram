@@ -30,22 +30,16 @@ const checkoutFormSchema = z.object({
   }),
   email: z.string().email({
     message: 'Email không hợp lệ',
-  }),
+  }).optional(),
   phone: z.string().regex(/^(0|\+84)[3|5|7|8|9][0-9]{8}$/, {
     message: 'Số điện thoại không hợp lệ',
   }),
   address: z.string().min(5, {
     message: 'Địa chỉ phải có ít nhất 5 ký tự',
   }),
-  city: z.string().min(2, {
-    message: 'Thành phố không được để trống',
-  }),
-  district: z.string().min(2, {
-    message: 'Quận/Huyện không được để trống',
-  }),
-  ward: z.string().min(2, {
-    message: 'Phường/Xã không được để trống',
-  }),
+  city: z.string().default("Huế"),
+  district: z.string().default(""),
+  ward: z.string().default(""),
   notes: z.string().optional(),
   paymentMethod: z.enum(['cod', 'bank_transfer', 'momo', 'vnpay'] as const),
 });
@@ -83,7 +77,7 @@ export function CheckoutForm() {
     if (items.length === 0) {
       return;
     }
-    
+
     try {
       // Tạo dữ liệu đơn hàng
       const orderData: CreateOrderData = {
@@ -107,14 +101,14 @@ export function CheckoutForm() {
           fee: shippingFee,
         }
       };
-      
+
       // Gọi API tạo đơn hàng
       const orderId = await createOrder(orderData);
-      
+
       if (orderId) {
         // Xóa giỏ hàng sau khi đặt hàng thành công
         clearCart();
-        
+
         // Chuyển hướng đến trang đặt hàng thành công
         router.push(`/order-success?orderId=${orderId}`);
       }
@@ -128,7 +122,7 @@ export function CheckoutForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="bg-white rounded-lg border p-6">
           <h2 className="text-lg font-semibold mb-4">Thông tin giao hàng</h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
@@ -163,10 +157,13 @@ export function CheckoutForm() {
               name="email"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Email (tùy chọn)</FormLabel>
                   <FormControl>
                     <Input placeholder="Email của bạn" {...field} />
                   </FormControl>
+                  <FormDescription>
+                    Nhập email nếu bạn muốn nhận thông báo về đơn hàng
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -179,54 +176,20 @@ export function CheckoutForm() {
                 <FormItem className="md:col-span-2">
                   <FormLabel>Địa chỉ</FormLabel>
                   <FormControl>
-                    <Input placeholder="Số nhà, tên đường" {...field} />
+                    <Input placeholder="Địa chỉ đầy đủ (số nhà, đường, phường/xã, quận/huyện)" {...field} />
                   </FormControl>
+                  <FormDescription>
+                    Vui lòng nhập địa chỉ đầy đủ để thuận tiện cho việc giao hàng
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Thành phố</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Thành phố" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="district"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Quận/Huyện</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Quận/Huyện" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="ward"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Phường/Xã</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Phường/Xã" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Các trường địa lý chi tiết tạm thời ẩn */}
+            <input type="hidden" {...form.register("city")} />
+            <input type="hidden" {...form.register("district")} />
+            <input type="hidden" {...form.register("ward")} />
 
             <FormField
               control={form.control}
@@ -253,7 +216,7 @@ export function CheckoutForm() {
 
         <div className="bg-white rounded-lg border p-6">
           <h2 className="text-lg font-semibold mb-4">Phương thức thanh toán</h2>
-          
+
           <FormField
             control={form.control}
             name="paymentMethod"
@@ -271,8 +234,8 @@ export function CheckoutForm() {
           />
         </div>
 
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           className="w-full"
           size="lg"
           disabled={loading}

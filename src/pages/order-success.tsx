@@ -45,7 +45,7 @@ export default function OrderSuccessPage() {
   // Format thời gian từ timestamp
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
-    
+
     const date = new Date(timestamp.seconds * 1000);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -62,22 +62,22 @@ export default function OrderSuccessPage() {
         title="Đặt hàng thành công"
         description="Cảm ơn bạn đã đặt hàng tại BẾP NHÀ TRÂM"
       />
-      
+
       <div className="container py-8 px-4">
         <Card className="max-w-2xl mx-auto border shadow-sm">
           <CardHeader className="text-center pb-2">
             <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-2" />
             <CardTitle className="text-2xl">Đặt hàng thành công!</CardTitle>
           </CardHeader>
-          
+
           <CardContent className="pt-4 pb-6">
             <div className="text-center mb-6">
               <p className="text-gray-600">
-                Cảm ơn bạn đã đặt hàng tại BẾP NHÀ TRÂM. Chúng tôi sẽ liên hệ với bạn 
+                Cảm ơn bạn đã đặt hàng tại BẾP NHÀ TRÂM. Chúng tôi sẽ liên hệ với bạn
                 trong thời gian sớm nhất để xác nhận đơn hàng.
               </p>
             </div>
-            
+
             {loading ? (
               <div className="flex justify-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -111,21 +111,22 @@ export default function OrderSuccessPage() {
                     </div>
                   )}
                 </div>
-                
-                <div className="text-sm text-gray-600">
-                  <h3 className="font-medium text-gray-900 mb-1">Giao đến:</h3>
-                  <p>{order.customer.name} | {order.customer.phone}</p>
-                  <p>
-                    {order.customer.address}, {order.customer.ward}, {order.customer.district}, {order.customer.city}
-                  </p>
-                </div>
+
+                  <div className="text-sm text-gray-600">
+                    <h3 className="font-medium text-gray-900 mb-1">Giao đến:</h3>
+                    <p>{order.customer.name} | {order.customer.phone}</p>
+                    <p>{order.customer.address}</p>
+                    {order.customer.email && (
+                      <p className="text-gray-500 text-xs mt-1">Email: {order.customer.email}</p>
+                    )}
+                  </div>
               </div>
             ) : (
               <div className="text-center py-4 text-gray-500">
                 Không tìm thấy thông tin đơn hàng
               </div>
             )}
-            
+
             <div className="mt-8 grid grid-cols-2 gap-4">
               <Button variant="outline" asChild>
                 <Link href="/" className="flex items-center justify-center gap-2">
@@ -133,7 +134,7 @@ export default function OrderSuccessPage() {
                   <span>Trang chủ</span>
                 </Link>
               </Button>
-              
+
               {user ? (
                 <Button asChild>
                   <Link href="/account/orders" className="flex items-center justify-center gap-2">

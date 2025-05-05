@@ -109,7 +109,7 @@ export default function OrderDetailPage() {
       icon: <Truck className="h-4 w-4" />
     },
     completed: {
-      label: 'Đã hoàn thành',
+      label: '��ã hoàn thành',
       color: 'bg-green-100 text-green-800 border-green-200',
       icon: <CheckCircle2 className="h-4 w-4" />
     },
@@ -335,8 +335,7 @@ export default function OrderDetailPage() {
                   <div>
                     <span className="text-gray-500">Địa chỉ:</span>
                     <div className="mt-1">
-                      {order.customer.address}, {order.customer.ward},
-                      <br />{order.customer.district}, {order.customer.city}
+                      {order.customer.address}
                     </div>
                   </div>
 

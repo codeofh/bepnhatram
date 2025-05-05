@@ -2,7 +2,7 @@ import { CartItem } from "@/contexts/CartContext";
 import { Timestamp } from "firebase/firestore";
 
 // Các trạng thái có thể có của đơn hàng
-export type OrderStatus = 
+export type OrderStatus =
   | 'pending'     // Đang chờ xác nhận
   | 'processing'  // Đang chuẩn bị
   | 'shipping'    // Đang giao hàng
@@ -10,14 +10,14 @@ export type OrderStatus =
   | 'cancelled';  // Đã hủy
 
 // Các phương thức thanh toán
-export type PaymentMethod = 
+export type PaymentMethod =
   | 'cod'           // Thanh toán khi nhận hàng
   | 'bank_transfer' // Chuyển khoản ngân hàng
   | 'momo'          // Ví điện tử MoMo
   | 'vnpay';        // VNPay
 
 // Trạng thái thanh toán
-export type PaymentStatus = 
+export type PaymentStatus =
   | 'pending'    // Chưa thanh toán
   | 'completed'  // Đã thanh toán
   | 'failed';    // Thanh toán thất bại
@@ -25,12 +25,12 @@ export type PaymentStatus =
 // Interface cho thông tin khách hàng
 export interface CustomerInfo {
   name: string;
-  email: string;
+  email?: string;
   phone: string;
   address: string;
-  city: string;
-  district: string;
-  ward: string;
+  city?: string;
+  district?: string;
+  ward?: string;
   notes?: string;
 }
 
