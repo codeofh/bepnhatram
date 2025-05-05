@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import {
-  ChevronLeft,
-  Check,
-  X,
-  Package,
-  Truck,
-  Mail,
-  Phone,
+import { 
+  ChevronLeft, 
+  Check, 
+  X, 
+  Package, 
+  Truck, 
+  Mail, 
+  Phone, 
   MapPin,
   AlertTriangle
 } from "lucide-react";
@@ -17,13 +17,13 @@ import {
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { OrderStatusBadge } from "@/components/Admin/OrderStatusBadge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
 } from "@/components/ui/table";
 import {
   Card,
@@ -66,7 +66,7 @@ export default function AdminOrderDetailPage() {
   const { id } = router.query;
   const { user, loading: authLoading } = useAuthContext();
   const { getOrderById, updateOrderStatus, loading: orderLoading } = useAdminOrders();
-
+  
   const [order, setOrder] = useState<Order | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [statusUpdateOpen, setStatusUpdateOpen] = useState(false);
@@ -125,15 +125,15 @@ export default function AdminOrderDetailPage() {
   // Handle order status update
   const handleUpdateStatus = async () => {
     if (!order || !newStatus) return;
-
+    
     setIsSubmitting(true);
     try {
       const success = await updateOrderStatus(
-        order.id,
-        newStatus as OrderStatus,
+        order.id, 
+        newStatus as OrderStatus, 
         newStatus === 'cancelled' ? statusNotes : undefined
       );
-
+      
       if (success) {
         setStatusUpdateOpen(false);
         // Refresh order data
@@ -151,7 +151,7 @@ export default function AdminOrderDetailPage() {
   // Format date
   const formatDate = (timestamp: any) => {
     if (!timestamp) return '-';
-
+    
     const date = new Date(timestamp.seconds * 1000);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
@@ -209,12 +209,12 @@ export default function AdminOrderDetailPage() {
     <>
       <Head>
         <title>
-          {order ? `Chi tiết đơn hàng #${order.id.slice(-6)}` : 'Đơn hàng'} - {siteConfig.name} Admin
+          {order ? `Chi tiết đơn hàng #${order.id}` : 'Đơn hàng'} - {siteConfig.name} Admin
         </title>
         <meta name="description" content="Chi tiết đơn hàng" />
       </Head>
 
-      <AdminLayout title={order ? `Chi tiết đơn hàng #${order.id.slice(-6)}` : 'Đơn hàng'}>
+      <AdminLayout title={order ? `Chi tiết đơn hàng #${order.id}` : 'Đơn hàng'}>
         <div className="mb-6">
           <Button variant="outline" asChild>
             <Link href="/admin/orders" className="flex items-center gap-1">
@@ -244,17 +244,12 @@ export default function AdminOrderDetailPage() {
         ) : !order ? (
           <Card>
             <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4">
-              <h1 className="text-2xl font-bold">Đơn hàng #{order.id}</h1>
-              <Badge
-                className={`${status.color} mt-2 sm:mt-0 flex items-center gap-1 px-3 py-1 border`}
-                variant="outline"
-              >
-                {status.icon}
-                <span>{status.label}</span>
-              </Badge>
-            </div>
-          </div>
+              <div className="text-center">
+                <h3 className="text-lg font-medium">Không tìm thấy đơn hàng</h3>
+                <p className="text-gray-500 mt-2">Đơn hàng không tồn tại hoặc đã bị xóa</p>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <div className="space-y-6">
             {/* Header with order info and status */}
@@ -262,14 +257,14 @@ export default function AdminOrderDetailPage() {
               <CardHeader className="pb-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <CardTitle className="text-xl">Đơn hàng #{order.id.slice(-6)}</CardTitle>
+                    <CardTitle className="text-xl">Đơn hàng #{order.id}</CardTitle>
                     <CardDescription>
                       Đặt hàng lúc: {formatDate(order.createdAt)}
                     </CardDescription>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <OrderStatusBadge status={order.status} className="px-3 py-1" />
-
+                    
                     {/* Status update button */}
                     {getNextStatuses(order.status).length > 0 && (
                       <Dialog open={statusUpdateOpen} onOpenChange={setStatusUpdateOpen}>
@@ -280,10 +275,10 @@ export default function AdminOrderDetailPage() {
                           <DialogHeader>
                             <DialogTitle>Cập nhật trạng thái đơn hàng</DialogTitle>
                             <DialogDescription>
-                              Thay đổi trạng thái đơn hàng #{order.id.slice(-6)}
+                              Thay đổi trạng thái đơn hàng #{order.id}
                             </DialogDescription>
                           </DialogHeader>
-
+                          
                           <div className="grid gap-4 py-4">
                             <div className="grid gap-2">
                               <label htmlFor="status" className="text-sm font-medium">
@@ -304,7 +299,7 @@ export default function AdminOrderDetailPage() {
                                 </SelectContent>
                               </Select>
                             </div>
-
+                            
                             {newStatus === 'cancelled' && (
                               <div className="grid gap-2">
                                 <label htmlFor="notes" className="text-sm font-medium">
@@ -319,13 +314,13 @@ export default function AdminOrderDetailPage() {
                               </div>
                             )}
                           </div>
-
+                          
                           <DialogFooter>
                             <Button variant="outline" onClick={() => setStatusUpdateOpen(false)}>
                               Hủy
                             </Button>
-                            <Button
-                              onClick={handleUpdateStatus}
+                            <Button 
+                              onClick={handleUpdateStatus} 
                               disabled={isSubmitting || !newStatus || (newStatus === 'cancelled' && !statusNotes)}
                               variant={newStatus === 'cancelled' ? 'destructive' : 'default'}
                             >
@@ -436,7 +431,7 @@ export default function AdminOrderDetailPage() {
                       <h3 className="text-sm font-medium text-gray-500">Khách hàng</h3>
                       <p className="font-medium">{order.customer.name}</p>
                     </div>
-
+                    
                     <div className="space-y-1">
                       <h3 className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
                         <Phone className="h-3.5 w-3.5" />
@@ -448,7 +443,7 @@ export default function AdminOrderDetailPage() {
                         </a>
                       </p>
                     </div>
-
+                    
                     {order.customer.email && (
                       <div className="space-y-1">
                         <h3 className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
@@ -462,7 +457,7 @@ export default function AdminOrderDetailPage() {
                         </p>
                       </div>
                     )}
-
+                    
                     <div className="space-y-1">
                       <h3 className="flex items-center gap-1.5 text-sm font-medium text-gray-500">
                         <MapPin className="h-3.5 w-3.5" />
@@ -470,7 +465,7 @@ export default function AdminOrderDetailPage() {
                       </h3>
                       <p>{order.customer.address}</p>
                     </div>
-
+                    
                     {order.customer.notes && (
                       <div className="space-y-1">
                         <h3 className="text-sm font-medium text-gray-500">Ghi chú</h3>
@@ -490,14 +485,14 @@ export default function AdminOrderDetailPage() {
                       <h3 className="text-sm font-medium text-gray-500">Phí vận chuyển</h3>
                       <p>{order.shipping.fee === 0 ? 'Miễn phí' : formatCurrency(order.shipping.fee)}</p>
                     </div>
-
+                    
                     {order.shipping.shippedAt && (
                       <div className="space-y-1">
                         <h3 className="text-sm font-medium text-gray-500">Thời gian gửi hàng</h3>
                         <p>{formatDate(order.shipping.shippedAt)}</p>
                       </div>
                     )}
-
+                    
                     {order.shipping.deliveredAt && (
                       <div className="space-y-1">
                         <h3 className="text-sm font-medium text-gray-500">Thời gian giao hàng</h3>
