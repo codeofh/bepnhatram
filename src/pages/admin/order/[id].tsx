@@ -250,8 +250,11 @@ export default function AdminOrderDetailPage() {
                 className={`${status.color} mt-2 sm:mt-0 flex items-center gap-1 px-3 py-1 border`}
                 variant="outline"
               >
-            </CardContent>
-          </Card>
+                {status.icon}
+                <span>{status.label}</span>
+              </Badge>
+            </div>
+          </div>
         ) : (
           <div className="space-y-6">
             {/* Header with order info and status */}
