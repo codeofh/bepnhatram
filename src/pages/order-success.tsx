@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { CheckCircle, Home, Package, ArrowRight } from 'lucide-react';
+import { CheckCircle, Home, Package, ArrowRight, AlertTriangle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/Layout/Layout';
 import { SEO } from '@/components/SEO/SEO';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useOrders } from '@/hooks/useOrders';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Order } from '@/types/order';
@@ -18,42 +19,59 @@ export default function OrderSuccessPage() {
   const { getOrder } = useOrders();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch thông tin đơn hàng
   useEffect(() => {
     async function fetchOrderDetails() {
-      if (orderId && typeof orderId === 'string') {
+      if (!orderId) {
+        setLoading(false);
+        return;
+      }
+      
+      if (typeof orderId === 'string') {
         setLoading(true);
+        setError(null);
+        
         try {
           const orderData = await getOrder(orderId);
           if (orderData) {
             setOrder(orderData);
+          } else {
+            setError("Không tìm thấy thông tin đơn hàng");
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Lỗi khi lấy thông tin đơn hàng:", error);
+          setError(error.message || "Đã xảy ra lỗi khi tải thông tin đơn hàng");
         } finally {
           setLoading(false);
         }
       }
     }
 
-    if (orderId) {
+    // We need to wait for router to be ready
+    if (router.isReady) {
       fetchOrderDetails();
     }
-  }, [orderId, getOrder]);
+  }, [orderId, getOrder, router.isReady]);
 
   // Format thời gian từ timestamp
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
 
-    const date = new Date(timestamp.seconds * 1000);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    try {
+      const date = new Date(timestamp.seconds * 1000);
+      return date.toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      console.error("Error formatting date:", e);
+      return 'N/A';
+    }
   };
 
   return (
@@ -82,13 +100,26 @@ export default function OrderSuccessPage() {
               <div className="flex justify-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               </div>
+            ) : error ? (
+              <Alert variant="destructive" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Lỗi</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            ) : !orderId ? (
+              <Alert className="mb-4">
+                <AlertTitle>Thông báo</AlertTitle>
+                <AlertDescription>
+                  Đơn hàng của bạn đã được tạo, nhưng hệ thống không thể hiển thị chi tiết đơn hàng lúc này.
+                </AlertDescription>
+              </Alert>
             ) : order ? (
               <div className="space-y-4">
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-medium">Mã đơn hàng:</h3>
-                      <span className="font-bold">{order.orderCode || order.id}</span>
-                    </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-medium">Mã đơn hàng:</h3>
+                    <span className="font-bold">{order.orderCode || order.id}</span>
+                  </div>
                   <div className="flex justify-between items-center mt-1">
                     <h3 className="font-medium">Ngày đặt hàng:</h3>
                     <span>{formatDate(order.createdAt)}</span>
@@ -112,14 +143,14 @@ export default function OrderSuccessPage() {
                   )}
                 </div>
 
-                  <div className="text-sm text-gray-600">
-                    <h3 className="font-medium text-gray-900 mb-1">Giao đến:</h3>
-                    <p>{order.customer.name} | {order.customer.phone}</p>
-                    <p>{order.customer.address}</p>
-                    {order.customer.email && (
-                      <p className="text-gray-500 text-xs mt-1">Email: {order.customer.email}</p>
-                    )}
-                  </div>
+                <div className="text-sm text-gray-600">
+                  <h3 className="font-medium text-gray-900 mb-1">Giao đến:</h3>
+                  <p>{order.customer?.name || 'N/A'} | {order.customer?.phone || 'N/A'}</p>
+                  <p>{order.customer?.address || 'N/A'}</p>
+                  {order.customer?.email && (
+                    <p className="text-gray-500 text-xs mt-1">Email: {order.customer.email}</p>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="text-center py-4 text-gray-500">
