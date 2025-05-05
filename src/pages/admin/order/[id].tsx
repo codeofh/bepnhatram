@@ -244,10 +244,12 @@ export default function AdminOrderDetailPage() {
         ) : !order ? (
           <Card>
             <CardContent className="p-6">
-              <div className="text-center">
-                <h3 className="text-lg font-medium">Không tìm thấy đơn hàng</h3>
-                <p className="text-gray-500 mt-2">Đơn hàng không tồn tại hoặc đã bị xóa</p>
-              </div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between mt-4">
+              <h1 className="text-2xl font-bold">Đơn hàng #{order.id}</h1>
+              <Badge
+                className={`${status.color} mt-2 sm:mt-0 flex items-center gap-1 px-3 py-1 border`}
+                variant="outline"
+              >
             </CardContent>
           </Card>
         ) : (

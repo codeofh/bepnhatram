@@ -36,6 +36,13 @@ export function useOrders() {
         throw new Error("Firestore chưa được khởi tạo");
       }
 
+      // Tạo mã đơn hàng với tiền tố yyMMdd
+      const now = new Date();
+      const year = now.getFullYear().toString().slice(-2); // Lấy 2 chữ số cuối của năm
+      const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Tháng định dạng 2 chữ số
+      const day = now.getDate().toString().padStart(2, '0'); // Ngày định dạng 2 chữ số
+      const datePrefix = `${year}${month}${day}`;
+
       // Tạo đơn hàng với dữ liệu cơ bản
       const newOrder = {
         userId: user ? user.uid : null,
@@ -54,18 +61,21 @@ export function useOrders() {
       const ordersCollection = collection(db, 'orders');
       const docRef = await addDoc(ordersCollection, newOrder);
 
-      // Cập nhật ID
+      // Tạo mã đơn hàng có tiền tố ngày tháng
+      const orderId = `${datePrefix}-${docRef.id}`;
+
+      // Cập nhật ID có tiền tố
       await updateDoc(docRef, {
-        id: docRef.id
+        id: orderId
       });
 
       toast({
         title: "Đặt hàng thành công",
-        description: `Mã đơn hàng: ${docRef.id}`,
+        description: `Mã đơn hàng: ${orderId}`,
         variant: "success",
       });
 
-      return docRef.id;
+      return orderId;
     } catch (err: any) {
       console.error('Lỗi khi tạo đơn hàng:', err);
       setError(`Đặt hàng thất bại: ${err.message}`);
@@ -175,7 +185,7 @@ export function useOrders() {
 
     try {
       if (!user) {
-        throw new Error("Bạn cần đăng nhập để cập nhật đơn hàng");
+        throw new Error("Bạn cần đăng nhập để cập nhật đơn h��ng");
       }
 
       if (!db) {
