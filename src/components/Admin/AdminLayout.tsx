@@ -139,7 +139,6 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                             : "text-gray-700"
                           }`}
                       >
-                        <span className="mr-3">{item.icon}</span>
                         <span>{item.name}</span>
                       </Link>
                     </SheetClose>
@@ -149,7 +148,6 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                     className="flex items-center p-3 mb-1 rounded-md hover:bg-gray-100 justify-start font-normal"
                     onClick={handleLogout}
                   >
-                    <LogOut size={20} className="mr-3" />
                     <span>Đăng xuất</span>
                   </Button>
                 </nav>
@@ -246,7 +244,6 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                     : "text-gray-700"
                   }`}
               >
-                <span className="mr-3">{item.icon}</span>
                 <span>{item.name}</span>
               </Link>
             ))}
@@ -255,7 +252,6 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
               className="flex items-center p-3 rounded-md hover:bg-gray-100 w-full justify-start font-normal"
               onClick={handleLogout}
             >
-              <LogOut size={20} className="mr-3" />
               <span>Đăng xuất</span>
             </Button>
           </nav>
