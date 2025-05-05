@@ -139,13 +139,17 @@ export default function OrdersPage() {
     );
   };
 
-  // Format date in Vietnamese format
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  // Format date in Vietnamese format from Timestamp
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return 'N/A';
+
+    const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
     return date.toLocaleDateString('vi-VN', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -279,31 +283,14 @@ export default function OrdersPage() {
                       >
                         <div className="p-4 bg-gray-50">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                            <div>
-                              <div className="flex items-center gap-2">
-                                <h3 className="font-medium">{order.id.slice(-6)}</h3>
-                                <Badge className={orderStatusMap[order.status].color}>
-                                  {orderStatusMap[order.status].label}
-                                </Badge>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                                <Clock className="h-4 w-4" />
-                                <span>{formatDate(order.createdAt)}</span>
+                            <div className="mt-4 pt-3 border-t">
+                              <div className="flex justify-between items-center">
+                                <Link href={`/account/order/${order.id}`} className="text-sm text-blue-600 hover:underline">
+                                  Xem chi tiết
+                                </Link>
+                                <span className="font-bold text-lg">{formatPrice(order.total)}</span>
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <span className="font-medium">{formatPrice(order.total)}</span>
-                              <CollapsibleTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
-                                    expandedOrders.includes(order.id) ? 'rotate-180' : ''
-                                  }`} />
-                                  <span className="sr-only">Chi tiết</span>
-                                </Button>
-                              </CollapsibleTrigger>
-                            </div>
-                          </div>
-                        </div>
 
                         <CollapsibleContent>
                           <div className="p-4 border-t">
@@ -316,8 +303,11 @@ export default function OrdersPage() {
                                       <PackageOpen className="h-4 w-4 text-gray-500" />
                                     </div>
                                     <div>
-                                      <p className="text-sm font-medium">{item.name}</p>
-                                      <p className="text-xs text-gray-500">
+                                  <p className="text-sm font-medium">{item.name}</p>
+                                  <p className="text-xs text-gray-500">
+                                    Số lượng: {item.quantity}
+                                    {item.selectedSize && ` - ${item.selectedSize}`}
+                                  </p>
                                         Số lượng: {item.quantity}
                                         {item.selectedSize && ` - ${item.selectedSize}`}
                                       </p>
