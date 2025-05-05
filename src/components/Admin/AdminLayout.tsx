@@ -162,12 +162,9 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                   className="h-10 w-auto object-contain"
                   priority
                 />
-                <span className="ml-2 text-xl font-bold hidden md:inline-block">
-                  Admin
-                </span>
               </div>
               <span className="text-xl font-bold md:hidden">
-                BNT Admin
+                BNT
               </span>
             </Link>
           </div>
