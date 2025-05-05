@@ -163,9 +163,6 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                   priority
                 />
               </div>
-              <span className="text-xl font-bold md:hidden">
-                BNT
-              </span>
             </Link>
           </div>
 
