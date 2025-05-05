@@ -245,9 +245,7 @@ export default function AdminOrdersPage() {
                     {filteredOrders.map((order) => (
                       <TableRow key={order.id} className="cursor-pointer hover:bg-gray-50">
                         <TableCell className="font-medium">
-                          {order.orderCode
-                            ? order.orderCode.substring(0, 6) + '...' + order.orderCode.slice(-4)
-                            : order.id.substring(0, 6) + '...' + order.id.slice(-4)}
+                          {order.orderCode || order.id}
                         </TableCell>
                         <TableCell>
                           <div>
