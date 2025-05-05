@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { CheckCircle, Home, Package, ArrowRight, AlertTriangle } from 'lucide-react';
@@ -18,58 +18,59 @@ export default function OrderSuccessPage() {
   const { user } = useAuthContext();
   const { getOrder } = useOrders();
   const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Start with false to prevent immediate loading
   const [error, setError] = useState<string | null>(null);
-  const [fetchAttempts, setFetchAttempts] = useState(0);
-  const MAX_FETCH_ATTEMPTS = 3;
+  const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
 
-  // Fetch thông tin đơn hàng - sử dụng useCallback để đảm bảo hàm không thay đổi giữa các lần render
-  const fetchOrderDetails = useCallback(async () => {
-    if (!orderId || typeof orderId !== 'string' || fetchAttempts >= MAX_FETCH_ATTEMPTS) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const orderData = await getOrder(orderId);
-      if (orderData) {
-        setOrder(orderData);
-        setLoading(false);
-      } else {
-        setError("Không tìm thấy thông tin đơn hàng");
-        setLoading(false);
-      }
-    } catch (error: any) {
-      console.error("Lỗi khi lấy thông tin đơn hàng:", error);
-      setError(error.message || "Đã xảy ra lỗi khi tải thông tin đơn hàng");
-      setLoading(false);
-    }
-  }, [orderId, getOrder, fetchAttempts]);
-
-  // UseEffect chỉ chạy khi router đã sẵn sàng và giá trị orderId thay đổi
+  // Chỉ fetch dữ liệu đơn hàng khi router đã sẵn sàng và chỉ fetch một lần
   useEffect(() => {
-    // Chỉ chạy khi router đã sẵn sàng và orderId tồn tại
-    if (router.isReady && orderId && typeof orderId === 'string') {
-      // Tăng số lần đã thử fetch
-      setFetchAttempts(prev => prev + 1);
-      // Chỉ fetch nếu chưa đạt tới số lần thử tối đa
-      if (fetchAttempts < MAX_FETCH_ATTEMPTS) {
-        fetchOrderDetails();
-      } else if (loading) {
-        // Nếu đã đạt tới số lần thử tối đa nhưng vẫn đang loading
-        setLoading(false);
-        setError("Không thể tải thông tin đơn hàng sau nhiều lần thử. Vui lòng kiểm tra trong mục đơn hàng của bạn.");
+    // Hàm an toàn để fetch thông tin đơn hàng
+    async function fetchOrderDetails() {
+      // Chỉ fetch nếu chưa từng fetch và có orderId
+      if (hasAttemptedFetch || !orderId || typeof orderId !== 'string') {
+        return;
       }
-    } else if (router.isReady && !orderId) {
-      // Nếu router đã sẵn sàng nhưng không có orderId
-      setLoading(false);
-    }
-  }, [router.isReady, orderId, fetchOrderDetails, fetchAttempts, loading]);
 
-  // Format thời gian từ timestamp một cách an toàn
+      setLoading(true);
+      setHasAttemptedFetch(true); // Đánh dấu đã thử fetch
+
+      try {
+        const orderData = await getOrder(orderId);
+        
+        if (orderData) {
+          setOrder(orderData);
+        } else {
+          setError("Không tìm thấy thông tin đơn hàng");
+        }
+      } catch (error: any) {
+        console.error("Lỗi khi lấy thông tin đơn hàng:", error);
+        setError(error.message || "Đã xảy ra lỗi khi tải thông tin đơn hàng");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Chỉ gọi fetch khi router đã sẵn sàng và chưa từng fetch
+    if (router.isReady && !hasAttemptedFetch) {
+      fetchOrderDetails();
+    }
+  }, [router.isReady, orderId, getOrder, hasAttemptedFetch]);
+
+  // Hiển thị nội dung mặc định nếu đợi quá lâu
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (loading) {
+        setLoading(false);
+        if (!order) {
+          setError("Không thể tải thông tin đơn hàng. Vui lòng kiểm tra trong mục đơn hàng của bạn.");
+        }
+      }
+    }, 5000); // Timeout sau 5 giây
+
+    return () => clearTimeout(timer);
+  }, [loading, order]);
+
+  // Format thời gian từ timestamp
   const formatDate = (timestamp: any) => {
     if (!timestamp) return 'N/A';
 
@@ -110,7 +111,7 @@ export default function OrderSuccessPage() {
               </p>
             </div>
 
-            {loading && fetchAttempts <= MAX_FETCH_ATTEMPTS ? (
+            {loading ? (
               <div className="flex justify-center py-4">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
               </div>
@@ -141,7 +142,7 @@ export default function OrderSuccessPage() {
                   <div className="flex justify-between items-center mt-1">
                     <h3 className="font-medium">Tổng tiền:</h3>
                     <span className="font-bold text-orange-500">
-                      {order.total.toLocaleString('vi-VN')}₫
+                      {order.total?.toLocaleString('vi-VN')}₫
                     </span>
                   </div>
                   {order.payment?.method === 'bank_transfer' && (
