@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import {
   LayoutDashboard,
@@ -152,9 +153,19 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
 
             {/* Logo */}
             <Link href="/admin/dashboard" className="flex items-center">
-              <span className="text-xl font-bold hidden md:inline-block">
-                {siteConfig.name} - Admin
-              </span>
+              <div className="flex items-center">
+                <Image
+                  src="/logo-removebg.png"
+                  alt={siteConfig.name}
+                  width={180}
+                  height={60}
+                  className="h-10 w-auto object-contain"
+                  priority
+                />
+                <span className="ml-2 text-xl font-bold hidden md:inline-block">
+                  Admin
+                </span>
+              </div>
               <span className="text-xl font-bold md:hidden">
                 BNT Admin
               </span>
