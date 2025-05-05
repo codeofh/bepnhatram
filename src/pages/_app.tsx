@@ -3,6 +3,7 @@ import type { AppProps } from 'next/app';
 import { Toaster } from "@/components/ui/toaster";
 import { ToastContextProvider } from '@/contexts/ToastContext';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { CartProvider } from '@/contexts/CartContext';
 import { OfflineWarning } from '@/components/ui/offline-warning';
 import '@/styles/globals.css';
 
@@ -15,7 +16,7 @@ export default function App({ Component, pageProps }: AppProps) {
       script.async = true;
       script.setAttribute('data-softgen-monitoring', 'true');
       document.head.appendChild(script);
-      
+
       return () => {
         document.head.removeChild(script);
       };
@@ -25,9 +26,11 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ToastContextProvider>
       <AuthProvider>
-        <Component {...pageProps} />
-        <Toaster />
-        <OfflineWarning />
+        <CartProvider>
+          <Component {...pageProps} />
+          <Toaster />
+          <OfflineWarning />
+        </CartProvider>
       </AuthProvider>
     </ToastContextProvider>
   );

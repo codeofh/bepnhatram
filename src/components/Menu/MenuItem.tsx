@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToastContext } from "@/contexts/ToastContext";
+import { useCartContext } from "@/contexts/CartContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { SizeOption } from "@/data/menuItems";
 
@@ -99,10 +100,15 @@ export function MenuItem({
     }
   };
 
-  // Function to show development notification
-  const showDevelopmentNotification = () => {
-    const sizeSuffix = sizes ? ` (${selectedSize})` : '';
-    showCartNotification('add', `${name}${sizeSuffix}`);
+  const { addItem } = useCartContext();
+
+  // Function to add item to cart
+  const handleAddToCart = () => {
+    addItem(
+      { id, name, description, price, image, category, rating, sizes },
+      1,
+      sizes ? selectedSize : undefined
+    );
   };
 
   return (
@@ -155,7 +161,8 @@ export function MenuItem({
             </div>
             <button
               className="bg-white rounded-full p-1.5 border border-gray-300 hover:bg-gray-50 flex-shrink-0"
-              onClick={showDevelopmentNotification}
+              onClick={handleAddToCart}
+              aria-label="Thêm vào giỏ hàng"
             >
               <Plus size={18} />
             </button>
