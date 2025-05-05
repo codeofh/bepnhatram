@@ -111,7 +111,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                   <Menu size={20} />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-64">
+              <SheetContent side="left" className="p-0 w-64 [&>button]:hidden">
                 <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                   <Link href="/" className="flex items-center">
                     <Image
