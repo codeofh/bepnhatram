@@ -12,9 +12,9 @@ interface LayoutProps {
   setActiveCategory?: (category: string) => void;
 }
 
-export function Layout({ 
-  children, 
-  searchQuery, 
+export function Layout({
+  children,
+  searchQuery,
   setSearchQuery,
   activeCategory = "all",
   setActiveCategory
@@ -22,8 +22,9 @@ export function Layout({
   const router = useRouter();
   const isHomePage = router.pathname === "/";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [localActiveCategory, setLocalActiveCategory] = useState("all");
-  
+
   // Use either the provided setActiveCategory or the local one
   const handleCategoryChange = (category: string) => {
     if (setActiveCategory) {
@@ -39,21 +40,23 @@ export function Layout({
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header 
-        toggleSidebar={toggleSidebar} 
-        searchQuery={searchQuery} 
-        setSearchQuery={setSearchQuery} 
+      <Header
+        toggleSidebar={toggleSidebar}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        isSearchModalOpen={isSearchModalOpen}
+        setIsSearchModalOpen={setIsSearchModalOpen}
       />
-      
+
       {/* Mobile sidebar */}
-      <div 
+      <div
         className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300 ${
           isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-        }`} 
+        }`}
         onClick={toggleSidebar}
       >
-        <div 
-          className="absolute left-0 top-0 h-full w-3/4 max-w-xs bg-white overflow-y-auto" 
+        <div
+          className="absolute left-0 top-0 h-full w-3/4 max-w-xs bg-white overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="p-4">
@@ -65,9 +68,9 @@ export function Layout({
           </div>
         </div>
       </div>
-      
+
       {children}
-      
+
       <Footer />
     </div>
   );

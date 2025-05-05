@@ -1,5 +1,6 @@
 import React, { ReactNode } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/router";
 import {
   LayoutDashboard,
@@ -105,23 +106,23 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
           <div className="flex items-center">
             {/* Mobile menu trigger */}
             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild className="lg:hidden mr-2">
+              <SheetTrigger asChild className="mr-2">
                 <Button variant="ghost" size="icon">
                   <Menu size={20} />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-64">
+              <SheetContent side="left" className="p-0 w-64 [&>button]:hidden">
                 <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                   <Link href="/" className="flex items-center">
-                    <span className="text-lg font-bold">
-                      {siteConfig.name} - Admin
-                    </span>
+                    <Image
+                      src="/logo-removebg.png"
+                      alt={siteConfig.name}
+                      width={120}
+                      height={40}
+                      className="h-8 w-auto object-contain"
+                      priority
+                    />
                   </Link>
-                  <SheetClose asChild>
-                    <Button variant="ghost" size="icon">
-                      <X size={18} />
-                    </Button>
-                  </SheetClose>
                 </div>
                 <nav className="flex flex-col p-2">
                   {navItems.map((item) => (
@@ -152,12 +153,16 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
 
             {/* Logo */}
             <Link href="/admin/dashboard" className="flex items-center">
-              <span className="text-xl font-bold hidden md:inline-block">
-                {siteConfig.name} - Admin
-              </span>
-              <span className="text-xl font-bold md:hidden">
-                BNT Admin
-              </span>
+              <div className="flex items-center">
+                <Image
+                  src="/logo-removebg.png"
+                  alt={siteConfig.name}
+                  width={180}
+                  height={60}
+                  className="h-10 w-auto object-contain"
+                  priority
+                />
+              </div>
             </Link>
           </div>
 
@@ -225,7 +230,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
       {/* Main container */}
       <div className="flex flex-1">
         {/* Sidebar - Desktop */}
-        <aside className="w-64 border-r border-gray-200 bg-white hidden lg:block">
+        <aside className={`w-64 border-r border-gray-200 bg-white ${isMobileMenuOpen ? 'hidden' : 'hidden lg:block'}`}>
           <nav className="p-4 space-y-1">
             {navItems.map((item) => (
               <Link
