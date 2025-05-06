@@ -139,14 +139,6 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                       </Link>
                     </SheetClose>
                   ))}
-                  <Button
-                    variant="ghost"
-                    className="flex items-center p-3 mb-1 rounded-md hover:bg-gray-100 justify-start font-normal"
-                    onClick={handleLogout}
-                  >
-                    <LogOut size={20} className="mr-3" />
-                    <span>Đăng xuất</span>
-                  </Button>
                 </nav>
               </SheetContent>
             </Sheet>
@@ -245,14 +237,6 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                 <span>{item.name}</span>
               </Link>
             ))}
-            <Button
-              variant="ghost"
-              className="flex items-center p-3 rounded-md hover:bg-gray-100 w-full justify-start font-normal"
-              onClick={handleLogout}
-            >
-              <LogOut size={20} className="mr-3" />
-              <span>Đăng xuất</span>
-            </Button>
           </nav>
         </aside>
 

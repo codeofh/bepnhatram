@@ -96,20 +96,6 @@ export function useAuth(): AuthHookReturn {
           .catch(err => console.error("Không thể gửi email xác thực:", err))
       );
 
-      // Create user document in Firestore
-      const userData: UserData = {
-        name,
-        email,
-        createdAt: serverTimestamp(),
-        lastLogin: serverTimestamp(),
-        authProvider: 'email'
-      };
-
-      updateOperations.push(
-        setDoc(doc(db!, 'users', user.uid), userData)
-          .catch(err => console.error("Không thể lưu dữ liệu người dùng vào Firestore:", err))
-      );
-
       // Wait for all operations to complete
       await Promise.allSettled(updateOperations);
 
@@ -148,15 +134,6 @@ export function useAuth(): AuthHookReturn {
     try {
       const userCredential = await signInWithEmailAndPassword(auth!, email, password);
 
-      // Update last login time
-      try {
-        await setDoc(doc(db!, 'users', userCredential.user.uid), {
-          lastLogin: serverTimestamp()
-        }, { merge: true });
-      } catch (dbErr) {
-        console.error("Không thể cập nhật thời gian đăng nhập:", dbErr);
-        // Continue even if database write fails
-      }
 
       showSuccess("Đăng nhập thành công!");
       return userCredential.user;
