@@ -10,7 +10,7 @@ import type {
 
 const TOAST_LIMIT = 1
 // Set to 1.5 seconds (1500ms)
-const TOAST_REMOVE_DELAY = 1500
+const TOAST_REMOVE_DELAY = 2000
 
 type ToasterToast = ToastProps & {
   id: string
@@ -80,6 +80,9 @@ export const reducer = (state: State, action: Action): State => {
     case "ADD_TOAST":
       return {
         ...state,
+        // If the toast limit is reached, the oldest toast will be removed
+        // and its timer will be cleared.
+        // Set timer for new toast
         toasts: [action.toast, ...state.toasts].slice(0, TOAST_LIMIT),
       }
 
@@ -141,7 +144,7 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
+type Toast = Omit<ToasterToast, "id" | "duration"> & { duration?: number }
 
 function toast({ ...props }: Toast) {
   const id = genId()
@@ -151,6 +154,12 @@ function toast({ ...props }: Toast) {
       type: "UPDATE_TOAST",
       toast: { ...props, id },
     })
+
+  // Set a timeout to automatically dismiss the toast after a duration
+  if (props.duration !== undefined) {
+    addToRemoveQueue(id, props.duration);
+  }
+
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
   dispatch({

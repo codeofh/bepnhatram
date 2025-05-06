@@ -22,6 +22,7 @@ import { useCartContext } from '@/contexts/CartContext';
 import { useOrders } from '@/hooks/useOrders';
 import { CreateOrderData, PaymentMethod } from '@/types/order';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 // Schema xác thực form đặt hàng
 const checkoutFormSchema = z.object({
@@ -53,6 +54,7 @@ export function CheckoutForm() {
   const router = useRouter();
   const { items, subtotal, clearCart } = useCartContext();
   const { user } = useAuthContext();
+  const { toast } = useToast();
   const { createOrder, loading } = useOrders();
 
   // Khởi tạo form
@@ -78,6 +80,16 @@ export function CheckoutForm() {
   // Xử lý khi submit form
   const onSubmit = async (values: CheckoutFormValues) => {
     if (items.length === 0) {
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Lỗi đặt hàng",
+        description: "Bạn cần đăng nhập để đặt hàng",
+        variant: "warning",
+        duration: 1500,
+      });
       return;
     }
 
