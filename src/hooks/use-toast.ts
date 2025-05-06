@@ -75,7 +75,7 @@ const addToRemoveQueue = (toastId: string) => {
   toastTimeouts.set(toastId, timeout)
 }
 
-export const reducer = (state: State, action: Action): State => {
+export const reducer = (state: State, action: Action): State => { // Keep the existing function signature
   switch (action.type) {
     case "ADD_TOAST":
       return {
@@ -157,7 +157,7 @@ function toast({ ...props }: Toast) {
 
   // Set a timeout to automatically dismiss the toast after a duration
   if (props.duration !== undefined) {
-    addToRemoveQueue(id, props.duration);
+ addToRemoveQueue(id); // Remove the second argument (duration)
   }
 
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
