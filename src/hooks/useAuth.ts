@@ -224,6 +224,9 @@ export function useAuth(): AuthHookReturn {
       console.error(`Lỗi đăng nhập với ${provider}:`, err);
       let errorMessage = `Đăng nhập với ${provider === 'google' ? 'Google' : 'Facebook'} thất bại`;
 
+      if (err.code === 'auth/unauthorized-domain') {
+        errorMessage = "Lỗi cấu hình đăng nhập. Vui lòng liên hệ quản trị viên";
+      } else 
       if (err.code === 'auth/popup-closed-by-user') {
         errorMessage = "Cửa sổ đăng nhập đã bị đóng";
       } else if (err.code === 'auth/network-request-failed') {
