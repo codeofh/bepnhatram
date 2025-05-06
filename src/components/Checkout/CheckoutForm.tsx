@@ -28,9 +28,12 @@ const checkoutFormSchema = z.object({
   name: z.string().min(2, {
     message: 'Tên phải có ít nhất 2 ký tự',
   }),
-  email: z.string().email({
-    message: 'Email không hợp lệ',
-  }).optional(),
+  email: z.union([
+    z.string().email({
+      message: 'Email không hợp lệ',
+    }),
+    z.string().length(0)
+  ]).optional(),
   phone: z.string().regex(/^(0|\+84)[3|5|7|8|9][0-9]{8}$/, {
     message: 'Số điện thoại không hợp lệ',
   }),
