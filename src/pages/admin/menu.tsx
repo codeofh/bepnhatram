@@ -11,7 +11,7 @@ import {
   Eye,
   ArrowUpDown,
   MoreHorizontal,
-  X
+  X,
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { MenuItemForm } from "@/components/Admin/MenuItemForm";
@@ -146,7 +146,7 @@ export default function AdminMenuPage() {
       if (currentItem) {
         // Update existing item
         const updatedItems = items.map((item) =>
-          item.id === currentItem.id ? { ...data, id: currentItem.id } : item
+          item.id === currentItem.id ? { ...data, id: currentItem.id } : item,
         );
         setItems(updatedItems);
         showSuccess("Đã cập nhật món ăn thành công!");
@@ -212,10 +212,7 @@ export default function AdminMenuPage() {
             </div>
 
             <div className="w-full md:w-auto">
-              <Select
-                value={categoryFilter}
-                onValueChange={setCategoryFilter}
-              >
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full md:w-44">
                   <div className="flex items-center">
                     <Filter className="w-4 h-4 mr-2" />
@@ -234,10 +231,7 @@ export default function AdminMenuPage() {
             </div>
           </div>
 
-          <Button
-            onClick={handleCreateItem}
-            className="w-full md:w-auto"
-          >
+          <Button onClick={handleCreateItem} className="w-full md:w-auto">
             <Plus className="mr-2 h-4 w-4" />
             Thêm món ăn
           </Button>
@@ -280,15 +274,16 @@ export default function AdminMenuPage() {
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                   </Button>
                 </TableHead>
-                <TableHead className="w-20 text-right">
-                  Thao tác
-                </TableHead>
+                <TableHead className="w-20 text-right">Thao tác</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center py-6 text-gray-500">
+                  <TableCell
+                    colSpan={6}
+                    className="text-center py-6 text-gray-500"
+                  >
                     Không tìm thấy món ăn nào
                   </TableCell>
                 </TableRow>
@@ -353,7 +348,9 @@ export default function AdminMenuPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditItem(item)}>
+                          <DropdownMenuItem
+                            onClick={() => handleEditItem(item)}
+                          >
                             <Edit className="mr-2 h-4 w-4" />
                             Chỉnh sửa
                           </DropdownMenuItem>
@@ -406,8 +403,8 @@ export default function AdminMenuPage() {
             <DialogHeader>
               <DialogTitle>Xác nhận xóa</DialogTitle>
               <DialogDescription>
-                Bạn có chắc chắn muốn xóa món ăn "{currentItem?.name}" khỏi thực đơn?
-                Hành động này không thể khôi phục.
+                Bạn có chắc chắn muốn xóa món ăn "{currentItem?.name}" khỏi thực
+                đơn? Hành động này không thể khôi phục.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
@@ -417,10 +414,7 @@ export default function AdminMenuPage() {
               >
                 Hủy
               </Button>
-              <Button
-                variant="destructive"
-                onClick={confirmDelete}
-              >
+              <Button variant="destructive" onClick={confirmDelete}>
                 Xóa
               </Button>
             </DialogFooter>

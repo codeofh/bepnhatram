@@ -11,7 +11,7 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    showCartNotification('development', 'Chức năng đang được phát triển');
+    showCartNotification("development", "Chức năng đang được phát triển");
   };
 
   return (
@@ -27,11 +27,18 @@ export default function ContactPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-2xl font-bold mb-6">Gửi tin nhắn cho chúng tôi</h2>
+              <h2 className="text-2xl font-bold mb-6">
+                Gửi tin nhắn cho chúng tôi
+              </h2>
 
               <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Họ và tên
+                  </label>
                   <input
                     type="text"
                     id="name"
@@ -41,7 +48,12 @@ export default function ContactPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Email
+                  </label>
                   <input
                     type="email"
                     id="email"
@@ -51,7 +63,12 @@ export default function ContactPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Tin nhắn</label>
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Tin nhắn
+                  </label>
                   <textarea
                     id="message"
                     rows={5}
@@ -60,7 +77,9 @@ export default function ContactPage() {
                   ></textarea>
                 </div>
 
-                <Button type="submit" className="w-full">Gửi tin nhắn</Button>
+                <Button type="submit" className="w-full">
+                  Gửi tin nhắn
+                </Button>
               </form>
             </div>
 
@@ -72,7 +91,9 @@ export default function ContactPage() {
                   <MapPin size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Địa chỉ</h3>
-                    <p className="text-gray-600">{siteConfig.contact.address}</p>
+                    <p className="text-gray-600">
+                      {siteConfig.contact.address}
+                    </p>
                   </div>
                 </div>
 
@@ -96,7 +117,9 @@ export default function ContactPage() {
                   <Clock size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Giờ mở cửa</h3>
-                    <p className="text-gray-600">{siteConfig.contact.openingHours}</p>
+                    <p className="text-gray-600">
+                      {siteConfig.contact.openingHours}
+                    </p>
                   </div>
                 </div>
               </div>

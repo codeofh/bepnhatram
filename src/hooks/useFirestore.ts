@@ -1,22 +1,22 @@
-import { 
-  collection, 
-  doc, 
-  getDoc, 
-  getDocs, 
-  setDoc, 
-  updateDoc, 
-  deleteDoc, 
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  setDoc,
+  updateDoc,
+  deleteDoc,
   query,
-  where, 
-  orderBy, 
+  where,
+  orderBy,
   limit,
   DocumentData,
   QueryConstraint,
   CollectionReference,
   DocumentReference,
-  WithFieldValue
-} from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+  WithFieldValue,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 /**
  * Hook for Firestore database operations with consistent configuration
@@ -24,19 +24,19 @@ import { db } from '@/lib/firebase';
  */
 export const useFirestore = () => {
   // Check if Firestore is available
-  const isFirestoreAvailable = typeof window !== 'undefined' && !!db;
+  const isFirestoreAvailable = typeof window !== "undefined" && !!db;
 
   // Get document with proper settings
   const getDocument = async <T = DocumentData>(
-    collectionName: string, 
-    docId: string
+    collectionName: string,
+    docId: string,
   ): Promise<T | null> => {
     if (!isFirestoreAvailable) return null;
-    
+
     try {
       const docRef = doc(db!, collectionName, docId);
       const snapshot = await getDoc(docRef);
-      
+
       if (snapshot.exists()) {
         return { id: snapshot.id, ...snapshot.data() } as unknown as T;
       }
@@ -53,12 +53,12 @@ export const useFirestore = () => {
     ...queryConstraints: QueryConstraint[]
   ): Promise<T[]> => {
     if (!isFirestoreAvailable) return [];
-    
+
     try {
       const collectionRef = collection(db!, collectionName);
       const q = query(collectionRef, ...queryConstraints);
       const querySnapshot = await getDocs(q);
-      
+
       return querySnapshot.docs.map((doc) => {
         return { id: doc.id, ...doc.data() } as unknown as T;
       });
@@ -70,14 +70,14 @@ export const useFirestore = () => {
 
   // Get all documents from a collection
   const getCollection = async <T = DocumentData>(
-    collectionName: string
+    collectionName: string,
   ): Promise<T[]> => {
     if (!isFirestoreAvailable) return [];
-    
+
     try {
       const collectionRef = collection(db!, collectionName);
       const snapshot = await getDocs(collectionRef);
-      
+
       return snapshot.docs.map((doc) => {
         return { id: doc.id, ...doc.data() } as unknown as T;
       });
@@ -92,10 +92,10 @@ export const useFirestore = () => {
     collectionName: string,
     docId: string,
     data: T,
-    merge = true
+    merge = true,
   ): Promise<void> => {
     if (!isFirestoreAvailable) throw new Error("Firestore is not available");
-    
+
     try {
       const docRef = doc(db!, collectionName, docId);
       await setDoc(docRef, data, { merge });
@@ -109,10 +109,10 @@ export const useFirestore = () => {
   const updateDocument = async (
     collectionName: string,
     docId: string,
-    data: Partial<DocumentData>
+    data: Partial<DocumentData>,
   ): Promise<void> => {
     if (!isFirestoreAvailable) throw new Error("Firestore is not available");
-    
+
     try {
       const docRef = doc(db!, collectionName, docId);
       await updateDoc(docRef, data);
@@ -125,10 +125,10 @@ export const useFirestore = () => {
   // Delete document
   const deleteDocument = async (
     collectionName: string,
-    docId: string
+    docId: string,
   ): Promise<void> => {
     if (!isFirestoreAvailable) throw new Error("Firestore is not available");
-    
+
     try {
       const docRef = doc(db!, collectionName, docId);
       await deleteDoc(docRef);
@@ -140,7 +140,7 @@ export const useFirestore = () => {
 
   // Get collection reference
   const getCollectionRef = <T = DocumentData>(
-    collectionName: string
+    collectionName: string,
   ): CollectionReference<T> | null => {
     if (!isFirestoreAvailable) return null;
     return collection(db!, collectionName) as CollectionReference<T>;
@@ -149,7 +149,7 @@ export const useFirestore = () => {
   // Get document reference
   const getDocumentRef = <T = DocumentData>(
     collectionName: string,
-    docId: string
+    docId: string,
   ): DocumentReference<T> | null => {
     if (!isFirestoreAvailable) return null;
     return doc(db!, collectionName, docId) as DocumentReference<T>;
@@ -163,6 +163,6 @@ export const useFirestore = () => {
     updateDocument,
     deleteDocument,
     getCollectionRef,
-    getDocumentRef
+    getDocumentRef,
   };
 };

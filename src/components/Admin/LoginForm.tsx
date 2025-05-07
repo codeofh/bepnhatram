@@ -26,10 +26,18 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
-  const { login, error: authError, loading, loginWithGoogle, loginWithFacebook } = useAuthContext();
+  const {
+    login,
+    error: authError,
+    loading,
+    loginWithGoogle,
+    loginWithFacebook,
+  } = useAuthContext();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSocialSubmitting, setIsSocialSubmitting] = useState<string | null>(null);
+  const [isSocialSubmitting, setIsSocialSubmitting] = useState<string | null>(
+    null,
+  );
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -51,16 +59,16 @@ export function LoginForm() {
     }
   }
 
-  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+  const handleSocialLogin = async (provider: "google" | "facebook") => {
     setError(null);
     setIsSocialSubmitting(provider);
 
     try {
       let result: User | null = null;
 
-      if (provider === 'google' && loginWithGoogle) {
+      if (provider === "google" && loginWithGoogle) {
         result = await loginWithGoogle();
-      } else if (provider === 'facebook' && loginWithFacebook) {
+      } else if (provider === "facebook" && loginWithFacebook) {
         result = await loginWithFacebook();
       }
 
@@ -69,7 +77,9 @@ export function LoginForm() {
       }
     } catch (err: any) {
       console.error(`${provider} login error:`, err);
-      setError(`Đăng nhập bằng ${provider} thất bại: ${err.message || 'Lỗi không xác định'}`);
+      setError(
+        `Đăng nhập bằng ${provider} thất bại: ${err.message || "Lỗi không xác định"}`,
+      );
     } finally {
       setIsSocialSubmitting(null);
     }
@@ -165,10 +175,10 @@ export function LoginForm() {
         <Button
           variant="outline"
           className="w-1/2"
-          onClick={() => handleSocialLogin('facebook')}
+          onClick={() => handleSocialLogin("facebook")}
           disabled={isSubmitting || loading || isSocialSubmitting !== null}
         >
-          {isSocialSubmitting === 'facebook' ? (
+          {isSocialSubmitting === "facebook" ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Facebook className="mr-2 h-4 w-4" />
@@ -178,10 +188,10 @@ export function LoginForm() {
         <Button
           variant="outline"
           className="w-1/2"
-          onClick={() => handleSocialLogin('google')}
+          onClick={() => handleSocialLogin("google")}
           disabled={isSubmitting || loading || isSocialSubmitting !== null}
         >
-          {isSocialSubmitting === 'google' ? (
+          {isSocialSubmitting === "google" ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Mail className="mr-2 h-4 w-4" />

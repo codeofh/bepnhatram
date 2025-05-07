@@ -2,7 +2,14 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { Search, Menu, ShoppingCart, User, LogOut, Settings } from "lucide-react";
+import {
+  Search,
+  Menu,
+  ShoppingCart,
+  User,
+  LogOut,
+  Settings,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthDialog } from "@/components/Auth/AuthDialog";
@@ -32,7 +39,7 @@ export function Header({
   searchQuery,
   setSearchQuery,
   isSearchModalOpen = false,
-  setIsSearchModalOpen
+  setIsSearchModalOpen,
 }: HeaderProps) {
   const router = useRouter();
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
@@ -68,23 +75,25 @@ export function Header({
 
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
-    if (!user || !user.displayName) return '?';
+    if (!user || !user.displayName) return "?";
 
-    const nameParts = user.displayName.split(' ');
+    const nameParts = user.displayName.split(" ");
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
 
-    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+    return (
+      nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
-  const isHomePage = router.pathname === '/';
-  const isAboutPage = router.pathname === '/about';
-  const isContactPage = router.pathname === '/contact';
+  const isHomePage = router.pathname === "/";
+  const isAboutPage = router.pathname === "/about";
+  const isContactPage = router.pathname === "/contact";
 
   // Menu items for navigation
   const menuItems = [
-    { href: '/', label: 'Món ăn', active: isHomePage },
-    { href: '/about', label: 'Giới thiệu', active: isAboutPage },
-    { href: '/contact', label: 'Liên hệ', active: isContactPage },
+    { href: "/", label: "Món ăn", active: isHomePage },
+    { href: "/about", label: "Giới thiệu", active: isAboutPage },
+    { href: "/contact", label: "Liên hệ", active: isContactPage },
   ];
 
   return (
@@ -121,8 +130,8 @@ export function Header({
                 href={item.href}
                 className={`font-medium ${
                   item.active
-                    ? 'text-blue-600 font-semibold'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? "text-blue-600 font-semibold"
+                    : "text-gray-600 hover:text-gray-900"
                 }`}
               >
                 {item.label}
@@ -133,14 +142,19 @@ export function Header({
           {/* Right side: Search, Cart, User buttons */}
           <div className="flex items-center">
             {/* Search Form */}
-            <form onSubmit={handleSearch} className="hidden md:block relative mr-4">
+            <form
+              onSubmit={handleSearch}
+              className="hidden md:block relative mr-4"
+            >
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 type="text"
                 placeholder="Tìm kiếm món ăn..."
                 className="pl-10 pr-10 w-64 h-9 rounded-lg"
-                value={searchQuery || ''}
-                onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+                value={searchQuery || ""}
+                onChange={(e) =>
+                  setSearchQuery && setSearchQuery(e.target.value)
+                }
               />
             </form>
 
@@ -160,13 +174,20 @@ export function Header({
             </div>
 
             {/* User Button / Profile */}
-            {mounted && (
-              user ? (
+            {mounted &&
+              (user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="ml-2 relative">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="ml-2 relative"
+                    >
                       <Avatar className="h-8 w-8 bg-green-600 text-white">
-                        <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                        <AvatarImage
+                          src={user.photoURL || undefined}
+                          alt={user.displayName || "User"}
+                        />
                         <AvatarFallback>{getUserInitials()}</AvatarFallback>
                       </Avatar>
                     </Button>
@@ -175,12 +196,19 @@ export function Header({
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex gap-2 items-center py-1.5">
                         <Avatar className="h-10 w-10 bg-green-600 text-white">
-                          <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                          <AvatarImage
+                            src={user.photoURL || undefined}
+                            alt={user.displayName || "User"}
+                          />
                           <AvatarFallback>{getUserInitials()}</AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col">
-                          <p className="text-sm font-medium leading-none">{user.displayName || 'Người dùng'}</p>
-                          <p className="text-xs leading-snug text-muted-foreground">{user.email}</p>
+                          <p className="text-sm font-medium leading-none">
+                            {user.displayName || "Người dùng"}
+                          </p>
+                          <p className="text-xs leading-snug text-muted-foreground">
+                            {user.email}
+                          </p>
                         </div>
                       </div>
                     </DropdownMenuLabel>
@@ -204,7 +232,10 @@ export function Header({
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                    <DropdownMenuItem
+                      onClick={handleLogout}
+                      className="cursor-pointer"
+                    >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Đăng xuất</span>
                     </DropdownMenuItem>
@@ -219,8 +250,7 @@ export function Header({
                 >
                   <User className="h-5 w-5" />
                 </Button>
-              )
-            )}
+              ))}
           </div>
         </div>
       </div>
@@ -232,7 +262,7 @@ export function Header({
       <SearchModal
         isOpen={isSearchModalOpen || false}
         onClose={closeSearchModal}
-        searchQuery={searchQuery || ''}
+        searchQuery={searchQuery || ""}
         setSearchQuery={setSearchQuery || (() => {})}
       />
     </header>

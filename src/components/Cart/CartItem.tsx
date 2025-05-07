@@ -1,8 +1,11 @@
-import React from 'react';
-import Image from 'next/image';
-import { Minus, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useCartContext, CartItem as CartItemType } from '@/contexts/CartContext';
+import React from "react";
+import Image from "next/image";
+import { Minus, Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  useCartContext,
+  CartItem as CartItemType,
+} from "@/contexts/CartContext";
 
 interface CartItemProps {
   item: CartItemType;
@@ -17,32 +20,27 @@ export function CartItem({ item, showControls = true }: CartItemProps) {
   const totalPrice = `${(item.price * item.quantity).toLocaleString("vi-VN")}₫`;
 
   const handleIncrease = () => {
-    updateQuantity(item.id.split('-')[0], item.quantity + 1, item.selectedSize);
+    updateQuantity(item.id.split("-")[0], item.quantity + 1, item.selectedSize);
   };
 
   const handleDecrease = () => {
-    updateQuantity(item.id.split('-')[0], item.quantity - 1, item.selectedSize);
+    updateQuantity(item.id.split("-")[0], item.quantity - 1, item.selectedSize);
   };
 
   const handleRemove = () => {
-    removeItem(item.id.split('-')[0], item.selectedSize);
+    removeItem(item.id.split("-")[0], item.selectedSize);
   };
 
   return (
     <div className="flex py-3 border-b last:border-0">
       <div className="h-16 w-16 relative rounded-md overflow-hidden flex-shrink-0">
-        <Image
-          src={item.image}
-          alt={item.name}
-          fill
-          className="object-cover"
-        />
+        <Image src={item.image} alt={item.name} fill className="object-cover" />
       </div>
 
       <div className="ml-3 flex-1">
         <div className="flex justify-between">
           <h4 className="text-sm font-medium line-clamp-1">{item.name}</h4>
-          <button 
+          <button
             onClick={handleRemove}
             className="text-gray-400 hover:text-red-500 transition-colors"
             aria-label="Xóa khỏi giỏ hàng"
@@ -56,8 +54,10 @@ export function CartItem({ item, showControls = true }: CartItemProps) {
         )}
 
         <div className="flex justify-between items-center mt-1">
-          <span className="text-sm text-orange-500 font-medium">{formattedPrice}</span>
-          
+          <span className="text-sm text-orange-500 font-medium">
+            {formattedPrice}
+          </span>
+
           {showControls ? (
             <div className="flex items-center">
               <Button
@@ -69,7 +69,9 @@ export function CartItem({ item, showControls = true }: CartItemProps) {
               >
                 <Minus size={14} />
               </Button>
-              <span className="mx-2 text-sm min-w-[20px] text-center">{item.quantity}</span>
+              <span className="mx-2 text-sm min-w-[20px] text-center">
+                {item.quantity}
+              </span>
               <Button
                 variant="outline"
                 size="icon"

@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import React, { useState, useEffect } from "react"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Facebook, Mail, X, Loader2 } from "lucide-react"
+import React, { useState, useEffect } from "react";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Facebook, Mail, X, Loader2 } from "lucide-react";
 
 import {
   Dialog,
@@ -12,15 +12,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -28,54 +23,59 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useToastContext } from "@/contexts/ToastContext"
-import { useAuthContext } from "@/contexts/AuthContext"
+} from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToastContext } from "@/contexts/ToastContext";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 // Login form schema
 const loginSchema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
   password: z.string().min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
-})
+});
 
 // Sign up form schema
-const signupSchema = z.object({
-  name: z.string().min(2, { message: "Tên phải có ít nhất 2 ký tự" }),
-  email: z.string().email({ message: "Email không hợp lệ" }),
-  password: z.string().min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Mật khẩu xác nhận không khớp",
-  path: ["confirmPassword"],
-})
+const signupSchema = z
+  .object({
+    name: z.string().min(2, { message: "Tên phải có ít nhất 2 ký tự" }),
+    email: z.string().email({ message: "Email không hợp lệ" }),
+    password: z
+      .string()
+      .min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Mật khẩu xác nhận không khớp",
+    path: ["confirmPassword"],
+  });
 
-type LoginFormValues = z.infer<typeof loginSchema>
-type SignupFormValues = z.infer<typeof signupSchema>
+type LoginFormValues = z.infer<typeof loginSchema>;
+type SignupFormValues = z.infer<typeof signupSchema>;
 
 interface AuthDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
-  const [activeTab, setActiveTab] = useState("login")
-  const [isLoginSubmitting, setIsLoginSubmitting] = useState(false)
-  const [isSignupSubmitting, setIsSignupSubmitting] = useState(false)
-  const [authError, setAuthError] = useState<string | null>(null)
-  const { showSuccess, showError } = useToastContext()
-  const { user, register, login, loginWithGoogle, loginWithFacebook, error } = useAuthContext()
+  const [activeTab, setActiveTab] = useState("login");
+  const [isLoginSubmitting, setIsLoginSubmitting] = useState(false);
+  const [isSignupSubmitting, setIsSignupSubmitting] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const { showSuccess, showError } = useToastContext();
+  const { user, register, login, loginWithGoogle, loginWithFacebook, error } =
+    useAuthContext();
 
   // Reset states when user changes or when the dialog opens/closes
   useEffect(() => {
     if (user) {
-      setIsLoginSubmitting(false)
-      setIsSignupSubmitting(false)
+      setIsLoginSubmitting(false);
+      setIsSignupSubmitting(false);
       if (open) {
-        onOpenChange(false)
+        onOpenChange(false);
       }
     }
-  }, [user, open, onOpenChange])
+  }, [user, open, onOpenChange]);
 
   // Reset error when dialog opens/closes or tab changes
   useEffect(() => {
@@ -89,7 +89,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       email: "",
       password: "",
     },
-  })
+  });
 
   // Signup form
   const signupForm = useForm<SignupFormValues>({
@@ -100,82 +100,85 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
       password: "",
       confirmPassword: "",
     },
-  })
+  });
 
   async function onLoginSubmit(data: LoginFormValues) {
-    setIsLoginSubmitting(true)
-    setAuthError(null)
-    
+    setIsLoginSubmitting(true);
+    setAuthError(null);
+
     try {
-      const result = await login(data.email, data.password)
+      const result = await login(data.email, data.password);
       if (result) {
-        loginForm.reset()
-        onOpenChange(false)
+        loginForm.reset();
+        onOpenChange(false);
       }
     } catch (err) {
-      console.error("Login error:", err)
+      console.error("Login error:", err);
     } finally {
-      setIsLoginSubmitting(false)
+      setIsLoginSubmitting(false);
     }
   }
 
   async function onSignupSubmit(data: SignupFormValues) {
-    setIsSignupSubmitting(true)
-    setAuthError(null)
-    
+    setIsSignupSubmitting(true);
+    setAuthError(null);
+
     try {
       console.log("Registration attempt with:", data.name, data.email);
       const result = await register(data.name, data.email, data.password);
       console.log("Registration result:", result);
-      
+
       if (result) {
         showSuccess("Đăng ký tài khoản thành công!");
-        signupForm.reset()
-        onOpenChange(false)
+        signupForm.reset();
+        onOpenChange(false);
       }
     } catch (err) {
-      console.error("Registration error:", err)
+      console.error("Registration error:", err);
       setAuthError("Đăng ký thất bại. Vui lòng thử lại sau.");
     } finally {
-      setIsSignupSubmitting(false)
+      setIsSignupSubmitting(false);
     }
   }
 
-  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+  const handleSocialLogin = async (provider: "google" | "facebook") => {
     try {
-      if (provider === 'google') {
-        setIsLoginSubmitting(true)
-        const result = await loginWithGoogle()
+      if (provider === "google") {
+        setIsLoginSubmitting(true);
+        const result = await loginWithGoogle();
         if (result) {
-          onOpenChange(false)
+          onOpenChange(false);
         }
-      } else if (provider === 'facebook') {
-        setIsLoginSubmitting(true)
-        const result = await loginWithFacebook()
+      } else if (provider === "facebook") {
+        setIsLoginSubmitting(true);
+        const result = await loginWithFacebook();
         if (result) {
-          onOpenChange(false)
+          onOpenChange(false);
         }
       }
     } catch (err) {
-      console.error(`${provider} login error:`, err)
+      console.error(`${provider} login error:`, err);
       setAuthError(`Đăng nhập bằng ${provider} thất bại`);
     } finally {
-      setIsLoginSubmitting(false)
+      setIsLoginSubmitting(false);
     }
-  }
+  };
 
   return (
-    <Dialog open={open} onOpenChange={(newOpen) => {
-      // Reset forms and states when closing dialog
-      if (!newOpen) {
-        loginForm.reset();
-        signupForm.reset();
-        setAuthError(null);
-        setIsLoginSubmitting(false);
-        setIsSignupSubmitting(false);
-      }
-      onOpenChange(newOpen);
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen) => {
+        // Reset forms and states when closing dialog
+        if (!newOpen) {
+          loginForm.reset();
+          signupForm.reset();
+          setAuthError(null);
+          setIsLoginSubmitting(false);
+          setIsSignupSubmitting(false);
+        }
+        onOpenChange(newOpen);
+      }}
+    >
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-center text-xl">
@@ -194,12 +197,17 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
           </Alert>
         )}
 
-        <Tabs defaultValue="login" value={activeTab} onValueChange={(value) => {
-          setActiveTab(value);
-          setAuthError(null);
-          setIsLoginSubmitting(false);
-          setIsSignupSubmitting(false);
-        }} className="w-full">
+        <Tabs
+          defaultValue="login"
+          value={activeTab}
+          onValueChange={(value) => {
+            setActiveTab(value);
+            setAuthError(null);
+            setIsLoginSubmitting(false);
+            setIsSignupSubmitting(false);
+          }}
+          className="w-full"
+        >
           <TabsList className="grid w-full grid-cols-2 mb-4">
             <TabsTrigger value="login">Đăng nhập</TabsTrigger>
             <TabsTrigger value="signup">Đăng ký</TabsTrigger>
@@ -207,7 +215,10 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
 
           <TabsContent value="login">
             <Form {...loginForm}>
-              <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+              <form
+                onSubmit={loginForm.handleSubmit(onLoginSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={loginForm.control}
                   name="email"
@@ -228,13 +239,21 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                     <FormItem>
                       <FormLabel>Mật khẩu</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="******" {...field} />
+                        <Input
+                          type="password"
+                          placeholder="******"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={isLoginSubmitting}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoginSubmitting}
+                >
                   {isLoginSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -262,7 +281,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               <Button
                 variant="outline"
                 className="w-1/2"
-                onClick={() => handleSocialLogin('facebook')}
+                onClick={() => handleSocialLogin("facebook")}
                 disabled={isLoginSubmitting}
               >
                 <Facebook className="mr-2 h-4 w-4" />
@@ -271,7 +290,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               <Button
                 variant="outline"
                 className="w-1/2"
-                onClick={() => handleSocialLogin('google')}
+                onClick={() => handleSocialLogin("google")}
                 disabled={isLoginSubmitting}
               >
                 <Mail className="mr-2 h-4 w-4" />
@@ -280,9 +299,15 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="signup" className="max-h-[75vh] overflow-y-auto pr-2">
+          <TabsContent
+            value="signup"
+            className="max-h-[75vh] overflow-y-auto pr-2"
+          >
             <Form {...signupForm}>
-              <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-4">
+              <form
+                onSubmit={signupForm.handleSubmit(onSignupSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={signupForm.control}
                   name="name"
@@ -316,7 +341,11 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                     <FormItem>
                       <FormLabel>Mật khẩu</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="******" {...field} />
+                        <Input
+                          type="password"
+                          placeholder="******"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -329,13 +358,21 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                     <FormItem>
                       <FormLabel>Xác nhận mật khẩu</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="******" {...field} />
+                        <Input
+                          type="password"
+                          placeholder="******"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" className="w-full" disabled={isSignupSubmitting}>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isSignupSubmitting}
+                >
                   {isSignupSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -358,12 +395,12 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
                 </span>
               </div>
             </div>
-            
+
             <div className="flex space-x-2">
               <Button
                 variant="outline"
                 className="w-1/2"
-                onClick={() => handleSocialLogin('facebook')}
+                onClick={() => handleSocialLogin("facebook")}
                 disabled={isSignupSubmitting}
               >
                 <Facebook className="mr-2 h-4 w-4" />
@@ -372,7 +409,7 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
               <Button
                 variant="outline"
                 className="w-1/2"
-                onClick={() => handleSocialLogin('google')}
+                onClick={() => handleSocialLogin("google")}
                 disabled={isSignupSubmitting}
               >
                 <Mail className="mr-2 h-4 w-4" />
@@ -383,5 +420,5 @@ export function AuthDialog({ open, onOpenChange }: AuthDialogProps) {
         </Tabs>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

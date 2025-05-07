@@ -3,24 +3,24 @@ import { Timestamp } from "firebase/firestore";
 
 // Các trạng thái có thể có của đơn hàng
 export type OrderStatus =
-  | 'pending'     // Đang chờ xác nhận
-  | 'processing'  // Đang chuẩn bị
-  | 'shipping'    // Đang giao hàng
-  | 'completed'   // Đã hoàn thành
-  | 'cancelled';  // Đã hủy
+  | "pending" // Đang chờ xác nhận
+  | "processing" // Đang chuẩn bị
+  | "shipping" // Đang giao hàng
+  | "completed" // Đã hoàn thành
+  | "cancelled"; // Đã hủy
 
 // Các phương thức thanh toán
 export type PaymentMethod =
-  | 'cod'           // Thanh toán khi nhận hàng
-  | 'bank_transfer' // Chuyển khoản ngân hàng
-  | 'momo'          // Ví điện tử MoMo
-  | 'vnpay';        // VNPay
+  | "cod" // Thanh toán khi nhận hàng
+  | "bank_transfer" // Chuyển khoản ngân hàng
+  | "momo" // Ví điện tử MoMo
+  | "vnpay"; // VNPay
 
 // Trạng thái thanh toán
 export type PaymentStatus =
-  | 'pending'    // Chưa thanh toán
-  | 'completed'  // Đã thanh toán
-  | 'failed';    // Thanh toán thất bại
+  | "pending" // Chưa thanh toán
+  | "completed" // Đã thanh toán
+  | "failed"; // Thanh toán thất bại
 
 // Interface cho thông tin khách hàng
 export interface CustomerInfo {

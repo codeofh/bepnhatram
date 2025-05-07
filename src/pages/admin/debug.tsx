@@ -46,11 +46,13 @@ export default function AdminDebugPage() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span>Current User:</span>
-                <span className="font-medium">{user?.email || 'Not signed in'}</span>
+                <span className="font-medium">
+                  {user?.email || "Not signed in"}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span>User ID:</span>
-                <span className="font-mono text-xs">{user?.uid || 'N/A'}</span>
+                <span className="font-mono text-xs">{user?.uid || "N/A"}</span>
               </div>
             </div>
           </CardContent>

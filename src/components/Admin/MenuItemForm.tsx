@@ -28,7 +28,7 @@ const sizeOptionSchema = z.object({
   name: z.string().min(1, { message: "Tên kích thước không được trống" }),
   price: z.preprocess(
     (val) => (val === "" ? undefined : Number(val)),
-    z.number().min(0, { message: "Giá phải là số dương" })
+    z.number().min(0, { message: "Giá phải là số dương" }),
   ),
 });
 
@@ -38,16 +38,16 @@ const menuItemSchema = z.object({
   description: z.string(),
   price: z.preprocess(
     (val) => (val === "" ? undefined : Number(val)),
-    z.number().min(0, { message: "Giá phải là số dương" })
+    z.number().min(0, { message: "Giá phải là số dương" }),
   ),
   category: z.string().min(1, { message: "Vui lòng chọn danh mục" }),
   rating: z.preprocess(
     (val) => (val === "" ? undefined : Number(val)),
-    z.number().min(1).max(5)
+    z.number().min(1).max(5),
   ),
   displayOrder: z.preprocess(
     (val) => (val === "" ? undefined : Number(val)),
-    z.number().optional()
+    z.number().optional(),
   ),
   image: z.string().min(1, { message: "URL hình ảnh không được trống" }),
   sizes: z.array(sizeOptionSchema).optional(),
@@ -66,9 +66,7 @@ export function MenuItemForm({
   onSubmit,
   isSubmitting,
 }: MenuItemFormProps) {
-  const [sizes, setSizes] = useState<SizeOption[]>(
-    initialData?.sizes || []
-  );
+  const [sizes, setSizes] = useState<SizeOption[]>(initialData?.sizes || []);
 
   const form = useForm<MenuItemFormValues>({
     resolver: zodResolver(menuItemSchema),
@@ -100,7 +98,11 @@ export function MenuItemForm({
     setSizes(newSizes);
   };
 
-  const updateSize = (index: number, field: keyof SizeOption, value: string | number) => {
+  const updateSize = (
+    index: number,
+    field: keyof SizeOption,
+    value: string | number,
+  ) => {
     const newSizes = [...sizes];
     if (field === "price") {
       newSizes[index][field] = Number(value);
@@ -141,7 +143,7 @@ export function MenuItemForm({
                     {...field}
                     onChange={(e) =>
                       field.onChange(
-                        e.target.value === "" ? "" : Number(e.target.value)
+                        e.target.value === "" ? "" : Number(e.target.value),
                       )
                     }
                   />
@@ -214,7 +216,7 @@ export function MenuItemForm({
                     {...field}
                     onChange={(e) =>
                       field.onChange(
-                        e.target.value === "" ? "" : Number(e.target.value)
+                        e.target.value === "" ? "" : Number(e.target.value),
                       )
                     }
                   />
@@ -236,14 +238,12 @@ export function MenuItemForm({
                     {...field}
                     onChange={(e) =>
                       field.onChange(
-                        e.target.value === "" ? "" : Number(e.target.value)
+                        e.target.value === "" ? "" : Number(e.target.value),
                       )
                     }
                   />
                 </FormControl>
-                <FormDescription>
-                  Số nhỏ hiển thị trước
-                </FormDescription>
+                <FormDescription>Số nhỏ hiển thị trước</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -259,7 +259,10 @@ export function MenuItemForm({
               <FormControl>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="col-span-2">
-                    <Input placeholder="https://example.com/image.jpg" {...field} />
+                    <Input
+                      placeholder="https://example.com/image.jpg"
+                      {...field}
+                    />
                   </div>
                   <Button
                     type="button"
@@ -347,11 +350,12 @@ export function MenuItemForm({
         </div>
 
         <div className="flex justify-end space-x-2">
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Đang lưu..." : initialData ? "Cập nhật" : "Thêm món ăn"}
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting
+              ? "Đang lưu..."
+              : initialData
+                ? "Cập nhật"
+                : "Thêm món ăn"}
           </Button>
         </div>
       </form>

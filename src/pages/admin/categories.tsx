@@ -8,7 +8,7 @@ import {
   Save,
   MoveUp,
   MoveDown,
-  GripVertical
+  GripVertical,
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -47,16 +47,33 @@ export default function AdminCategoriesPage() {
   const [isClient, setIsClient] = useState(false);
   const [categories, setCategories] = useState<Category[]>([
     { id: "all", name: "Tất cả", displayName: "Tất cả", displayOrder: 0 },
-    { id: "special", name: "special", displayName: "Đặc biệt", displayOrder: 1 },
+    {
+      id: "special",
+      name: "special",
+      displayName: "Đặc biệt",
+      displayOrder: 1,
+    },
     { id: "main", name: "main", displayName: "Món chính", displayOrder: 2 },
-    { id: "chicken", name: "chicken", displayName: "Gà ủ muối", displayOrder: 3 },
-    { id: "chicken-feet", name: "chicken-feet", displayName: "Chân gà", displayOrder: 4 },
+    {
+      id: "chicken",
+      name: "chicken",
+      displayName: "Gà ủ muối",
+      displayOrder: 3,
+    },
+    {
+      id: "chicken-feet",
+      name: "chicken-feet",
+      displayName: "Chân gà",
+      displayOrder: 4,
+    },
     { id: "drinks", name: "drinks", displayName: "Đồ uống", displayOrder: 5 },
   ]);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
+    null,
+  );
 
   useEffect(() => {
     setIsClient(true);
@@ -96,7 +113,7 @@ export default function AdminCategoriesPage() {
       try {
         // In a real app, this would delete from Firebase
         const newCategories = categories.filter(
-          (c) => c.id !== categoryToDelete.id
+          (c) => c.id !== categoryToDelete.id,
         );
         setCategories(newCategories);
         showSuccess("Đã xóa danh mục thành công!");
@@ -138,12 +155,12 @@ export default function AdminCategoriesPage() {
         const updatedCategories = categories.map((c) =>
           c.id === editingCategory.id
             ? {
-              ...editingCategory,
-              // Don't allow changing ID or name of "all" category
-              id: isDefault ? "all" : editingCategory.id,
-              name: isDefault ? "Tất cả" : editingCategory.name,
-            }
-            : c
+                ...editingCategory,
+                // Don't allow changing ID or name of "all" category
+                id: isDefault ? "all" : editingCategory.id,
+                name: isDefault ? "Tất cả" : editingCategory.name,
+              }
+            : c,
         );
         setCategories(updatedCategories);
         showSuccess("Đã cập nhật danh mục thành công!");
@@ -221,9 +238,7 @@ export default function AdminCategoriesPage() {
                     <th className="text-left py-3 px-4 font-medium">
                       Tên hiển thị
                     </th>
-                    <th className="text-left py-3 px-4 font-medium">
-                      Thứ tự
-                    </th>
+                    <th className="text-left py-3 px-4 font-medium">Thứ tự</th>
                     <th className="text-right py-3 px-4 font-medium">
                       Thao tác
                     </th>
@@ -274,9 +289,7 @@ export default function AdminCategoriesPage() {
                             onClick={() => handleEdit(category)}
                           >
                             <Edit className="h-4 w-4" />
-                            <span className="ml-2 hidden sm:inline">
-                              Sửa
-                            </span>
+                            <span className="ml-2 hidden sm:inline">Sửa</span>
                           </Button>
                           {category.id !== "all" && (
                             <Button
@@ -286,9 +299,7 @@ export default function AdminCategoriesPage() {
                               onClick={() => handleDelete(category)}
                             >
                               <Trash2 className="h-4 w-4" />
-                              <span className="ml-2 hidden sm:inline">
-                                Xóa
-                              </span>
+                              <span className="ml-2 hidden sm:inline">Xóa</span>
                             </Button>
                           )}
                         </div>
@@ -334,7 +345,8 @@ export default function AdminCategoriesPage() {
                       disabled={!!editingCategory.id} // Can't edit ID of existing category
                     />
                     <p className="text-xs text-gray-500">
-                      ID dùng để định danh danh mục, chỉ bao gồm chữ cái, số và dấu gạch ngang
+                      ID dùng để định danh danh mục, chỉ bao gồm chữ cái, số và
+                      dấu gạch ngang
                     </p>
                   </div>
                 )}
@@ -412,10 +424,7 @@ export default function AdminCategoriesPage() {
         </Dialog>
 
         {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-        >
+        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Xác nhận xóa</DialogTitle>

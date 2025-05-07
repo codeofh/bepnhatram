@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   collection,
   doc,
@@ -10,13 +10,13 @@ import {
   addDoc,
   updateDoc,
   serverTimestamp,
-  Timestamp
-} from 'firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
-import { useFirestore } from '@/hooks/useFirestore';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { db } from '@/lib/firebase';
-import { Order, CreateOrderData, OrderStatus } from '@/types/order';
+  Timestamp,
+} from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
+import { useFirestore } from "@/hooks/useFirestore";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { db } from "@/lib/firebase";
+import { Order, CreateOrderData, OrderStatus } from "@/types/order";
 
 // Utility function to sanitize data for Firestore
 // Firebase doesn't allow undefined values, convert them to null
@@ -24,24 +24,24 @@ const sanitizeForFirestore = (data: any): any => {
   if (data === undefined) {
     return null;
   }
-  
-  if (data === null || typeof data !== 'object') {
+
+  if (data === null || typeof data !== "object") {
     return data;
   }
-  
+
   if (Array.isArray(data)) {
-    return data.map(item => sanitizeForFirestore(item));
+    return data.map((item) => sanitizeForFirestore(item));
   }
-  
+
   const sanitizedData: Record<string, any> = {};
-  
+
   for (const key in data) {
     if (Object.prototype.hasOwnProperty.call(data, key)) {
       const value = data[key];
       sanitizedData[key] = sanitizeForFirestore(value);
     }
   }
-  
+
   return sanitizedData;
 };
 
@@ -54,7 +54,9 @@ export function useOrders() {
   const [error, setError] = useState<string | null>(null);
 
   // Tạo đơn hàng mới
-  const createOrder = async (orderData: CreateOrderData): Promise<string | null> => {
+  const createOrder = async (
+    orderData: CreateOrderData,
+  ): Promise<string | null> => {
     setLoading(true);
     setError(null);
 
@@ -66,15 +68,17 @@ export function useOrders() {
       // Tạo mã đơn hàng với tiền tố yyMMdd + 8 ký tự ngẫu nhiên từ A-Z và 0-9
       const now = new Date();
       const year = now.getFullYear().toString().slice(-2); // Lấy 2 chữ số cuối của năm
-      const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Tháng định dạng 2 chữ số
-      const day = now.getDate().toString().padStart(2, '0'); // Ngày định dạng 2 ch�� số
+      const month = (now.getMonth() + 1).toString().padStart(2, "0"); // Tháng định dạng 2 chữ số
+      const day = now.getDate().toString().padStart(2, "0"); // Ngày định dạng 2 ch�� số
       const datePrefix = `${year}${month}${day}`;
 
       // Tạo 8 ký tự ngẫu nhiên từ A-Z và 0-9
-      const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let randomChars = '';
+      const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let randomChars = "";
       for (let i = 0; i < 8; i++) {
-        randomChars += characters.charAt(Math.floor(Math.random() * characters.length));
+        randomChars += characters.charAt(
+          Math.floor(Math.random() * characters.length),
+        );
       }
 
       // Mã đơn hàng đầy đủ
@@ -84,24 +88,24 @@ export function useOrders() {
       const sanitizedOrderData = sanitizeForFirestore(orderData);
 
       // Thêm vào Firestore
-      const ordersCollection = collection(db, 'orders');
+      const ordersCollection = collection(db, "orders");
       const docRef = await addDoc(ordersCollection, {
         userId: user ? user.uid : null,
         ...sanitizedOrderData,
-        status: 'pending' as OrderStatus,
+        status: "pending" as OrderStatus,
         payment: {
           ...(sanitizedOrderData.payment || {}),
-          status: 'pending',
-          paidAt: null
+          status: "pending",
+          paidAt: null,
         },
         orderCode: orderCode, // Mã đơn hàng hiển thị
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       // Cập nhật thêm ID Firestore vào đơn hàng
       await updateDoc(docRef, {
-        id: docRef.id
+        id: docRef.id,
       });
 
       toast({
@@ -113,7 +117,7 @@ export function useOrders() {
       // Trả về ID của Firestore để sử dụng cho navigation
       return docRef.id;
     } catch (err: any) {
-      console.error('Lỗi khi tạo đơn hàng:', err);
+      console.error("Lỗi khi tạo đơn hàng:", err);
       setError(`Đặt hàng thất bại: ${err.message}`);
 
       toast({
@@ -138,7 +142,7 @@ export function useOrders() {
         throw new Error("Firestore chưa được khởi tạo");
       }
 
-      const orderDoc = await getDoc(doc(db, 'orders', orderId));
+      const orderDoc = await getDoc(doc(db, "orders", orderId));
 
       if (!orderDoc.exists()) {
         const errMsg = "Không tìm thấy đơn hàng";
@@ -157,21 +161,26 @@ export function useOrders() {
 
       return orderData;
     } catch (err: any) {
-      console.error('Lỗi khi lấy đơn hàng:', err);
+      console.error("Lỗi khi lấy đơn hàng:", err);
 
       // Xử lý các loại lỗi phổ biến từ Firestore
       let errorMessage = err.message || "Không thể lấy thông tin đơn hàng";
 
-      if (err.code === 'permission-denied') {
-        errorMessage = 'Bạn không có quyền truy cập vào dữ liệu này';
-      } else if (err.code === 'unavailable' || err.code === 'failed-precondition') {
-        errorMessage = 'Kết nối tới máy chủ bị gián đoạn. Vui lòng kiểm tra kết nối internet của bạn và thử lại';
-      } else if (err.code === 'resource-exhausted') {
-        errorMessage = 'Đã vượt quá giới hạn truy vấn cho phép. Vui lòng thử lại sau ít phút';
-      } else if (err.code === 'not-found') {
-        errorMessage = 'Không tìm thấy dữ liệu đơn hàng';
-      } else if (err.code === 'cancelled') {
-        errorMessage = 'Yêu cầu đã bị hủy';
+      if (err.code === "permission-denied") {
+        errorMessage = "Bạn không có quyền truy cập vào dữ liệu này";
+      } else if (
+        err.code === "unavailable" ||
+        err.code === "failed-precondition"
+      ) {
+        errorMessage =
+          "Kết nối tới máy chủ bị gián đoạn. Vui lòng kiểm tra kết nối internet của bạn và thử lại";
+      } else if (err.code === "resource-exhausted") {
+        errorMessage =
+          "Đã vượt quá giới hạn truy vấn cho phép. Vui lòng thử lại sau ít phút";
+      } else if (err.code === "not-found") {
+        errorMessage = "Không tìm thấy dữ liệu đơn hàng";
+      } else if (err.code === "cancelled") {
+        errorMessage = "Yêu cầu đã bị hủy";
       }
 
       setError(errorMessage);
@@ -197,16 +206,16 @@ export function useOrders() {
       }
 
       const ordersQuery = query(
-        collection(db, 'orders'),
-        where('userId', '==', user.uid),
-        orderBy('createdAt', 'desc')
+        collection(db, "orders"),
+        where("userId", "==", user.uid),
+        orderBy("createdAt", "desc"),
       );
 
       const snapshot = await getDocs(ordersQuery);
 
-      return snapshot.docs.map(doc => doc.data() as Order);
+      return snapshot.docs.map((doc) => doc.data() as Order);
     } catch (err: any) {
-      console.error('Lỗi khi lấy danh sách đơn hàng:', err);
+      console.error("Lỗi khi lấy danh sách đơn hàng:", err);
       setError(`Không thể lấy danh sách đơn hàng: ${err.message}`);
       return [];
     } finally {
@@ -215,7 +224,11 @@ export function useOrders() {
   };
 
   // Cập nhật trạng thái đơn hàng
-  const updateOrderStatus = async (orderId: string, status: OrderStatus, reason?: string): Promise<boolean> => {
+  const updateOrderStatus = async (
+    orderId: string,
+    status: OrderStatus,
+    reason?: string,
+  ): Promise<boolean> => {
     setLoading(true);
     setError(null);
 
@@ -228,7 +241,7 @@ export function useOrders() {
         throw new Error("Firestore chưa được khởi tạo");
       }
 
-      const orderRef = doc(db, 'orders', orderId);
+      const orderRef = doc(db, "orders", orderId);
       const orderDoc = await getDoc(orderRef);
 
       if (!orderDoc.exists()) {
@@ -246,22 +259,22 @@ export function useOrders() {
       // Chuẩn bị dữ liệu cập nhật
       const updateData: any = {
         status,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       // Nếu hủy đơn hàng, thêm lý do
-      if (status === 'cancelled' && reason) {
+      if (status === "cancelled" && reason) {
         updateData.cancellationReason = reason;
       }
 
       // Nếu trạng thái là shipping, cập nhật thời gian giao hàng
-      if (status === 'shipping') {
-        updateData['shipping.shippedAt'] = Timestamp.now();
+      if (status === "shipping") {
+        updateData["shipping.shippedAt"] = Timestamp.now();
       }
 
       // Nếu trạng thái là completed, cập nhật thời gian hoàn thành
-      if (status === 'completed') {
-        updateData['shipping.deliveredAt'] = Timestamp.now();
+      if (status === "completed") {
+        updateData["shipping.deliveredAt"] = Timestamp.now();
       }
 
       await updateDoc(orderRef, updateData);
@@ -274,7 +287,7 @@ export function useOrders() {
 
       return true;
     } catch (err: any) {
-      console.error('Lỗi khi cập nhật trạng thái đơn hàng:', err);
+      console.error("Lỗi khi cập nhật trạng thái đơn hàng:", err);
       setError(`Không thể cập nhật trạng thái đơn hàng: ${err.message}`);
 
       toast({
@@ -290,7 +303,11 @@ export function useOrders() {
   };
 
   // Cập nhật trạng thái thanh toán
-  const updatePaymentStatus = async (orderId: string, status: 'pending' | 'completed' | 'failed', transactionId?: string): Promise<boolean> => {
+  const updatePaymentStatus = async (
+    orderId: string,
+    status: "pending" | "completed" | "failed",
+    transactionId?: string,
+  ): Promise<boolean> => {
     setLoading(true);
     setError(null);
 
@@ -303,7 +320,7 @@ export function useOrders() {
         throw new Error("Firestore chưa được khởi tạo");
       }
 
-      const orderRef = doc(db, 'orders', orderId);
+      const orderRef = doc(db, "orders", orderId);
       const orderDoc = await getDoc(orderRef);
 
       if (!orderDoc.exists()) {
@@ -311,16 +328,16 @@ export function useOrders() {
       }
 
       const updateData: any = {
-        'payment.status': status,
-        updatedAt: serverTimestamp()
+        "payment.status": status,
+        updatedAt: serverTimestamp(),
       };
 
-      if (status === 'completed') {
-        updateData['payment.paidAt'] = Timestamp.now();
+      if (status === "completed") {
+        updateData["payment.paidAt"] = Timestamp.now();
       }
 
       if (transactionId) {
-        updateData['payment.transactionId'] = transactionId;
+        updateData["payment.transactionId"] = transactionId;
       }
 
       await updateDoc(orderRef, updateData);
@@ -333,7 +350,7 @@ export function useOrders() {
 
       return true;
     } catch (err: any) {
-      console.error('Lỗi khi cập nhật trạng thái thanh toán:', err);
+      console.error("Lỗi khi cập nhật trạng thái thanh toán:", err);
       setError(`Không thể cập nhật trạng thái thanh toán: ${err.message}`);
 
       toast({
@@ -355,6 +372,6 @@ export function useOrders() {
     updateOrderStatus,
     updatePaymentStatus,
     loading,
-    error
+    error,
   };
 }

@@ -12,12 +12,19 @@ import {
   X,
   PackageOpen,
   ShoppingCart,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -47,7 +54,7 @@ export default function OrdersPage() {
   useEffect(() => {
     setIsClient(true);
     if (!authLoading && !user) {
-      router.push('/');
+      router.push("/");
     } else if (user && !hasFetched) {
       fetchOrders();
     }
@@ -62,41 +69,48 @@ export default function OrdersPage() {
       setHasFetched(true);
     } catch (error: any) {
       console.error("Error fetching orders:", error);
-      setFetchError(error.message || "Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.");
+      setFetchError(
+        error.message ||
+          "Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.",
+      );
       setHasFetched(true);
     }
   };
 
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
-    if (!user || !user.displayName) return '?';
+    if (!user || !user.displayName) return "?";
 
-    const nameParts = user.displayName.split(' ');
+    const nameParts = user.displayName.split(" ");
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
 
-    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+    return (
+      nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
   // Toggle order expansion
   const toggleOrderExpansion = (orderId: string) => {
-    setExpandedOrders(prev =>
+    setExpandedOrders((prev) =>
       prev.includes(orderId)
-        ? prev.filter(id => id !== orderId)
-        : [...prev, orderId]
+        ? prev.filter((id) => id !== orderId)
+        : [...prev, orderId],
     );
   };
 
   // Format date in Vietnamese format from Timestamp
   const formatDate = (timestamp: any) => {
-    if (!timestamp) return 'N/A';
+    if (!timestamp) return "N/A";
 
-    const date = timestamp.seconds ? new Date(timestamp.seconds * 1000) : new Date(timestamp);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    const date = timestamp.seconds
+      ? new Date(timestamp.seconds * 1000)
+      : new Date(timestamp);
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -107,28 +121,31 @@ export default function OrdersPage() {
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return amount.toLocaleString('vi-VN') + '₫';
+    return amount.toLocaleString("vi-VN") + "₫";
   };
 
   // Filter orders by status and search query
-  const filteredOrders = orders.filter(order => {
-    const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-    const matchesSearch = searchQuery === '' ||
+  const filteredOrders = orders.filter((order) => {
+    const matchesStatus =
+      statusFilter === "all" || order.status === statusFilter;
+    const matchesSearch =
+      searchQuery === "" ||
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (order.orderCode && order.orderCode.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (order.orderCode &&
+        order.orderCode.toLowerCase().includes(searchQuery.toLowerCase())) ||
       order.items.some((item: any) =>
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     return matchesStatus && matchesSearch;
   });
 
   // Order status mapping
-  const orderStatusMap: Record<string, { color: string, label: string }> = {
-    "pending": { color: "bg-yellow-100 text-yellow-800", label: "Chờ xác nhận" },
-    "processing": { color: "bg-blue-100 text-blue-800", label: "Đang chuẩn bị" },
-    "shipping": { color: "bg-purple-100 text-purple-800", label: "Đang giao" },
-    "completed": { color: "bg-green-100 text-green-800", label: "Đã hoàn thành" },
-    "cancelled": { color: "bg-red-100 text-red-800", label: "Đã hủy" }
+  const orderStatusMap: Record<string, { color: string; label: string }> = {
+    pending: { color: "bg-yellow-100 text-yellow-800", label: "Chờ xác nhận" },
+    processing: { color: "bg-blue-100 text-blue-800", label: "Đang chuẩn bị" },
+    shipping: { color: "bg-purple-100 text-purple-800", label: "Đang giao" },
+    completed: { color: "bg-green-100 text-green-800", label: "Đã hoàn thành" },
+    cancelled: { color: "bg-red-100 text-red-800", label: "Đã hủy" },
   };
 
   if (authLoading || !isClient) {
@@ -147,7 +164,10 @@ export default function OrdersPage() {
     <Layout>
       <Head>
         <title>Đơn hàng của tôi - {siteConfig.name}</title>
-        <meta name="description" content="Lịch sử đơn hàng và theo dõi trạng thái" />
+        <meta
+          name="description"
+          content="Lịch sử đơn hàng và theo dõi trạng thái"
+        />
       </Head>
 
       <div className="container py-8 px-4 md:py-12">
@@ -158,28 +178,50 @@ export default function OrdersPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 bg-green-600 text-white">
-                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                    <AvatarImage
+                      src={user.photoURL || undefined}
+                      alt={user.displayName || "User"}
+                    />
                     <AvatarFallback>{getUserInitials()}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg">{user.displayName || 'Người dùng'}</CardTitle>
-                    <CardDescription className="text-sm truncate">{user.email}</CardDescription>
+                    <CardTitle className="text-lg">
+                      {user.displayName || "Người dùng"}
+                    </CardTitle>
+                    <CardDescription className="text-sm truncate">
+                      {user.email}
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 <nav className="space-y-1">
-                  <Link href="/account" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
+                  <Link
+                    href="/account"
+                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
+                  >
                     <User className="mr-3 h-4 w-4" />
-                    <span className="text-sm font-medium">Thông tin tài khoản</span>
+                    <span className="text-sm font-medium">
+                      Thông tin tài khoản
+                    </span>
                   </Link>
-                  <Link href="/account/orders" className="flex items-center px-4 py-2 bg-gray-100">
+                  <Link
+                    href="/account/orders"
+                    className="flex items-center px-4 py-2 bg-gray-100"
+                  >
                     <ShoppingBag className="mr-3 h-4 w-4" />
-                    <span className="text-sm font-medium">Đơn hàng của tôi</span>
+                    <span className="text-sm font-medium">
+                      Đơn hàng của tôi
+                    </span>
                   </Link>
-                  <Link href="/account/settings" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
+                  <Link
+                    href="/account/settings"
+                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
+                  >
                     <Settings className="mr-3 h-4 w-4" />
-                    <span className="text-sm font-medium">Cài đặt tài khoản</span>
+                    <span className="text-sm font-medium">
+                      Cài đặt tài khoản
+                    </span>
                   </Link>
                 </nav>
               </CardContent>
@@ -237,8 +279,12 @@ export default function OrdersPage() {
                 {fetchError ? (
                   <div className="text-center py-12 space-y-3">
                     <AlertTriangle className="h-12 w-12 mx-auto text-red-500" />
-                    <h3 className="text-lg font-medium text-gray-900">Lỗi khi tải dữ liệu</h3>
-                    <p className="text-gray-500 max-w-md mx-auto">{fetchError}</p>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      Lỗi khi tải dữ liệu
+                    </h3>
+                    <p className="text-gray-500 max-w-md mx-auto">
+                      {fetchError}
+                    </p>
                     <Button onClick={fetchOrders} className="mt-4">
                       Thử lại
                     </Button>
@@ -250,11 +296,13 @@ export default function OrdersPage() {
                 ) : filteredOrders.length === 0 ? (
                   <div className="text-center py-12 space-y-3">
                     <ShoppingCart className="h-12 w-12 mx-auto text-gray-300" />
-                    <h3 className="text-lg font-medium text-gray-900">Không có đơn hàng nào</h3>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      Không có đơn hàng nào
+                    </h3>
                     <p className="text-gray-500">
-                      {searchQuery || statusFilter !== 'all'
-                        ? 'Không tìm thấy đơn hàng phù hợp với bộ lọc'
-                        : 'Bạn chưa có đơn hàng nào trong lịch sử'}
+                      {searchQuery || statusFilter !== "all"
+                        ? "Không tìm thấy đơn hàng phù hợp với bộ lọc"
+                        : "Bạn chưa có đơn hàng nào trong lịch sử"}
                     </p>
                   </div>
                 ) : (
@@ -270,8 +318,12 @@ export default function OrdersPage() {
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div>
                               <div className="flex items-center gap-2">
-                                <h3 className="font-medium">{order.orderCode || order.id}</h3>
-                                <Badge className={orderStatusMap[order.status].color}>
+                                <h3 className="font-medium">
+                                  {order.orderCode || order.id}
+                                </h3>
+                                <Badge
+                                  className={orderStatusMap[order.status].color}
+                                >
                                   {orderStatusMap[order.status].label}
                                 </Badge>
                               </div>
@@ -281,12 +333,18 @@ export default function OrdersPage() {
                               </div>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="font-medium">{formatPrice(order.total)}</span>
+                              <span className="font-medium">
+                                {formatPrice(order.total)}
+                              </span>
                               <CollapsibleTrigger asChild>
                                 <Button variant="ghost" size="sm">
-                                  <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${
-                                    expandedOrders.includes(order.id) ? 'rotate-180' : ''
-                                  }`} />
+                                  <ChevronDown
+                                    className={`h-4 w-4 transition-transform duration-200 ${
+                                      expandedOrders.includes(order.id)
+                                        ? "rotate-180"
+                                        : ""
+                                    }`}
+                                  />
                                   <span className="sr-only">Chi tiết</span>
                                 </Button>
                               </CollapsibleTrigger>
@@ -296,33 +354,49 @@ export default function OrdersPage() {
 
                         <CollapsibleContent>
                           <div className="p-4 border-t">
-                            <h4 className="font-medium mb-3">Chi tiết đơn hàng</h4>
+                            <h4 className="font-medium mb-3">
+                              Chi tiết đơn hàng
+                            </h4>
                             <div className="space-y-3">
                               {order.items.map((item: any) => (
-                                <div key={item.id} className="flex justify-between items-center">
+                                <div
+                                  key={item.id}
+                                  className="flex justify-between items-center"
+                                >
                                   <div className="flex items-start gap-3">
                                     <div className="w-8 h-8 bg-gray-100 rounded-md flex items-center justify-center">
                                       <PackageOpen className="h-4 w-4 text-gray-500" />
                                     </div>
                                     <div>
-                                      <p className="text-sm font-medium">{item.name}</p>
+                                      <p className="text-sm font-medium">
+                                        {item.name}
+                                      </p>
                                       <p className="text-xs text-gray-500">
                                         Số lượng: {item.quantity}
-                                        {item.selectedSize ? ` - ${item.selectedSize}` : ''}
+                                        {item.selectedSize
+                                          ? ` - ${item.selectedSize}`
+                                          : ""}
                                       </p>
                                     </div>
                                   </div>
-                                  <span className="text-sm">{formatPrice(item.price * item.quantity)}</span>
+                                  <span className="text-sm">
+                                    {formatPrice(item.price * item.quantity)}
+                                  </span>
                                 </div>
                               ))}
                             </div>
 
                             <div className="mt-4 pt-3 border-t">
                               <div className="flex justify-between items-center">
-                                <Link href={`/account/order/${order.id}`} className="text-sm text-blue-600 hover:underline">
+                                <Link
+                                  href={`/account/order/${order.id}`}
+                                  className="text-sm text-blue-600 hover:underline"
+                                >
                                   Xem chi tiết
                                 </Link>
-                                <span className="font-bold text-lg">{formatPrice(order.total)}</span>
+                                <span className="font-bold text-lg">
+                                  {formatPrice(order.total)}
+                                </span>
                               </div>
                             </div>
                           </div>

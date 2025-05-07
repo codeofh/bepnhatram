@@ -1,16 +1,28 @@
-import { useState, useEffect, useCallback } from 'react';
-import { auth, db, isFirebaseInitialized, safeFirestoreOperation } from '@/lib/firebase';
+import { useState, useEffect, useCallback } from "react";
+import {
+  auth,
+  db,
+  isFirebaseInitialized,
+  safeFirestoreOperation,
+} from "@/lib/firebase";
 import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  User
-} from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, getDocs, Firestore } from 'firebase/firestore';
-import { useRouter } from 'next/router';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { useToastContext } from '@/contexts/ToastContext';
-import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+  User,
+} from "firebase/auth";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  getDocs,
+  Firestore,
+} from "firebase/firestore";
+import { useRouter } from "next/router";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useToastContext } from "@/contexts/ToastContext";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 
 interface AdminUser extends User {
   isAdmin?: boolean;
@@ -37,7 +49,7 @@ export function useAdminAuth() {
 
       return await safeFirestoreOperation(async () => {
         // db is guaranteed to be non-null here due to the check above
-        const userRef = doc(db as Firestore, 'admins', userId);
+        const userRef = doc(db as Firestore, "admins", userId);
         const userSnap = await getDoc(userRef);
 
         // User exists in admins collection
@@ -49,20 +61,22 @@ export function useAdminAuth() {
         console.log("User is not an admin");
 
         // For development: auto-create admin user if admins collection is empty
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV === "development") {
           try {
             // Check if admins collection is empty
-            const adminsRef = collection(db as Firestore, 'admins');
+            const adminsRef = collection(db as Firestore, "admins");
             const adminsSnapshot = await getDocs(adminsRef);
 
             if (adminsSnapshot.empty) {
-              console.log("Admins collection is empty, creating first admin user");
+              console.log(
+                "Admins collection is empty, creating first admin user",
+              );
               // Create the first admin
               await setDoc(userRef, {
                 isAdmin: true,
                 createdAt: new Date(),
-                role: 'admin',
-                note: 'Auto-created first admin in development mode'
+                role: "admin",
+                note: "Auto-created first admin in development mode",
               });
               console.log("Created first admin user successfully");
               return true;
@@ -85,15 +99,15 @@ export function useAdminAuth() {
 
   useEffect(() => {
     // Skip Firebase interactions during server-side rendering
-    const isClient = typeof window !== 'undefined';
+    const isClient = typeof window !== "undefined";
     if (!isClient || !isFirebaseInitialized()) {
       setLoading(false);
       return () => {};
     }
 
     // Check if we're on the debug page - special case to bypass admin check temporarily
-    const isDebugPage = router.pathname === '/admin/debug';
-    const isLoginPage = router.pathname === '/admin';
+    const isDebugPage = router.pathname === "/admin/debug";
+    const isLoginPage = router.pathname === "/admin";
 
     // Don't check admin status on login page or if already logged out
     if (isLoginPage) {
@@ -106,7 +120,7 @@ export function useAdminAuth() {
         try {
           // If we're on the debug page, allow access for any authenticated user
           if (isDebugPage) {
-            const adminUser = {...authUser, isAdmin: true} as AdminUser;
+            const adminUser = { ...authUser, isAdmin: true } as AdminUser;
             setUser(adminUser);
             setLoading(false);
             return;
@@ -114,10 +128,14 @@ export function useAdminAuth() {
 
           // If offline and not on debug page, show message and redirect
           if (!isOnline && !isDebugPage) {
-            setError("Không thể xác thực quyền admin khi không có kết nối mạng");
-            showError("Không thể xác thực quyền admin khi không có kết nối mạng");
+            setError(
+              "Không thể xác thực quyền admin khi không có kết nối mạng",
+            );
+            showError(
+              "Không thể xác thực quyền admin khi không có kết nối mạng",
+            );
             await signOut(auth!);
-            router.push('/admin');
+            router.push("/admin");
             setLoading(false);
             return;
           }
@@ -126,34 +144,38 @@ export function useAdminAuth() {
           const isAdmin = await checkAdminStatus(authUser.uid);
 
           if (isAdmin) {
-            const adminUser = {...authUser, isAdmin: true} as AdminUser;
+            const adminUser = { ...authUser, isAdmin: true } as AdminUser;
             setUser(adminUser);
           } else {
             // User exists but is not an admin - log them out and redirect
             setError("Bạn không có quyền truy cập vào trang quản trị");
             showError("Bạn không có quyền truy cập vào trang quản trị");
             await signOut(auth!);
-            router.push('/admin');
+            router.push("/admin");
             setUser(null);
           }
         } catch (err: any) {
           console.error("Error checking admin status:", err);
-          if (err.message?.includes('offline') || err.code === 'unavailable') {
-            setError("Không thể kiểm tra quyền admin khi không có kết nối mạng");
-            showError("Không thể kiểm tra quyền admin khi không có kết nối mạng");
+          if (err.message?.includes("offline") || err.code === "unavailable") {
+            setError(
+              "Không thể kiểm tra quyền admin khi không có kết nối mạng",
+            );
+            showError(
+              "Không thể kiểm tra quyền admin khi không có kết nối mạng",
+            );
           } else {
             setError("Có lỗi khi kiểm tra quyền admin. Vui lòng thử lại sau.");
             showError("Có lỗi khi kiểm tra quyền admin. Vui lòng thử lại sau.");
           }
           // On error, log out and redirect to login
           await signOut(auth!);
-          router.push('/admin');
+          router.push("/admin");
           setUser(null);
         }
       } else {
         // If not logged in and not on login page, redirect to login
         if (!isLoginPage) {
-          router.push('/admin');
+          router.push("/admin");
         }
         setUser(null);
       }
@@ -166,13 +188,17 @@ export function useAdminAuth() {
   // Social auth check - only run on login page to avoid unnecessary checks
   useEffect(() => {
     const checkSocialAuthAdminStatus = async () => {
-      const isLoginPage = router.pathname === '/admin';
+      const isLoginPage = router.pathname === "/admin";
       if (authUser && !user && isOnline && isLoginPage) {
         try {
           const isAdmin = await checkAdminStatus(authUser.uid);
           if (!isAdmin) {
-            setError("Tài khoản này không có quyền truy cập vào trang quản trị");
-            showError("Tài khoản này không có quyền truy cập vào trang quản trị");
+            setError(
+              "Tài khoản này không có quyền truy cập vào trang quản trị",
+            );
+            showError(
+              "Tài khoản này không có quyền truy cập vào trang quản trị",
+            );
           }
         } catch (err) {
           console.error("Error checking admin status for social login:", err);
@@ -206,11 +232,14 @@ export function useAdminAuth() {
       console.error("Login error:", err);
       let errorMessage = "Đăng nhập thất bại";
 
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+      if (
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/wrong-password"
+      ) {
         errorMessage = "Email hoặc mật khẩu không chính xác";
-      } else if (err.code === 'auth/too-many-requests') {
+      } else if (err.code === "auth/too-many-requests") {
         errorMessage = "Quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau";
-      } else if (err.code === 'auth/network-request-failed') {
+      } else if (err.code === "auth/network-request-failed") {
         errorMessage = "Lỗi kết nối mạng";
       } else if (err.code) {
         errorMessage = `Lỗi đăng nhập: ${err.code}`;
@@ -237,7 +266,7 @@ export function useAdminAuth() {
 
     try {
       await signOut(auth!);
-      router.push('/admin');
+      router.push("/admin");
     } catch (err: any) {
       console.error("Logout error:", err);
       setError("Đăng xuất thất bại");
@@ -253,12 +282,14 @@ export function useAdminAuth() {
     }
 
     if (!isOnline) {
-      throw new Error("Không thể tạo người dùng admin khi không có kết nối mạng");
+      throw new Error(
+        "Không thể tạo người dùng admin khi không có kết nối mạng",
+      );
     }
 
     try {
       console.log("Creating admin user with ID:", userId);
-      const userRef = doc(db as Firestore, 'admins', userId);
+      const userRef = doc(db as Firestore, "admins", userId);
 
       // Check if this admin already exists
       const existingDoc = await getDoc(userRef);
@@ -271,8 +302,8 @@ export function useAdminAuth() {
       await setDoc(userRef, {
         isAdmin: true,
         createdAt: new Date(),
-        role: 'admin',
-        note: 'Created from admin debug page'
+        role: "admin",
+        note: "Created from admin debug page",
       });
 
       console.log("Admin user created successfully");
@@ -291,7 +322,7 @@ export function useAdminAuth() {
 
     try {
       return await safeFirestoreOperation(async () => {
-        const userRef = doc(db as Firestore, 'admins', userId);
+        const userRef = doc(db as Firestore, "admins", userId);
         const userSnap = await getDoc(userRef);
         return userSnap.exists();
       }, false);
@@ -310,6 +341,6 @@ export function useAdminAuth() {
     createAdminUser,
     isUserAdmin,
     checkAdminStatus,
-    isOnline
+    isOnline,
   };
 }

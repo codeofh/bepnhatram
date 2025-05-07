@@ -10,7 +10,7 @@ import {
   Search,
   Filter,
   ShoppingCart,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 
 import { AdminLayout } from "@/components/Admin/AdminLayout";
@@ -23,7 +23,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from "@/components/ui/table";
 import {
   Card,
@@ -75,7 +75,10 @@ export default function AdminOrdersPage() {
       setHasFetched(true);
     } catch (error: any) {
       console.error("Error fetching orders:", error);
-      setFetchError(error.message || "Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.");
+      setFetchError(
+        error.message ||
+          "Không thể tải danh sách đơn hàng. Vui lòng thử lại sau.",
+      );
       setHasFetched(true);
     }
   };
@@ -89,15 +92,17 @@ export default function AdminOrdersPage() {
         let filtered = [...orders];
 
         // Lọc theo status
-        if (selectedStatus !== 'all') {
-          filtered = filtered.filter(order => order.status === selectedStatus);
+        if (selectedStatus !== "all") {
+          filtered = filtered.filter(
+            (order) => order.status === selectedStatus,
+          );
         }
 
         // Lọc theo thời gian
         if (startDate) {
           const startTimestamp = startDate.getTime() / 1000;
-          filtered = filtered.filter(order =>
-            order.createdAt.seconds >= startTimestamp
+          filtered = filtered.filter(
+            (order) => order.createdAt.seconds >= startTimestamp,
           );
         }
 
@@ -105,28 +110,38 @@ export default function AdminOrdersPage() {
           const endDateCopy = new Date(endDate);
           endDateCopy.setHours(23, 59, 59, 999);
           const endTimestamp = endDateCopy.getTime() / 1000;
-          filtered = filtered.filter(order =>
-            order.createdAt.seconds <= endTimestamp
+          filtered = filtered.filter(
+            (order) => order.createdAt.seconds <= endTimestamp,
           );
         }
 
         // Lọc theo từ khóa tìm kiếm
-        if (searchTerm && searchTerm.trim() !== '') {
+        if (searchTerm && searchTerm.trim() !== "") {
           const term = searchTerm.toLowerCase().trim();
-          filtered = filtered.filter(order =>
-            order.id.toLowerCase().includes(term) ||
-            (order.orderCode && order.orderCode.toLowerCase().includes(term)) ||
-            order.customer.name.toLowerCase().includes(term) ||
-            order.customer.email?.toLowerCase().includes(term) ||
-            order.customer.phone.toLowerCase().includes(term)
+          filtered = filtered.filter(
+            (order) =>
+              order.id.toLowerCase().includes(term) ||
+              (order.orderCode &&
+                order.orderCode.toLowerCase().includes(term)) ||
+              order.customer.name.toLowerCase().includes(term) ||
+              order.customer.email?.toLowerCase().includes(term) ||
+              order.customer.phone.toLowerCase().includes(term),
           );
         }
 
         setFilteredOrders(filtered);
       } else {
         // Fetch lại từ server với filters
-        const statusFilter = selectedStatus !== 'all' ? selectedStatus as OrderStatus : undefined;
-        const data = await getAllOrders(statusFilter, startDate, endDate, searchTerm);
+        const statusFilter =
+          selectedStatus !== "all"
+            ? (selectedStatus as OrderStatus)
+            : undefined;
+        const data = await getAllOrders(
+          statusFilter,
+          startDate,
+          endDate,
+          searchTerm,
+        );
         setFilteredOrders(data);
       }
     } catch (error) {
@@ -143,21 +158,21 @@ export default function AdminOrdersPage() {
 
   // Format date
   const formatDate = (timestamp: any) => {
-    if (!timestamp) return '-';
+    if (!timestamp) return "-";
 
     const date = new Date(timestamp.seconds * 1000);
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return amount.toLocaleString('vi-VN') + '₫';
+    return amount.toLocaleString("vi-VN") + "₫";
   };
 
   if (authLoading || !isClient) {
@@ -212,7 +227,9 @@ export default function AdminOrdersPage() {
             ) : fetchError ? (
               <div className="text-center py-12 space-y-3">
                 <AlertTriangle className="h-12 w-12 mx-auto text-red-500" />
-                <h3 className="text-lg font-medium text-gray-900">Lỗi khi tải dữ liệu</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Lỗi khi tải dữ liệu
+                </h3>
                 <p className="text-gray-500 max-w-md mx-auto">{fetchError}</p>
                 <Button onClick={() => fetchOrders()} className="mt-4">
                   Thử lại
@@ -221,11 +238,16 @@ export default function AdminOrdersPage() {
             ) : filteredOrders.length === 0 ? (
               <div className="text-center py-12 space-y-3">
                 <ShoppingCart className="h-12 w-12 mx-auto text-gray-300" />
-                <h3 className="text-lg font-medium text-gray-900">Không có đơn hàng nào</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Không có đơn hàng nào
+                </h3>
                 <p className="text-gray-500">
-                  {searchTerm || selectedStatus !== 'all' || startDate || endDate
-                    ? 'Không tìm thấy đơn hàng phù hợp với bộ lọc'
-                    : 'Chưa có đơn hàng nào trong hệ thống'}
+                  {searchTerm ||
+                  selectedStatus !== "all" ||
+                  startDate ||
+                  endDate
+                    ? "Không tìm thấy đơn hàng phù hợp với bộ lọc"
+                    : "Chưa có đơn hàng nào trong hệ thống"}
                 </p>
               </div>
             ) : (
@@ -243,14 +265,21 @@ export default function AdminOrdersPage() {
                   </TableHeader>
                   <TableBody>
                     {filteredOrders.map((order) => (
-                      <TableRow key={order.id} className="cursor-pointer hover:bg-gray-50">
+                      <TableRow
+                        key={order.id}
+                        className="cursor-pointer hover:bg-gray-50"
+                      >
                         <TableCell className="font-medium">
                           {order.orderCode || order.id}
                         </TableCell>
                         <TableCell>
                           <div>
-                            <div className="font-medium">{order.customer.name}</div>
-                            <div className="text-xs text-gray-500">{order.customer.phone}</div>
+                            <div className="font-medium">
+                              {order.customer.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {order.customer.phone}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -268,7 +297,9 @@ export default function AdminOrdersPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => router.push(`/admin/order/${order.id}`)}
+                            onClick={() =>
+                              router.push(`/admin/order/${order.id}`)
+                            }
                             title="Xem chi tiết"
                           >
                             <Eye className="h-4 w-4" />

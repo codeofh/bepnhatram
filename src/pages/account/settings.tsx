@@ -12,7 +12,7 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,9 +27,15 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -59,10 +65,12 @@ const createPasswordFormSchema = (isSocialUser: boolean) => {
         }),
       };
 
-  return z.object(fullSchema).refine((data) => data.newPassword === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirmPassword"],
-  });
+  return z
+    .object(fullSchema)
+    .refine((data) => data.newPassword === data.confirmPassword, {
+      message: "Mật khẩu xác nhận không khớp",
+      path: ["confirmPassword"],
+    });
 };
 
 type PasswordFormValues = {
@@ -85,7 +93,8 @@ export default function AccountSettingsPage() {
   });
 
   // Determine if user is from social login
-  const isSocialUser = user?.providerData && user.providerData[0]?.providerId !== 'password';
+  const isSocialUser =
+    user?.providerData && user.providerData[0]?.providerId !== "password";
 
   // Setup form with dynamic schema
   const form = useForm<PasswordFormValues>({
@@ -101,18 +110,20 @@ export default function AccountSettingsPage() {
   useEffect(() => {
     setIsClient(true);
     if (!loading && !user) {
-      router.push('/');
+      router.push("/");
     }
   }, [user, loading, router]);
 
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
-    if (!user || !user.displayName) return '?';
+    if (!user || !user.displayName) return "?";
 
-    const nameParts = user.displayName.split(' ');
+    const nameParts = user.displayName.split(" ");
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
 
-    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+    return (
+      nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
   const onSubmit = async (data: PasswordFormValues) => {
@@ -121,19 +132,23 @@ export default function AccountSettingsPage() {
     // This would update the password in a real application
     // For now, we'll just show a success message
     setTimeout(() => {
-      showInfo("Tính năng đang được phát triển. Mật khẩu sẽ được cập nhật sau.");
+      showInfo(
+        "Tính năng đang được phát triển. Mật khẩu sẽ được cập nhật sau.",
+      );
       form.reset();
       setIsSubmitting(false);
     }, 1000);
   };
 
   const handleNotificationChange = (key: keyof typeof notificationSettings) => {
-    setNotificationSettings(prev => ({
+    setNotificationSettings((prev) => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
     }));
 
-    showInfo("Tính năng đang được phát triển. Cài đặt thông báo sẽ được lưu sau.");
+    showInfo(
+      "Tính năng đang được phát triển. Cài đặt thông báo sẽ được lưu sau.",
+    );
   };
 
   if (loading || !isClient) {
@@ -152,7 +167,10 @@ export default function AccountSettingsPage() {
     <Layout>
       <Head>
         <title>Cài đặt tài khoản - {siteConfig.name}</title>
-        <meta name="description" content="Quản lý cài đặt và bảo mật tài khoản" />
+        <meta
+          name="description"
+          content="Quản lý cài đặt và bảo mật tài khoản"
+        />
       </Head>
 
       <div className="container py-8 px-4 md:py-12">
@@ -163,28 +181,50 @@ export default function AccountSettingsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 bg-green-600 text-white">
-                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                    <AvatarImage
+                      src={user.photoURL || undefined}
+                      alt={user.displayName || "User"}
+                    />
                     <AvatarFallback>{getUserInitials()}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg">{user.displayName || 'Người dùng'}</CardTitle>
-                    <CardDescription className="text-sm truncate">{user.email}</CardDescription>
+                    <CardTitle className="text-lg">
+                      {user.displayName || "Người dùng"}
+                    </CardTitle>
+                    <CardDescription className="text-sm truncate">
+                      {user.email}
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 <nav className="space-y-1">
-                  <Link href="/account" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
+                  <Link
+                    href="/account"
+                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
+                  >
                     <User className="mr-3 h-4 w-4" />
-                    <span className="text-sm font-medium">Thông tin tài khoản</span>
+                    <span className="text-sm font-medium">
+                      Thông tin tài khoản
+                    </span>
                   </Link>
-                  <Link href="/account/orders" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
+                  <Link
+                    href="/account/orders"
+                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
+                  >
                     <ShoppingBag className="mr-3 h-4 w-4" />
-                    <span className="text-sm font-medium">Đơn hàng của tôi</span>
+                    <span className="text-sm font-medium">
+                      Đơn hàng của tôi
+                    </span>
                   </Link>
-                  <Link href="/account/settings" className="flex items-center px-4 py-2 bg-gray-100">
+                  <Link
+                    href="/account/settings"
+                    className="flex items-center px-4 py-2 bg-gray-100"
+                  >
                     <Settings className="mr-3 h-4 w-4" />
-                    <span className="text-sm font-medium">Cài đặt tài khoản</span>
+                    <span className="text-sm font-medium">
+                      Cài đặt tài khoản
+                    </span>
                   </Link>
                 </nav>
               </CardContent>
@@ -198,7 +238,9 @@ export default function AccountSettingsPage() {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   <Lock className="h-5 w-5 text-blue-600" />
-                  <CardTitle>{isSocialUser ? "Thiết lập mật khẩu" : "Đổi mật khẩu"}</CardTitle>
+                  <CardTitle>
+                    {isSocialUser ? "Thiết lập mật khẩu" : "Đổi mật khẩu"}
+                  </CardTitle>
                 </div>
                 <CardDescription>
                   {isSocialUser
@@ -208,17 +250,25 @@ export default function AccountSettingsPage() {
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    {user.providerData && user.providerData[0]?.providerId !== 'password' && (
-                      <Alert className="mb-4">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertTitle>Tài khoản liên kết</AlertTitle>
-                        <AlertDescription>
-                          Bạn đang đăng nhập bằng tài khoản {user.providerData[0]?.providerId === 'google.com' ? 'Google' : 'Facebook'}.
-                          Bạn có thể thiết lập mật khẩu để đăng nhập bằng email và mật khẩu trong tương lai.
-                        </AlertDescription>
-                      </Alert>
-                    )}
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-4"
+                  >
+                    {user.providerData &&
+                      user.providerData[0]?.providerId !== "password" && (
+                        <Alert className="mb-4">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Tài khoản liên kết</AlertTitle>
+                          <AlertDescription>
+                            Bạn đang đăng nhập bằng tài khoản{" "}
+                            {user.providerData[0]?.providerId === "google.com"
+                              ? "Google"
+                              : "Facebook"}
+                            . Bạn có thể thiết lập mật khẩu để đăng nhập bằng
+                            email và mật khẩu trong tương lai.
+                          </AlertDescription>
+                        </Alert>
+                      )}
 
                     {!isSocialUser && (
                       <FormField
@@ -304,8 +354,10 @@ export default function AccountSettingsPage() {
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                           Đang {isSocialUser ? "thiết lập" : "cập nhật"}...
                         </>
+                      ) : isSocialUser ? (
+                        "Thiết lập mật khẩu"
                       ) : (
-                        isSocialUser ? "Thiết lập mật khẩu" : "Cập nhật mật khẩu"
+                        "Cập nhật mật khẩu"
                       )}
                     </Button>
                   </form>
@@ -328,12 +380,18 @@ export default function AccountSettingsPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <label className="text-sm font-medium">Thông báo qua email</label>
-                      <p className="text-xs text-gray-500">Nhận thông báo qua địa chỉ email</p>
+                      <label className="text-sm font-medium">
+                        Thông báo qua email
+                      </label>
+                      <p className="text-xs text-gray-500">
+                        Nhận thông báo qua địa chỉ email
+                      </p>
                     </div>
                     <Switch
                       checked={notificationSettings.emailNotifications}
-                      onCheckedChange={() => handleNotificationChange('emailNotifications')}
+                      onCheckedChange={() =>
+                        handleNotificationChange("emailNotifications")
+                      }
                     />
                   </div>
 
@@ -341,12 +399,18 @@ export default function AccountSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <label className="text-sm font-medium">Cập nhật đơn hàng</label>
-                      <p className="text-xs text-gray-500">Nhận thông báo khi đơn hàng có thay đổi trạng thái</p>
+                      <label className="text-sm font-medium">
+                        Cập nhật đơn hàng
+                      </label>
+                      <p className="text-xs text-gray-500">
+                        Nhận thông báo khi đơn hàng có thay đổi trạng thái
+                      </p>
                     </div>
                     <Switch
                       checked={notificationSettings.orderUpdates}
-                      onCheckedChange={() => handleNotificationChange('orderUpdates')}
+                      onCheckedChange={() =>
+                        handleNotificationChange("orderUpdates")
+                      }
                     />
                   </div>
 
@@ -354,12 +418,18 @@ export default function AccountSettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <label className="text-sm font-medium">Ưu đãi và khuyến mãi</label>
-                      <p className="text-xs text-gray-500">Nhận thông tin về ưu đãi và khuyến mãi mới</p>
+                      <label className="text-sm font-medium">
+                        Ưu đãi và khuyến mãi
+                      </label>
+                      <p className="text-xs text-gray-500">
+                        Nhận thông tin về ưu đãi và khuyến mãi mới
+                      </p>
                     </div>
                     <Switch
                       checked={notificationSettings.promotions}
-                      onCheckedChange={() => handleNotificationChange('promotions')}
+                      onCheckedChange={() =>
+                        handleNotificationChange("promotions")
+                      }
                     />
                   </div>
                 </div>
@@ -385,7 +455,8 @@ export default function AccountSettingsPage() {
                       Tài khoản của bạn đang được bảo vệ
                     </AlertTitle>
                     <AlertDescription>
-                      Các tính năng bảo mật nâng cao như xác thực hai yếu tố sẽ được phát triển trong thời gian tới.
+                      Các tính năng bảo mật nâng cao như xác thực hai yếu tố sẽ
+                      được phát triển trong thời gian tới.
                     </AlertDescription>
                   </Alert>
                 </div>

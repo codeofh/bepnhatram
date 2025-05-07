@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { X, Search } from 'lucide-react';
+import React, { useEffect, useRef } from "react";
+import { X, Search } from "lucide-react";
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -8,7 +8,12 @@ interface SearchModalProps {
   setSearchQuery: (query: string) => void;
 }
 
-export function SearchModal({ isOpen, onClose, searchQuery, setSearchQuery }: SearchModalProps) {
+export function SearchModal({
+  isOpen,
+  onClose,
+  searchQuery,
+  setSearchQuery,
+}: SearchModalProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Focus the input when the modal opens
@@ -21,17 +26,17 @@ export function SearchModal({ isOpen, onClose, searchQuery, setSearchQuery }: Se
   // Handle escape key to close the modal
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener("keydown", handleEscape);
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, [isOpen, onClose]);
 
@@ -39,20 +44,22 @@ export function SearchModal({ isOpen, onClose, searchQuery, setSearchQuery }: Se
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-16 px-4">
-      <div 
+      <div
         className="bg-white w-full max-w-md rounded-lg shadow-lg overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 relative">
-          <h3 className="text-lg font-medium mb-3 text-center">Tìm kiếm món ăn</h3>
-          
-          <button 
+          <h3 className="text-lg font-medium mb-3 text-center">
+            Tìm kiếm món ăn
+          </h3>
+
+          <button
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
             onClick={onClose}
           >
             <X size={20} />
           </button>
-          
+
           <div className="relative">
             <input
               ref={inputRef}
@@ -62,9 +69,12 @@ export function SearchModal({ isOpen, onClose, searchQuery, setSearchQuery }: Se
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
             {searchQuery && (
-              <button 
+              <button
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 onClick={() => setSearchQuery("")}
               >
@@ -72,15 +82,15 @@ export function SearchModal({ isOpen, onClose, searchQuery, setSearchQuery }: Se
               </button>
             )}
           </div>
-          
+
           <div className="flex justify-end mt-4 space-x-2">
-            <button 
+            <button
               className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
               onClick={onClose}
             >
               Hủy
             </button>
-            <button 
+            <button
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
               onClick={onClose}
             >

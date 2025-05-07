@@ -17,7 +17,7 @@ export function Layout({
   searchQuery,
   setSearchQuery,
   activeCategory = "all",
-  setActiveCategory
+  setActiveCategory,
 }: LayoutProps) {
   const router = useRouter();
   const isHomePage = router.pathname === "/";
@@ -51,7 +51,7 @@ export function Layout({
       {/* Mobile sidebar */}
       <div
         className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300 ${
-          isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          isSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={toggleSidebar}
       >
@@ -61,7 +61,9 @@ export function Layout({
         >
           <div className="p-4">
             <Sidebar
-              activeCategory={setActiveCategory ? activeCategory : localActiveCategory}
+              activeCategory={
+                setActiveCategory ? activeCategory : localActiveCategory
+              }
               setActiveCategory={handleCategoryChange}
               onClose={() => setIsSidebarOpen(false)}
             />

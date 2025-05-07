@@ -15,7 +15,7 @@ import {
   Lock,
   Globe,
   User,
-  ShoppingBag
+  ShoppingBag,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/admin');
+    router.push("/admin");
   };
 
   const isActive = (path: string) => {
@@ -57,12 +57,14 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
 
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
-    if (!user || !user.displayName) return '?';
+    if (!user || !user.displayName) return "?";
 
-    const nameParts = user.displayName.split(' ');
+    const nameParts = user.displayName.split(" ");
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
 
-    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+    return (
+      nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
   const navItems = [
@@ -129,10 +131,11 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                     <SheetClose asChild key={item.path}>
                       <Link
                         href={item.path}
-                        className={`flex items-center p-3 mb-1 rounded-md hover:bg-gray-100 ${isActive(item.path)
+                        className={`flex items-center p-3 mb-1 rounded-md hover:bg-gray-100 ${
+                          isActive(item.path)
                             ? "bg-blue-50 text-blue-600 font-medium"
                             : "text-gray-700"
-                          }`}
+                        }`}
                       >
                         <span className="mr-3">{item.icon}</span>
                         <span>{item.name}</span>
@@ -164,7 +167,10 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
                   <Avatar className="h-8 w-8 bg-green-600 text-white">
-                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                    <AvatarImage
+                      src={user.photoURL || undefined}
+                      alt={user.displayName || "User"}
+                    />
                     <AvatarFallback>{getUserInitials()}</AvatarFallback>
                   </Avatar>
                   <span className="mr-1 hidden sm:inline-block">
@@ -178,12 +184,19 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                 <div className="p-3 flex flex-col items-start">
                   <div className="flex items-center mb-2">
                     <Avatar className="h-10 w-10 bg-green-600 text-white mr-3">
-                      <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                      <AvatarImage
+                        src={user.photoURL || undefined}
+                        alt={user.displayName || "User"}
+                      />
                       <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <span className="font-medium">{user.displayName || user.email?.split('@')[0]}</span>
-                      <span className="text-xs text-gray-500">{user.email}</span>
+                      <span className="font-medium">
+                        {user.displayName || user.email?.split("@")[0]}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {user.email}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -196,19 +209,30 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/account/settings" className="w-full flex items-center">
+                    <Link
+                      href="/account/settings"
+                      className="w-full flex items-center"
+                    >
                       <Lock className="h-4 w-4 mr-2" />
                       Đổi mật khẩu
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/" target="_blank" rel="noopener noreferrer" className="w-full flex items-center">
+                    <Link
+                      href="/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center"
+                    >
                       <Globe className="h-4 w-4 mr-2" />
                       Xem trang web
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="my-1" />
-                  <DropdownMenuItem onClick={handleLogout} className="w-full flex items-center">
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="w-full flex items-center"
+                  >
                     <LogOut className="h-4 w-4 mr-2" />
                     Đăng xuất
                   </DropdownMenuItem>
@@ -222,16 +246,19 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
       {/* Main container */}
       <div className="flex flex-1">
         {/* Sidebar - Desktop */}
-        <aside className={`w-64 border-r border-gray-200 bg-white ${isMobileMenuOpen ? 'hidden' : 'hidden lg:block'}`}>
+        <aside
+          className={`w-64 border-r border-gray-200 bg-white ${isMobileMenuOpen ? "hidden" : "hidden lg:block"}`}
+        >
           <nav className="p-4 space-y-1">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
-                className={`flex items-center p-3 rounded-md hover:bg-gray-100 ${isActive(item.path)
+                className={`flex items-center p-3 rounded-md hover:bg-gray-100 ${
+                  isActive(item.path)
                     ? "bg-blue-50 text-blue-600 font-medium"
                     : "text-gray-700"
-                  }`}
+                }`}
               >
                 <span className="mr-3">{item.icon}</span>
                 <span>{item.name}</span>

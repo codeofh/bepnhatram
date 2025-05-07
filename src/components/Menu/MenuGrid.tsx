@@ -26,13 +26,17 @@ interface MenuGridProps {
   searchQuery?: string;
 }
 
-export function MenuGrid({ items, activeCategory, searchQuery = "" }: MenuGridProps) {
+export function MenuGrid({
+  items,
+  activeCategory,
+  searchQuery = "",
+}: MenuGridProps) {
   const ITEMS_PER_PAGE = 20;
   const [currentPage, setCurrentPage] = useState(1);
 
   // Filter items by active category and search query
   const filteredItems = items
-    .filter(item => {
+    .filter((item) => {
       // Filter by category
       if (activeCategory && activeCategory !== "all") {
         if (item.category !== activeCategory) return false;
@@ -49,7 +53,9 @@ export function MenuGrid({ items, activeCategory, searchQuery = "" }: MenuGridPr
 
         const descriptionMatches =
           item.description.toLowerCase().includes(query) ||
-          removeDiacritics(item.description.toLowerCase()).includes(queryNoDiacritics);
+          removeDiacritics(item.description.toLowerCase()).includes(
+            queryNoDiacritics,
+          );
 
         return nameMatches || descriptionMatches;
       }
@@ -68,7 +74,10 @@ export function MenuGrid({ items, activeCategory, searchQuery = "" }: MenuGridPr
   // Calculate pagination
   const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedItems = filteredItems.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const paginatedItems = filteredItems.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE,
+  );
 
   // Reset to first page when category or search changes
   React.useEffect(() => {
@@ -89,7 +98,9 @@ export function MenuGrid({ items, activeCategory, searchQuery = "" }: MenuGridPr
                 if (currentPage > 1) setCurrentPage(currentPage - 1);
               }}
               aria-disabled={currentPage === 1}
-              className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+              className={
+                currentPage === 1 ? "pointer-events-none opacity-50" : ""
+              }
             >
               <ChevronLeft className="h-4 w-4" />
               <span>Trước</span>
@@ -119,7 +130,11 @@ export function MenuGrid({ items, activeCategory, searchQuery = "" }: MenuGridPr
                 if (currentPage < totalPages) setCurrentPage(currentPage + 1);
               }}
               aria-disabled={currentPage === totalPages}
-              className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+              className={
+                currentPage === totalPages
+                  ? "pointer-events-none opacity-50"
+                  : ""
+              }
             >
               <span>Tiếp</span>
               <ChevronRight className="h-4 w-4" />
@@ -141,7 +156,9 @@ export function MenuGrid({ items, activeCategory, searchQuery = "" }: MenuGridPr
         </div>
       ) : (
         <div className="text-center py-10">
-          <h3 className="text-xl font-medium text-gray-700 mb-2">Không tìm thấy món ăn</h3>
+          <h3 className="text-xl font-medium text-gray-700 mb-2">
+            Không tìm thấy món ăn
+          </h3>
           <p className="text-gray-500">
             {searchQuery
               ? `Không tìm thấy món ăn nào phù hợp với từ khóa "${searchQuery}"`
@@ -152,9 +169,7 @@ export function MenuGrid({ items, activeCategory, searchQuery = "" }: MenuGridPr
 
       {/* Bottom Pagination for all screen sizes */}
       {filteredItems.length > 0 && (
-        <div className="mt-8">
-          {renderPagination()}
-        </div>
+        <div className="mt-8">{renderPagination()}</div>
       )}
     </>
   );

@@ -12,7 +12,7 @@ import {
   Loader2,
   ShoppingBag,
   Settings,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -26,9 +26,16 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Layout } from "@/components/Layout/Layout";
@@ -66,7 +73,7 @@ export default function AccountPage() {
   useEffect(() => {
     setIsClient(true);
     if (!loading && !user) {
-      router.push('/');
+      router.push("/");
     } else if (user) {
       // Update form values with user data
       form.reset({
@@ -78,12 +85,14 @@ export default function AccountPage() {
 
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
-    if (!user || !user.displayName) return '?';
+    if (!user || !user.displayName) return "?";
 
-    const nameParts = user.displayName.split(' ');
+    const nameParts = user.displayName.split(" ");
     if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
 
-    return (nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)).toUpperCase();
+    return (
+      nameParts[0].charAt(0) + nameParts[nameParts.length - 1].charAt(0)
+    ).toUpperCase();
   };
 
   const onSubmit = async (data: ProfileFormValues) => {
@@ -92,7 +101,9 @@ export default function AccountPage() {
     // This would update the user profile in a real application
     // For now, we'll just show a success message
     setTimeout(() => {
-      showInfo("Tính năng đang được phát triển. Thông tin tài khoản sẽ được cập nhật sau.");
+      showInfo(
+        "Tính năng đang được phát triển. Thông tin tài khoản sẽ được cập nhật sau.",
+      );
       setIsSubmitting(false);
     }, 1000);
   };
@@ -113,7 +124,10 @@ export default function AccountPage() {
     <Layout>
       <Head>
         <title>Tài khoản của tôi - {siteConfig.name}</title>
-        <meta name="description" content="Quản lý thông tin tài khoản cá nhân" />
+        <meta
+          name="description"
+          content="Quản lý thông tin tài khoản cá nhân"
+        />
       </Head>
 
       <div className="container py-8 px-4 md:py-12">
@@ -124,28 +138,50 @@ export default function AccountPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12 bg-green-600 text-white">
-                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || 'User'} />
+                    <AvatarImage
+                      src={user.photoURL || undefined}
+                      alt={user.displayName || "User"}
+                    />
                     <AvatarFallback>{getUserInitials()}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg">{user.displayName || 'Người dùng'}</CardTitle>
-                    <CardDescription className="text-sm truncate">{user.email}</CardDescription>
+                    <CardTitle className="text-lg">
+                      {user.displayName || "Người dùng"}
+                    </CardTitle>
+                    <CardDescription className="text-sm truncate">
+                      {user.email}
+                    </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 <nav className="space-y-1">
-                  <Link href="/account" className="flex items-center px-4 py-2 bg-gray-100">
+                  <Link
+                    href="/account"
+                    className="flex items-center px-4 py-2 bg-gray-100"
+                  >
                     <User className="mr-3 h-4 w-4" />
-                    <span className="text-sm font-medium">Thông tin tài khoản</span>
+                    <span className="text-sm font-medium">
+                      Thông tin tài khoản
+                    </span>
                   </Link>
-                  <Link href="/account/orders" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
+                  <Link
+                    href="/account/orders"
+                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
+                  >
                     <ShoppingBag className="mr-3 h-4 w-4" />
-                    <span className="text-sm font-medium">Đơn hàng của tôi</span>
+                    <span className="text-sm font-medium">
+                      Đơn hàng của tôi
+                    </span>
                   </Link>
-                  <Link href="/account/settings" className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50">
+                  <Link
+                    href="/account/settings"
+                    className="flex items-center px-4 py-2 text-gray-700 hover:bg-gray-50"
+                  >
                     <Settings className="mr-3 h-4 w-4" />
-                    <span className="text-sm font-medium">Cài đặt tài khoản</span>
+                    <span className="text-sm font-medium">
+                      Cài đặt tài khoản
+                    </span>
                   </Link>
                 </nav>
               </CardContent>
@@ -163,7 +199,10 @@ export default function AccountPage() {
               </CardHeader>
               <CardContent>
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-6"
+                  >
                     <FormField
                       control={form.control}
                       name="displayName"
@@ -173,7 +212,11 @@ export default function AccountPage() {
                           <FormControl>
                             <div className="relative">
                               <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                              <Input className="pl-10" placeholder="Nguyễn Văn A" {...field} />
+                              <Input
+                                className="pl-10"
+                                placeholder="Nguyễn Văn A"
+                                {...field}
+                              />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -188,11 +231,13 @@ export default function AccountPage() {
                           <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                           <Input
                             className="pl-10"
-                            value={user?.email || ''}
+                            value={user?.email || ""}
                             disabled
                           />
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">Email không thể thay đổi</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Email không thể thay đổi
+                        </p>
                       </div>
 
                       <FormField
@@ -204,7 +249,11 @@ export default function AccountPage() {
                             <FormControl>
                               <div className="relative">
                                 <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input className="pl-10" placeholder="0912345678" {...field} />
+                                <Input
+                                  className="pl-10"
+                                  placeholder="0912345678"
+                                  {...field}
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -225,7 +274,9 @@ export default function AccountPage() {
                             <Mail className="h-4 w-4 mr-2 text-gray-500" />
                             <span className="text-sm">Xác thực email</span>
                           </div>
-                          <span className="text-sm text-green-600 font-medium">Đã xác thực</span>
+                          <span className="text-sm text-green-600 font-medium">
+                            Đã xác thực
+                          </span>
                         </div>
 
                         <div className="flex items-center justify-between py-2 px-4 bg-gray-50 rounded-md">
@@ -233,7 +284,13 @@ export default function AccountPage() {
                             <Calendar className="h-4 w-4 mr-2 text-gray-500" />
                             <span className="text-sm">Ngày tham gia</span>
                           </div>
-                          <span className="text-sm text-gray-600">{user?.metadata?.creationTime ? new Date(user.metadata.creationTime).toLocaleDateString('vi-VN') : 'N/A'}</span>
+                          <span className="text-sm text-gray-600">
+                            {user?.metadata?.creationTime
+                              ? new Date(
+                                  user.metadata.creationTime,
+                                ).toLocaleDateString("vi-VN")
+                              : "N/A"}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -266,7 +323,9 @@ export default function AccountPage() {
                 <CardContent>
                   <div className="text-center py-4">
                     <ShoppingBag className="h-8 w-8 mx-auto text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-500">Bạn chưa có đơn hàng nào</p>
+                    <p className="mt-2 text-sm text-gray-500">
+                      Bạn chưa có đơn hàng nào
+                    </p>
                   </div>
                 </CardContent>
                 <CardFooter className="flex justify-end">
@@ -284,7 +343,9 @@ export default function AccountPage() {
                   <CardTitle className="text-base">Quản lý mật khẩu</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-gray-500">Thay đổi mật khẩu tài khoản và cài đặt bảo mật bổ sung.</p>
+                  <p className="text-sm text-gray-500">
+                    Thay đổi mật khẩu tài khoản và cài đặt bảo mật bổ sung.
+                  </p>
                 </CardContent>
                 <CardFooter className="flex justify-end">
                   <Button variant="ghost" asChild size="sm">

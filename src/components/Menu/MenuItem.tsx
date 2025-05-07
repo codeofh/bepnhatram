@@ -4,7 +4,13 @@ import { Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToastContext } from "@/contexts/ToastContext";
 import { useCartContext } from "@/contexts/CartContext";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { SizeOption } from "@/data/menuItems";
 
 interface MenuItemProps {
@@ -29,8 +35,12 @@ export function MenuItem({
   sizes,
 }: MenuItemProps) {
   const { showCartNotification } = useToastContext();
-  const [selectedSize, setSelectedSize] = useState<string>(sizes ? sizes[0].name : '');
-  const [currentPrice, setCurrentPrice] = useState<number>(sizes ? sizes[0].price : price);
+  const [selectedSize, setSelectedSize] = useState<string>(
+    sizes ? sizes[0].name : "",
+  );
+  const [currentPrice, setCurrentPrice] = useState<number>(
+    sizes ? sizes[0].price : price,
+  );
 
   // Format price with dot separator for thousands
   const formattedPrice = `${currentPrice.toLocaleString("vi-VN")}₫`;
@@ -43,7 +53,7 @@ export function MenuItem({
     drinks: "text-blue-500 fill-blue-500", // Xanh dương - đồ uống
     chicken: "text-amber-500 fill-amber-500", // Vàng nâu - gà ủ muối
     "chicken-feet": "text-red-500 fill-red-500", // Đỏ - chân gà
-    special: "text-purple-500 fill-purple-500" // Tím - món đặc biệt
+    special: "text-purple-500 fill-purple-500", // Tím - món đặc biệt
   };
 
   // Category badge color mapping
@@ -54,7 +64,7 @@ export function MenuItem({
     drinks: "bg-blue-500", // Xanh dương - đồ uống
     chicken: "bg-amber-500", // Vàng nâu - gà ủ muối
     "chicken-feet": "bg-red-500", // Đỏ - chân gà
-    special: "bg-purple-500" // Tím - món đặc biệt
+    special: "bg-purple-500", // Tím - món đặc biệt
   };
 
   // Generate stars based on rating with category color
@@ -64,8 +74,9 @@ export function MenuItem({
       stars.push(
         <svg
           key={i}
-          className={`w-5 h-5 ${i <= rating ? "text-blue-500 fill-blue-500" : "text-gray-300"
-            }`}
+          className={`w-5 h-5 ${
+            i <= rating ? "text-blue-500 fill-blue-500" : "text-gray-300"
+          }`}
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
@@ -75,7 +86,7 @@ export function MenuItem({
           strokeLinejoin="round"
         >
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-        </svg>
+        </svg>,
       );
     }
     return stars;
@@ -89,12 +100,12 @@ export function MenuItem({
     drinks: "Đồ uống",
     chicken: "Gà ủ muối",
     "chicken-feet": "Chân gà",
-    special: "Đặc biệt"
+    special: "Đặc biệt",
   };
 
   const handleSizeChange = (value: string) => {
     setSelectedSize(value);
-    const sizeOption = sizes?.find(size => size.name === value);
+    const sizeOption = sizes?.find((size) => size.name === value);
     if (sizeOption) {
       setCurrentPrice(sizeOption.price);
     }
@@ -107,21 +118,18 @@ export function MenuItem({
     addItem(
       { id, name, description, price, image, category, rating, sizes },
       1,
-      sizes ? selectedSize : undefined
+      sizes ? selectedSize : undefined,
     );
   };
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
       <div className="relative h-36 sm:h-40 md:h-48 w-full">
-        <Image
-          src={image}
-          alt={name}
-          fill
-          className="object-cover"
-        />
+        <Image src={image} alt={name} fill className="object-cover" />
         <div className="absolute top-2 right-2">
-          <Badge className={`${categoryColorMap[category as keyof typeof categoryColorMap]} text-white text-xs`}>
+          <Badge
+            className={`${categoryColorMap[category as keyof typeof categoryColorMap]} text-white text-xs`}
+          >
             {categoryNameMap[category as keyof typeof categoryNameMap]}
           </Badge>
         </div>
@@ -129,11 +137,13 @@ export function MenuItem({
 
       <div className="p-2 sm:p-3 md:p-4 flex flex-col relative">
         <div className="flex-grow relative">
-          <h3 className="font-bold text-sm sm:text-base md:text-lg  line-clamp-2 min-h-[2.5em]">{name}</h3>
-          <div className="flex mb-1 sm:mb-2">
-            {renderStars()}
-          </div>
-          <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">{description}</p>
+          <h3 className="font-bold text-sm sm:text-base md:text-lg  line-clamp-2 min-h-[2.5em]">
+            {name}
+          </h3>
+          <div className="flex mb-1 sm:mb-2">{renderStars()}</div>
+          <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">
+            {description}
+          </p>
         </div>
 
         <div className="space-y-2 mt-auto">
@@ -155,9 +165,10 @@ export function MenuItem({
           )}
 
           <div className="flex items-center justify-between w-full bg-gray-50/50 rounded-lg px-3 py-2">
-            <div className="text-orange-500 font-bold text-sm sm:text-base md:text-lg"
-            >
-              <span className="font-bold text-sm sm:text-base md:text-lg">{formattedPrice}</span>
+            <div className="text-orange-500 font-bold text-sm sm:text-base md:text-lg">
+              <span className="font-bold text-sm sm:text-base md:text-lg">
+                {formattedPrice}
+              </span>
             </div>
             <button
               className="bg-white rounded-full p-1.5 border border-gray-300 hover:bg-gray-50 flex-shrink-0"

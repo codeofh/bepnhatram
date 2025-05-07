@@ -1,11 +1,11 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { useRouter } from 'next/router';
-import { Loader2 } from 'lucide-react';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { useRouter } from "next/router";
+import { Loader2 } from "lucide-react";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -14,38 +14,40 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { PaymentMethods } from '@/components/Checkout/PaymentMethods';
-import { useCartContext } from '@/contexts/CartContext';
-import { useOrders } from '@/hooks/useOrders';
-import { CreateOrderData, PaymentMethod } from '@/types/order';
-import { useAuthContext } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { PaymentMethods } from "@/components/Checkout/PaymentMethods";
+import { useCartContext } from "@/contexts/CartContext";
+import { useOrders } from "@/hooks/useOrders";
+import { CreateOrderData, PaymentMethod } from "@/types/order";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 // Schema xác thực form đặt hàng
 const checkoutFormSchema = z.object({
   name: z.string().min(2, {
-    message: 'Tên phải có ít nhất 2 ký tự',
+    message: "Tên phải có ít nhất 2 ký tự",
   }),
-  email: z.union([
-    z.string().email({
-      message: 'Email không hợp lệ',
-    }),
-    z.string().length(0)
-  ]).optional(),
+  email: z
+    .union([
+      z.string().email({
+        message: "Email không hợp lệ",
+      }),
+      z.string().length(0),
+    ])
+    .optional(),
   phone: z.string().regex(/^(0|\+84)[3|5|7|8|9][0-9]{8}$/, {
-    message: 'Số điện thoại không hợp lệ',
+    message: "Số điện thoại không hợp lệ",
   }),
   address: z.string().min(5, {
-    message: 'Địa chỉ phải có ít nhất 5 ký tự',
+    message: "Địa chỉ phải có ít nhất 5 ký tự",
   }),
   city: z.string().default("Huế"),
   district: z.string().default(""),
   ward: z.string().default(""),
   notes: z.string().optional(),
-  paymentMethod: z.enum(['cod', 'bank_transfer', 'momo', 'vnpay'] as const),
+  paymentMethod: z.enum(["cod", "bank_transfer", "momo", "vnpay"] as const),
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutFormSchema>;
@@ -61,15 +63,15 @@ export function CheckoutForm() {
   const form = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutFormSchema),
     defaultValues: {
-      name: user?.displayName || '',
-      email: user?.email || '',
-      phone: '',
-      address: '',
-      city: 'Huế',
-      district: '',
-      ward: '',
-      notes: '',
-      paymentMethod: 'cod',
+      name: user?.displayName || "",
+      email: user?.email || "",
+      phone: "",
+      address: "",
+      city: "Huế",
+      district: "",
+      ward: "",
+      notes: "",
+      paymentMethod: "cod",
     },
   });
 
@@ -114,7 +116,7 @@ export function CheckoutForm() {
         },
         shipping: {
           fee: shippingFee,
-        }
+        },
       };
 
       // Gọi API tạo đơn hàng
@@ -129,8 +131,8 @@ export function CheckoutForm() {
         try {
           setTimeout(() => {
             router.push({
-              pathname: '/order-success',
-              query: { orderId }
+              pathname: "/order-success",
+              query: { orderId },
             });
           }, 100);
         } catch (navError) {
@@ -203,10 +205,14 @@ export function CheckoutForm() {
                 <FormItem className="md:col-span-2">
                   <FormLabel>Địa chỉ</FormLabel>
                   <FormControl>
-                    <Input placeholder="Địa chỉ đầy đủ (số nhà, đường, phường/xã, quận/huyện)" {...field} />
+                    <Input
+                      placeholder="Địa chỉ đầy đủ (số nhà, đường, phường/xã, quận/huyện)"
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
-                    Vui lòng nhập địa chỉ đầy đủ để thuận tiện cho việc giao hàng
+                    Vui lòng nhập địa chỉ đầy đủ để thuận tiện cho việc giao
+                    hàng
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -261,19 +267,14 @@ export function CheckoutForm() {
           />
         </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          size="lg"
-          disabled={loading}
-        >
+        <Button type="submit" className="w-full" size="lg" disabled={loading}>
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Đang xử lý...
             </>
           ) : (
-            'Đặt hàng'
+            "Đặt hàng"
           )}
         </Button>
       </form>

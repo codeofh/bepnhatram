@@ -11,10 +11,16 @@ import {
   TrendingUp,
   TrendingDown,
   ShoppingBag,
-  Clock
+  Clock,
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useAdminOrders } from "@/hooks/useAdminOrders";
 import { siteConfig } from "@/config/siteConfig";
@@ -34,7 +40,7 @@ export default function AdminDashboardPage() {
     if (!loading && !user) {
       router.push("/admin");
     }
-    
+
     if (user) {
       fetchOrderStats();
     }
@@ -54,7 +60,7 @@ export default function AdminDashboardPage() {
 
   // Format currency
   const formatCurrency = (amount: number) => {
-    return amount ? amount.toLocaleString('vi-VN') + 'đ' : '0đ';
+    return amount ? amount.toLocaleString("vi-VN") + "đ" : "0đ";
   };
 
   if (loading || !isClient) {
@@ -89,9 +95,13 @@ export default function AdminDashboardPage() {
     },
     {
       title: "Đơn đang giao",
-      value: orderStats ? (orderStats.processing + orderStats.shipping).toString() : "0",
+      value: orderStats
+        ? (orderStats.processing + orderStats.shipping).toString()
+        : "0",
       description: "Đang xử lý & giao",
-      change: orderStats ? `${orderStats.completed} hoàn thành` : "0 hoàn thành",
+      change: orderStats
+        ? `${orderStats.completed} hoàn thành`
+        : "0 hoàn thành",
       trend: "up",
       icon: <ShoppingBag className="h-5 w-5 text-blue-500" />,
     },
@@ -124,9 +134,7 @@ export default function AdminDashboardPage() {
                 <CardTitle className="text-sm font-medium text-gray-500">
                   {stat.title}
                 </CardTitle>
-                <div className="p-2 bg-gray-100 rounded-full">
-                  {stat.icon}
-                </div>
+                <div className="p-2 bg-gray-100 rounded-full">{stat.icon}</div>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
@@ -134,8 +142,11 @@ export default function AdminDashboardPage() {
                   <span className="text-xs font-medium">
                     {stat.description}
                   </span>
-                  <span className={`ml-2 flex items-center text-xs font-medium ${stat.trend === "up" ? "text-green-500" : "text-red-500"
-                    }`}>
+                  <span
+                    className={`ml-2 flex items-center text-xs font-medium ${
+                      stat.trend === "up" ? "text-green-500" : "text-red-500"
+                    }`}
+                  >
                     {stat.change}
                     {stat.trend === "up" ? (
                       <ArrowUpRight className="h-3 w-3 ml-0.5" />
@@ -175,8 +186,11 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                     <div className="flex items-center ml-4">
-                      <div className={`flex items-center ${item.rating >= 4 ? "text-green-500" : "text-amber-500"
-                        }`}>
+                      <div
+                        className={`flex items-center ${
+                          item.rating >= 4 ? "text-green-500" : "text-amber-500"
+                        }`}
+                      >
                         {item.rating >= 4 ? (
                           <TrendingUp className="h-4 w-4 mr-1" />
                         ) : (
@@ -210,13 +224,19 @@ export default function AdminDashboardPage() {
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">Chờ xác nhận</span>
                       <span className="text-sm text-gray-500">
-                        {orderStats.pending} đơn ({Math.round((orderStats.pending / orderStats.total) * 100) || 0}%)
+                        {orderStats.pending} đơn (
+                        {Math.round(
+                          (orderStats.pending / orderStats.total) * 100,
+                        ) || 0}
+                        %)
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className="h-2.5 rounded-full bg-yellow-500"
-                        style={{ width: `${Math.round((orderStats.pending / orderStats.total) * 100) || 0}%` }}
+                        style={{
+                          width: `${Math.round((orderStats.pending / orderStats.total) * 100) || 0}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -224,13 +244,19 @@ export default function AdminDashboardPage() {
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">Đang chuẩn bị</span>
                       <span className="text-sm text-gray-500">
-                        {orderStats.processing} đơn ({Math.round((orderStats.processing / orderStats.total) * 100) || 0}%)
+                        {orderStats.processing} đơn (
+                        {Math.round(
+                          (orderStats.processing / orderStats.total) * 100,
+                        ) || 0}
+                        %)
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className="h-2.5 rounded-full bg-blue-500"
-                        style={{ width: `${Math.round((orderStats.processing / orderStats.total) * 100) || 0}%` }}
+                        style={{
+                          width: `${Math.round((orderStats.processing / orderStats.total) * 100) || 0}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -238,13 +264,19 @@ export default function AdminDashboardPage() {
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">Đang giao</span>
                       <span className="text-sm text-gray-500">
-                        {orderStats.shipping} đơn ({Math.round((orderStats.shipping / orderStats.total) * 100) || 0}%)
+                        {orderStats.shipping} đơn (
+                        {Math.round(
+                          (orderStats.shipping / orderStats.total) * 100,
+                        ) || 0}
+                        %)
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className="h-2.5 rounded-full bg-purple-500"
-                        style={{ width: `${Math.round((orderStats.shipping / orderStats.total) * 100) || 0}%` }}
+                        style={{
+                          width: `${Math.round((orderStats.shipping / orderStats.total) * 100) || 0}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -252,13 +284,19 @@ export default function AdminDashboardPage() {
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">Hoàn thành</span>
                       <span className="text-sm text-gray-500">
-                        {orderStats.completed} đơn ({Math.round((orderStats.completed / orderStats.total) * 100) || 0}%)
+                        {orderStats.completed} đơn (
+                        {Math.round(
+                          (orderStats.completed / orderStats.total) * 100,
+                        ) || 0}
+                        %)
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className="h-2.5 rounded-full bg-green-500"
-                        style={{ width: `${Math.round((orderStats.completed / orderStats.total) * 100) || 0}%` }}
+                        style={{
+                          width: `${Math.round((orderStats.completed / orderStats.total) * 100) || 0}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -266,13 +304,19 @@ export default function AdminDashboardPage() {
                     <div className="flex justify-between mb-1">
                       <span className="text-sm font-medium">Đã hủy</span>
                       <span className="text-sm text-gray-500">
-                        {orderStats.cancelled} đơn ({Math.round((orderStats.cancelled / orderStats.total) * 100) || 0}%)
+                        {orderStats.cancelled} đơn (
+                        {Math.round(
+                          (orderStats.cancelled / orderStats.total) * 100,
+                        ) || 0}
+                        %)
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
                       <div
                         className="h-2.5 rounded-full bg-red-500"
-                        style={{ width: `${Math.round((orderStats.cancelled / orderStats.total) * 100) || 0}%` }}
+                        style={{
+                          width: `${Math.round((orderStats.cancelled / orderStats.total) * 100) || 0}%`,
+                        }}
                       ></div>
                     </div>
                   </div>

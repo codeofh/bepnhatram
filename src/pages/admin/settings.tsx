@@ -2,7 +2,16 @@ import React, { useEffect, useState } from "react";
 import Head from "next/head";
 //import firebase functions
 import { useRouter } from "next/router";
-import { Save, Globe, Phone, Clock, MapPin, Mail, Facebook, Instagram } from "lucide-react";
+import {
+  Save,
+  Globe,
+  Phone,
+  Clock,
+  MapPin,
+  Mail,
+  Facebook,
+  Instagram,
+} from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
@@ -18,12 +27,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
@@ -34,10 +38,10 @@ import {
 import { useToastContext } from "@/contexts/ToastContext";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
-import { doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, setDoc, getDoc } from "firebase/firestore";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { db } from '@/lib/firebase';
+import { db } from "@/lib/firebase";
 const generalSettingsSchema = z.object({
   name: z.string().min(1, { message: "Tên nhà hàng không được để trống" }),
   description: z.string().min(1, { message: "Mô tả không được để trống" }),
@@ -46,28 +50,54 @@ const generalSettingsSchema = z.object({
     phone: z.string().min(10, { message: "Số điện thoại không hợp lệ" }),
     email: z.string().email({ message: "Email không hợp lệ" }),
     address: z.string().min(1, { message: "Địa chỉ không được để trống" }),
-    openingHours: z.string().min(1, { message: "Giờ mở cửa không được để trống" }),
+    openingHours: z
+      .string()
+      .min(1, { message: "Giờ mở cửa không được để trống" }),
     city: z.string().min(1, { message: "Thành phố không được để trống" }),
     region: z.string().min(1, { message: "Tỉnh/thành không được để trống" }),
     postalCode: z.string(),
-    countryCode: z.string().min(2, { message: "Mã quốc gia không hợp lệ" })
+    countryCode: z.string().min(2, { message: "Mã quốc gia không hợp lệ" }),
   }),
 });
 
 const socialSettingsSchema = z.object({
   social: z.object({
-    facebook: z.string().url({ message: "URL Facebook không hợp lệ" }).or(z.string().length(0)),
+    facebook: z
+      .string()
+      .url({ message: "URL Facebook không hợp lệ" })
+      .or(z.string().length(0)),
     facebookHandle: z.string(),
-    instagram: z.string().url({ message: "URL Instagram không hợp lệ" }).or(z.string().length(0)),
-    twitter: z.string().url({ message: "URL Twitter không hợp lệ" }).or(z.string().length(0)),
-    zalo: z.string().url({ message: "URL Zalo không hợp lệ" }).or(z.string().length(0)),
-    tiktok: z.string().url({ message: "URL TikTok không hợp lệ" }).or(z.string().length(0)),
+    instagram: z
+      .string()
+      .url({ message: "URL Instagram không hợp lệ" })
+      .or(z.string().length(0)),
+    twitter: z
+      .string()
+      .url({ message: "URL Twitter không hợp lệ" })
+      .or(z.string().length(0)),
+    zalo: z
+      .string()
+      .url({ message: "URL Zalo không hợp lệ" })
+      .or(z.string().length(0)),
+    tiktok: z
+      .string()
+      .url({ message: "URL TikTok không hợp lệ" })
+      .or(z.string().length(0)),
     tiktokHandle: z.string(),
-    messenger: z.string().url({ message: "URL Messenger không hợp lệ" }).or(z.string().length(0)),
+    messenger: z
+      .string()
+      .url({ message: "URL Messenger không hợp lệ" })
+      .or(z.string().length(0)),
   }),
   ordering: z.object({
-    shopeeFood: z.string().url({ message: "URL ShopeeFood không hợp lệ" }).or(z.string().length(0)),
-    grabFood: z.string().url({ message: "URL GrabFood không hợp lệ" }).or(z.string().length(0)),
+    shopeeFood: z
+      .string()
+      .url({ message: "URL ShopeeFood không hợp lệ" })
+      .or(z.string().length(0)),
+    grabFood: z
+      .string()
+      .url({ message: "URL GrabFood không hợp lệ" })
+      .or(z.string().length(0)),
   }),
 });
 
@@ -91,12 +121,10 @@ interface MapSetting {
   longitude: string;
 }
 export default function AdminSettingsPage() {
-
-
   const updateGeneralSettings = async (data: GeneralSettingsValues) => {
     try {
-      const settingsRef = doc(db, 'settings', 'general');
- await setDoc(settingsRef, data, { merge: true });
+      const settingsRef = doc(db!, "settings", "general");
+      await setDoc(settingsRef, data, { merge: true });
     } catch (error) {
       console.error(error);
     }
@@ -104,28 +132,26 @@ export default function AdminSettingsPage() {
 
   const updateSocialSettings = async (data: SocialSettingsValues) => {
     try {
-      const settingsRef = doc(db, 'settings', 'social');
- await setDoc(settingsRef, data, { merge: true });
+      const settingsRef = doc(db!, "settings", "social");
+      await setDoc(settingsRef, data, { merge: true });
     } catch (error) {
       console.error(error);
     }
-
   };
 
   const updateMapsSettings = async (data: MapsSettingsValues) => {
     try {
-      const settingsRef = doc(db, 'settings', 'maps');
- await setDoc(settingsRef, data, { merge: true });
+      const settingsRef = doc(db!, "settings", "maps");
+      await setDoc(settingsRef, data, { merge: true });
     } catch (error) {
       console.error(error);
     }
-
   };
 
   const { user, loading } = useAuthContext();
   const router = useRouter();
   const { showSuccess, showError } = useToastContext();
- const [isClient, setIsClient] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
 
   const generalForm = useForm<GeneralSettingsValues>({
@@ -134,15 +160,15 @@ export default function AdminSettingsPage() {
       name: siteConfig.name,
       description: siteConfig.description,
       url: siteConfig.url,
- contact: siteConfig.contact || {
- phone: "",
- email: "",
- address: "",
- openingHours: "",
- city: "",
- region: "",
- postalCode: "",
- countryCode: "",
+      contact: siteConfig.contact || {
+        phone: "",
+        email: "",
+        address: "",
+        openingHours: "",
+        city: "",
+        region: "",
+        postalCode: "",
+        countryCode: "",
       },
     },
   });
@@ -151,18 +177,18 @@ export default function AdminSettingsPage() {
     resolver: zodResolver(socialSettingsSchema),
     defaultValues: {
       social: {
- facebook: siteConfig.social?.facebook || "",
- facebookHandle: siteConfig.social?.facebookHandle || "",
- instagram: siteConfig.social?.instagram || "",
- twitter: siteConfig.social?.twitter || "",
- zalo: siteConfig.social?.zalo || "",
- tiktok: siteConfig.social?.tiktok || "",
- tiktokHandle: siteConfig.social?.tiktokHandle || "",
- messenger: siteConfig.social?.messenger || "",
+        facebook: siteConfig.social?.facebook || "",
+        facebookHandle: siteConfig.social?.facebookHandle || "",
+        instagram: siteConfig.social?.instagram || "",
+        twitter: siteConfig.social?.twitter || "",
+        zalo: siteConfig.social?.zalo || "",
+        tiktok: siteConfig.social?.tiktok || "",
+        tiktokHandle: siteConfig.social?.tiktokHandle || "",
+        messenger: siteConfig.social?.messenger || "",
       },
       ordering: siteConfig.ordering || {
-        shopeeFood: siteConfig.ordering.shopeeFood,
-        grabFood: siteConfig.ordering.grabFood,
+        shopeeFood: "",
+        grabFood: ""
       },
     },
   });
@@ -170,11 +196,11 @@ export default function AdminSettingsPage() {
   const mapsForm = useForm<MapsSettingsValues>({
     resolver: zodResolver(mapsSettingsSchema),
     defaultValues: {
- maps: siteConfig.maps || {
- embedUrl: "",
- directionsUrl: "",
- latitude: "",
- longitude: "",
+      maps: siteConfig.maps || {
+        embedUrl: "",
+        directionsUrl: "",
+        latitude: "",
+        longitude: "",
       },
     },
   });
@@ -184,44 +210,61 @@ export default function AdminSettingsPage() {
     if (!loading && !user) {
       router.push("/admin");
     }
- fetchSettings();
+    fetchSettings();
   }, [user, loading, router]); // Add fetchSettings to dependencies if it relies on user/loading
 
   const fetchSettings = async () => {
- try {
- const generalSettingsRef = doc(db, 'settings', 'general');
- const socialSettingsRef = doc(db, 'settings', 'social');
- const mapsSettingsRef = doc(db, 'settings', 'maps');
+    try {
+      const generalSettingsRef = doc(db!, "settings", "general");
+      const socialSettingsRef = doc(db!, "settings", "social");
+      const mapsSettingsRef = doc(db!, "settings", "maps");
 
- const [generalSnap, socialSnap, mapsSnap] = await Promise.all([
- getDoc(generalSettingsRef),
- getDoc(socialSettingsRef),
- getDoc(mapsSettingsRef),
- ]);
+      const [generalSnap, socialSnap, mapsSnap] = await Promise.all([
+        getDoc(generalSettingsRef),
+        getDoc(socialSettingsRef),
+        getDoc(mapsSettingsRef),
+      ]);
 
-      const generalData = generalSnap.exists() ? generalSnap.data() : siteConfig;
+      const generalData = generalSnap.exists()
+        ? generalSnap.data()
+        : siteConfig;
       const socialData = socialSnap.exists() ? socialSnap.data() : siteConfig;
       const mapsData = mapsSnap.exists() ? mapsSnap.data() : siteConfig;
-      
- generalForm.reset({
- ...generalData,
- contact: generalData?.contact || { phone: "", email: "", address: "", openingHours: "", city: "", region: "", postalCode: "", countryCode: "" }
- });
- socialForm.reset({
-        social: socialData?.social || { facebook: "", facebookHandle: "", instagram: "", twitter: "", zalo: "", tiktok: "", tiktokHandle: "", messenger: "" },
-        ordering: socialData?.ordering || { shopeeFood: "", grabFood: "" }
- });
+
+      generalForm.reset({
+        ...generalData,
+        contact: generalData?.contact || {
+          phone: "",
+          email: "",
+          address: "",
+          openingHours: "",
+          city: "",
+          region: "",
+          postalCode: "",
+          countryCode: "",
+        },
+      });
+      socialForm.reset({
+        social: socialData?.social || {
+          facebook: "",
+          facebookHandle: "",
+          instagram: "",
+          twitter: "",
+          zalo: "",
+          tiktok: "",
+          tiktokHandle: "",
+          messenger: "",
+        },
+        ordering: socialData?.ordering || { shopeeFood: "", grabFood: "" },
+      });
       mapsForm.reset({
- ...mapsData
- });
-
-
- } catch (error) {
- console.error("Error fetching settings:", error);
- showError("Có lỗi xảy ra khi tải cài đặt!");
- }
+        ...mapsData,
+      });
+    } catch (error) {
+      console.error("Error fetching settings:", error);
+      showError("Có lỗi xảy ra khi tải cài đặt!");
+    }
   };
-
 
   const onSubmitGeneral = async (data: GeneralSettingsValues) => {
     try {
@@ -241,9 +284,9 @@ export default function AdminSettingsPage() {
     }
   };
   const onSubmitMaps = async (data: MapsSettingsValues) => {
- try {
- await updateMapsSettings(data);
- showSuccess("Đã lưu cài đặt bản đồ thành công!");
+    try {
+      await updateMapsSettings(data);
+      showSuccess("Đã lưu cài đặt bản đồ thành công!");
     } catch (error) {
       showError("Có lỗi xảy ra khi lưu cài đặt!");
     }
@@ -286,7 +329,10 @@ export default function AdminSettingsPage() {
 
               <TabsContent value="general" className="py-4">
                 <Form {...generalForm}>
-                  <form onSubmit={generalForm.handleSubmit(onSubmitGeneral)} className="space-y-6">
+                  <form
+                    onSubmit={generalForm.handleSubmit(onSubmitGeneral)}
+                    className="space-y-6"
+                  >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <FormField
                         control={generalForm.control}
@@ -314,7 +360,11 @@ export default function AdminSettingsPage() {
                             <FormControl>
                               <div className="relative">
                                 <Globe className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input className="pl-10" placeholder="https://bepnhatram.com" {...field} />
+                                <Input
+                                  className="pl-10"
+                                  placeholder="https://bepnhatram.com"
+                                  {...field}
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -359,7 +409,11 @@ export default function AdminSettingsPage() {
                             <FormControl>
                               <div className="relative">
                                 <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input className="pl-10" placeholder="0886286032" {...field} />
+                                <Input
+                                  className="pl-10"
+                                  placeholder="0886286032"
+                                  {...field}
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -376,7 +430,11 @@ export default function AdminSettingsPage() {
                             <FormControl>
                               <div className="relative">
                                 <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input className="pl-10" placeholder="info@bepnhatram.com" {...field} />
+                                <Input
+                                  className="pl-10"
+                                  placeholder="info@bepnhatram.com"
+                                  {...field}
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -394,7 +452,11 @@ export default function AdminSettingsPage() {
                           <FormControl>
                             <div className="relative">
                               <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                              <Input className="pl-10" placeholder="15/15 Đống Đa, Phú Nhuận, Huế" {...field} />
+                              <Input
+                                className="pl-10"
+                                placeholder="15/15 Đống Đa, Phú Nhuận, Huế"
+                                {...field}
+                              />
                             </div>
                           </FormControl>
                           <FormMessage />
@@ -412,7 +474,11 @@ export default function AdminSettingsPage() {
                             <FormControl>
                               <div className="relative">
                                 <Clock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input className="pl-10" placeholder="10:00 - 22:00 (Thứ 2 - Chủ nhật)" {...field} />
+                                <Input
+                                  className="pl-10"
+                                  placeholder="10:00 - 22:00 (Thứ 2 - Chủ nhật)"
+                                  {...field}
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -491,7 +557,10 @@ export default function AdminSettingsPage() {
 
               <TabsContent value="social" className="py-4">
                 <Form {...socialForm}>
-                  <form onSubmit={socialForm.handleSubmit(onSubmitSocial)} className="space-y-6">
+                  <form
+                    onSubmit={socialForm.handleSubmit(onSubmitSocial)}
+                    className="space-y-6"
+                  >
                     <h3 className="text-lg font-medium border-b pb-2">
                       Mạng xã hội
                     </h3>
@@ -506,7 +575,11 @@ export default function AdminSettingsPage() {
                             <FormControl>
                               <div className="relative">
                                 <Facebook className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input className="pl-10" placeholder="https://fb.com/bepnhatram.1" {...field} />
+                                <Input
+                                  className="pl-10"
+                                  placeholder="https://fb.com/bepnhatram.1"
+                                  {...field}
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -521,7 +594,10 @@ export default function AdminSettingsPage() {
                           <FormItem>
                             <FormLabel>Facebook Handle</FormLabel>
                             <FormControl>
-                              <Input placeholder="fb.com/bepnhatram.1" {...field} />
+                              <Input
+                                placeholder="fb.com/bepnhatram.1"
+                                {...field}
+                              />
                             </FormControl>
                             <FormDescription>
                               Tên hiển thị của trang Facebook
@@ -542,7 +618,11 @@ export default function AdminSettingsPage() {
                             <FormControl>
                               <div className="relative">
                                 <Instagram className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input className="pl-10" placeholder="https://instagram.com/bepnhatram" {...field} />
+                                <Input
+                                  className="pl-10"
+                                  placeholder="https://instagram.com/bepnhatram"
+                                  {...field}
+                                />
                               </div>
                             </FormControl>
                             <FormMessage />
@@ -557,7 +637,10 @@ export default function AdminSettingsPage() {
                           <FormItem>
                             <FormLabel>Twitter URL</FormLabel>
                             <FormControl>
-                              <Input placeholder="https://twitter.com/bepnhatram" {...field} />
+                              <Input
+                                placeholder="https://twitter.com/bepnhatram"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -573,7 +656,10 @@ export default function AdminSettingsPage() {
                           <FormItem>
                             <FormLabel>TikTok URL</FormLabel>
                             <FormControl>
-                              <Input placeholder="https://www.tiktok.com/@tramthichnauan" {...field} />
+                              <Input
+                                placeholder="https://www.tiktok.com/@tramthichnauan"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -606,7 +692,10 @@ export default function AdminSettingsPage() {
                           <FormItem>
                             <FormLabel>Zalo URL</FormLabel>
                             <FormControl>
-                              <Input placeholder="https://zalo.me/0886286032" {...field} />
+                              <Input
+                                placeholder="https://zalo.me/0886286032"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -620,7 +709,10 @@ export default function AdminSettingsPage() {
                           <FormItem>
                             <FormLabel>Messenger URL</FormLabel>
                             <FormControl>
-                              <Input placeholder="https://m.me/bepnhatram.1" {...field} />
+                              <Input
+                                placeholder="https://m.me/bepnhatram.1"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -640,7 +732,10 @@ export default function AdminSettingsPage() {
                           <FormItem>
                             <FormLabel>Shopee Food URL</FormLabel>
                             <FormControl>
-                              <Input placeholder="https://shopeefood.vn/hue/bep-nha-tram-ga-u-muoi-chan-ga" {...field} />
+                              <Input
+                                placeholder="https://shopeefood.vn/hue/bep-nha-tram-ga-u-muoi-chan-ga"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -654,7 +749,10 @@ export default function AdminSettingsPage() {
                           <FormItem>
                             <FormLabel>Grab Food URL</FormLabel>
                             <FormControl>
-                              <Input placeholder="https://food.grab.com/vn/vi/restaurant/bep-nha-tram" {...field} />
+                              <Input
+                                placeholder="https://food.grab.com/vn/vi/restaurant/bep-nha-tram"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -674,7 +772,10 @@ export default function AdminSettingsPage() {
 
               <TabsContent value="maps" className="py-4">
                 <Form {...mapsForm}>
-                  <form onSubmit={mapsForm.handleSubmit(onSubmitMaps)} className="space-y-6">
+                  <form
+                    onSubmit={mapsForm.handleSubmit(onSubmitMaps)}
+                    className="space-y-6"
+                  >
                     <h3 className="text-lg font-medium border-b pb-2">
                       Cài đặt bản đồ
                     </h3>
@@ -707,7 +808,10 @@ export default function AdminSettingsPage() {
                         <FormItem>
                           <FormLabel>URL chỉ đường</FormLabel>
                           <FormControl>
-                            <Input placeholder="https://maps.app.goo.gl/oSWx2zEwL6VCU4Hf7" {...field} />
+                            <Input
+                              placeholder="https://maps.app.goo.gl/oSWx2zEwL6VCU4Hf7"
+                              {...field}
+                            />
                           </FormControl>
                           <FormDescription>
                             Liên kết để dẫn đến chỉ đường trên Google Maps
@@ -725,7 +829,10 @@ export default function AdminSettingsPage() {
                           <FormItem>
                             <FormLabel>Vĩ độ (Latitude)</FormLabel>
                             <FormControl>
-                              <Input placeholder="16.462158199999998" {...field} />
+                              <Input
+                                placeholder="16.462158199999998"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -739,7 +846,10 @@ export default function AdminSettingsPage() {
                           <FormItem>
                             <FormLabel>Kinh độ (Longitude)</FormLabel>
                             <FormControl>
-                              <Input placeholder="107.59194319999999" {...field} />
+                              <Input
+                                placeholder="107.59194319999999"
+                                {...field}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>

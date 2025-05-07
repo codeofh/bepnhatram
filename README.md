@@ -30,12 +30,14 @@ Trang web cho nhà hàng BẾP NHÀ TRÂM, chuyên các món ăn ngon tại Hu�
 ### Các bước cài đặt
 
 1. Clone repository:
+
    ```bash
    git clone https://github.com/codeofh/bepnhatram.git
    cd bepnhatram
    ```
 
 2. Cài đặt các dependencies:
+
    ```bash
    npm install
    # hoặc
@@ -43,6 +45,7 @@ Trang web cho nhà hàng BẾP NHÀ TRÂM, chuyên các món ăn ngon tại Hu�
    ```
 
 3. Chạy ứng dụng ở môi trường phát triển:
+
    ```bash
    npm run dev
    # hoặc

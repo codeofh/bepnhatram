@@ -1,15 +1,22 @@
-import React from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
-import { ArrowLeft, ShoppingBag, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { CartItem } from '@/components/Cart/CartItem';
-import { useCartContext } from '@/contexts/CartContext';
-import { Layout } from '@/components/Layout/Layout';
-import { SEO } from '@/components/SEO/SEO';
-import { siteConfig } from '@/config/siteConfig';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useRouter } from 'next/router';
+import React from "react";
+import Head from "next/head";
+import Link from "next/link";
+import { ArrowLeft, ShoppingBag, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CartItem } from "@/components/Cart/CartItem";
+import { useCartContext } from "@/contexts/CartContext";
+import { Layout } from "@/components/Layout/Layout";
+import { SEO } from "@/components/SEO/SEO";
+import { siteConfig } from "@/config/siteConfig";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useRouter } from "next/router";
 
 export default function CartPage() {
   const { items, itemCount, subtotal, clearCart } = useCartContext();
@@ -29,10 +36,7 @@ export default function CartPage() {
 
   return (
     <Layout>
-      <SEO
-        title="Giỏ hàng"
-        description="Giỏ hàng của bạn tại BẾP NHÀ TRÂM"
-      />
+      <SEO title="Giỏ hàng" description="Giỏ hàng của bạn tại BẾP NHÀ TRÂM" />
 
       <div className="container py-8 px-4">
         <div className="flex items-center mb-6">
@@ -48,11 +52,13 @@ export default function CartPage() {
           <Card className="border shadow-sm mb-8">
             <CardContent className="pt-6 pb-8 flex flex-col items-center justify-center">
               <ShoppingBag className="h-16 w-16 text-gray-300 mb-4" />
-              <CardTitle className="text-lg mb-2">Giỏ hàng của bạn đang trống</CardTitle>
+              <CardTitle className="text-lg mb-2">
+                Giỏ hàng của bạn đang trống
+              </CardTitle>
               <CardDescription className="text-center mb-6">
                 Bạn chưa thêm bất kỳ món ăn nào vào giỏ hàng.
               </CardDescription>
-              <Button onClick={() => router.push('/')}>
+              <Button onClick={() => router.push("/")}>
                 Tiếp tục mua hàng
               </Button>
             </CardContent>
@@ -107,7 +113,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Phí vận chuyển:</span>
-                    <span>{shipFee === 0 ? 'Miễn phí' : formattedShipFee}</span>
+                    <span>{shipFee === 0 ? "Miễn phí" : formattedShipFee}</span>
                   </div>
                   {shipFee > 0 && (
                     <div className="text-xs text-gray-500 italic">
@@ -116,7 +122,9 @@ export default function CartPage() {
                   )}
                   <div className="pt-4 border-t flex justify-between font-bold">
                     <span>Tổng cộng:</span>
-                    <span className="text-orange-500 text-lg">{formattedTotal}</span>
+                    <span className="text-orange-500 text-lg">
+                      {formattedTotal}
+                    </span>
                   </div>
                 </CardContent>
                 <CardFooter className="px-4 md:px-6 py-4 flex flex-col gap-2">
@@ -126,9 +134,7 @@ export default function CartPage() {
                     asChild
                     disabled={isEmpty}
                   >
-                    <Link href="/checkout">
-                      Tiến hành thanh toán
-                    </Link>
+                    <Link href="/checkout">Tiến hành thanh toán</Link>
                   </Button>
                 </CardFooter>
               </Card>
