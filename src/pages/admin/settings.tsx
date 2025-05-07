@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Head from "next/head";
+//import firebase functions
 import { useRouter } from "next/router";
 import { Save, Globe, Phone, Clock, MapPin, Mail, Facebook, Instagram } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
@@ -33,8 +34,10 @@ import {
 import { useToastContext } from "@/contexts/ToastContext";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
+import { doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import { db } from '@/lib/firebase';
 const generalSettingsSchema = z.object({
   name: z.string().min(1, { message: "Tên nhà hàng không được để trống" }),
   description: z.string().min(1, { message: "Mô tả không được để trống" }),
@@ -81,11 +84,48 @@ type GeneralSettingsValues = z.infer<typeof generalSettingsSchema>;
 type SocialSettingsValues = z.infer<typeof socialSettingsSchema>;
 type MapsSettingsValues = z.infer<typeof mapsSettingsSchema>;
 
+interface MapSetting {
+  embedUrl: string;
+  directionsUrl: string;
+  latitude: string;
+  longitude: string;
+}
 export default function AdminSettingsPage() {
+
+
+  const updateGeneralSettings = async (data: GeneralSettingsValues) => {
+    try {
+      const settingsRef = doc(db, 'settings', 'general');
+ await setDoc(settingsRef, data, { merge: true });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const updateSocialSettings = async (data: SocialSettingsValues) => {
+    try {
+      const settingsRef = doc(db, 'settings', 'social');
+ await setDoc(settingsRef, data, { merge: true });
+    } catch (error) {
+      console.error(error);
+    }
+
+  };
+
+  const updateMapsSettings = async (data: MapsSettingsValues) => {
+    try {
+      const settingsRef = doc(db, 'settings', 'maps');
+ await setDoc(settingsRef, data, { merge: true });
+    } catch (error) {
+      console.error(error);
+    }
+
+  };
+
   const { user, loading } = useAuthContext();
   const router = useRouter();
   const { showSuccess, showError } = useToastContext();
-  const [isClient, setIsClient] = useState(false);
+ const [isClient, setIsClient] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
 
   const generalForm = useForm<GeneralSettingsValues>({
@@ -94,15 +134,15 @@ export default function AdminSettingsPage() {
       name: siteConfig.name,
       description: siteConfig.description,
       url: siteConfig.url,
-      contact: {
-        phone: siteConfig.contact.phone,
-        email: siteConfig.contact.email,
-        address: siteConfig.contact.address,
-        openingHours: siteConfig.contact.openingHours,
-        city: siteConfig.contact.city,
-        region: siteConfig.contact.region,
-        postalCode: siteConfig.contact.postalCode,
-        countryCode: siteConfig.contact.countryCode,
+ contact: siteConfig.contact || {
+ phone: "",
+ email: "",
+ address: "",
+ openingHours: "",
+ city: "",
+ region: "",
+ postalCode: "",
+ countryCode: "",
       },
     },
   });
@@ -111,16 +151,16 @@ export default function AdminSettingsPage() {
     resolver: zodResolver(socialSettingsSchema),
     defaultValues: {
       social: {
-        facebook: siteConfig.social.facebook,
-        facebookHandle: siteConfig.social.facebookHandle,
-        instagram: siteConfig.social.instagram,
-        twitter: siteConfig.social.twitter,
-        zalo: siteConfig.social.zalo,
-        tiktok: siteConfig.social.tiktok,
-        tiktokHandle: siteConfig.social.tiktokHandle,
-        messenger: siteConfig.social.messenger,
+ facebook: siteConfig.social?.facebook || "",
+ facebookHandle: siteConfig.social?.facebookHandle || "",
+ instagram: siteConfig.social?.instagram || "",
+ twitter: siteConfig.social?.twitter || "",
+ zalo: siteConfig.social?.zalo || "",
+ tiktok: siteConfig.social?.tiktok || "",
+ tiktokHandle: siteConfig.social?.tiktokHandle || "",
+ messenger: siteConfig.social?.messenger || "",
       },
-      ordering: {
+      ordering: siteConfig.ordering || {
         shopeeFood: siteConfig.ordering.shopeeFood,
         grabFood: siteConfig.ordering.grabFood,
       },
@@ -130,11 +170,11 @@ export default function AdminSettingsPage() {
   const mapsForm = useForm<MapsSettingsValues>({
     resolver: zodResolver(mapsSettingsSchema),
     defaultValues: {
-      maps: {
-        embedUrl: siteConfig.maps.embedUrl,
-        directionsUrl: siteConfig.maps.directionsUrl,
-        latitude: siteConfig.maps.latitude,
-        longitude: siteConfig.maps.longitude,
+ maps: siteConfig.maps || {
+ embedUrl: "",
+ directionsUrl: "",
+ latitude: "",
+ longitude: "",
       },
     },
   });
@@ -144,33 +184,66 @@ export default function AdminSettingsPage() {
     if (!loading && !user) {
       router.push("/admin");
     }
-  }, [user, loading, router]);
+ fetchSettings();
+  }, [user, loading, router]); // Add fetchSettings to dependencies if it relies on user/loading
 
-  const onSubmitGeneral = (data: GeneralSettingsValues) => {
+  const fetchSettings = async () => {
+ try {
+ const generalSettingsRef = doc(db, 'settings', 'general');
+ const socialSettingsRef = doc(db, 'settings', 'social');
+ const mapsSettingsRef = doc(db, 'settings', 'maps');
+
+ const [generalSnap, socialSnap, mapsSnap] = await Promise.all([
+ getDoc(generalSettingsRef),
+ getDoc(socialSettingsRef),
+ getDoc(mapsSettingsRef),
+ ]);
+
+      const generalData = generalSnap.exists() ? generalSnap.data() : siteConfig;
+      const socialData = socialSnap.exists() ? socialSnap.data() : siteConfig;
+      const mapsData = mapsSnap.exists() ? mapsSnap.data() : siteConfig;
+      
+ generalForm.reset({
+ ...generalData,
+ contact: generalData?.contact || { phone: "", email: "", address: "", openingHours: "", city: "", region: "", postalCode: "", countryCode: "" }
+ });
+ socialForm.reset({
+        social: socialData?.social || { facebook: "", facebookHandle: "", instagram: "", twitter: "", zalo: "", tiktok: "", tiktokHandle: "", messenger: "" },
+        ordering: socialData?.ordering || { shopeeFood: "", grabFood: "" }
+ });
+      mapsForm.reset({
+ ...mapsData
+ });
+
+
+ } catch (error) {
+ console.error("Error fetching settings:", error);
+ showError("Có lỗi xảy ra khi tải cài đặt!");
+ }
+  };
+
+
+  const onSubmitGeneral = async (data: GeneralSettingsValues) => {
     try {
-      // In a real app, this would save to a database/Firebase/environment
-      console.log("General settings:", data);
+      await updateGeneralSettings(data);
       showSuccess("Đã lưu cài đặt chung thành công!");
     } catch (error) {
       showError("Có lỗi xảy ra khi lưu cài đặt!");
     }
   };
 
-  const onSubmitSocial = (data: SocialSettingsValues) => {
+  const onSubmitSocial = async (data: SocialSettingsValues) => {
     try {
-      // In a real app, this would save to a database/Firebase/environment
-      console.log("Social settings:", data);
+      await updateSocialSettings(data);
       showSuccess("Đã lưu cài đặt mạng xã hội thành công!");
     } catch (error) {
       showError("Có lỗi xảy ra khi lưu cài đặt!");
     }
   };
-
-  const onSubmitMaps = (data: MapsSettingsValues) => {
-    try {
-      // In a real app, this would save to a database/Firebase/environment
-      console.log("Maps settings:", data);
-      showSuccess("Đã lưu cài đặt bản đồ thành công!");
+  const onSubmitMaps = async (data: MapsSettingsValues) => {
+ try {
+ await updateMapsSettings(data);
+ showSuccess("Đã lưu cài đặt bản đồ thành công!");
     } catch (error) {
       showError("Có lỗi xảy ra khi lưu cài đặt!");
     }
