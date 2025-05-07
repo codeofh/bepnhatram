@@ -9,6 +9,7 @@ import {
   MoveUp,
   MoveDown,
   GripVertical,
+  RefreshCw,
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -31,56 +32,45 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToastContext } from "@/contexts/ToastContext";
-
-interface Category {
-  id: string;
-  name: string;
-  displayName: string;
-  displayOrder: number;
-  icon?: string;
-}
+import { useCategories, Category } from "@/hooks/useCategories";
 
 export default function AdminCategoriesPage() {
-  const { user, loading } = useAuthContext();
+  const { user, loading: authLoading } = useAuthContext();
   const router = useRouter();
   const { showSuccess, showError } = useToastContext();
   const [isClient, setIsClient] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([
-    { id: "all", name: "Tất cả", displayName: "Tất cả", displayOrder: 0 },
-    {
-      id: "special",
-      name: "special",
-      displayName: "Đặc biệt",
-      displayOrder: 1,
-    },
-    { id: "main", name: "main", displayName: "Món chính", displayOrder: 2 },
-    {
-      id: "chicken",
-      name: "chicken",
-      displayName: "Gà ủ muối",
-      displayOrder: 3,
-    },
-    {
-      id: "chicken-feet",
-      name: "chicken-feet",
-      displayName: "Chân gà",
-      displayOrder: 4,
-    },
-    { id: "drinks", name: "drinks", displayName: "Đồ uống", displayOrder: 5 },
-  ]);
+  
+  // Use the categories hook
+  const { 
+    categories, 
+    loading: categoriesLoading, 
+    error: categoriesError,
+    fetchCategories,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    updateCategoryOrder
+  } = useCategories();
+  
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
-    null,
-  );
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       router.push("/auth/login?redirect=" + encodeURIComponent(router.asPath));
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router]);
+
+  // Show error toast if categories fetch fails
+  useEffect(() => {
+    if (categoriesError) {
+      showError(categoriesError);
+    }
+  }, [categoriesError, showError]);
 
   const handleEdit = (category: Category) => {
     setEditingCategory({ ...category });
@@ -89,7 +79,7 @@ export default function AdminCategoriesPage() {
 
   const handleAdd = () => {
     const newCategory: Category = {
-      id: "",
+      id: "", // Empty string for new category
       name: "",
       displayName: "",
       displayOrder: categories.length,
@@ -103,30 +93,28 @@ export default function AdminCategoriesPage() {
     setIsDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (categoryToDelete) {
-      if (categoryToDelete.id === "all") {
-        showError("Không thể xóa danh mục mặc định!");
-        return;
-      }
-
+      setIsSubmitting(true);
       try {
-        // In a real app, this would delete from Firebase
-        const newCategories = categories.filter(
-          (c) => c.id !== categoryToDelete.id,
-        );
-        setCategories(newCategories);
-        showSuccess("Đã xóa danh mục thành công!");
-      } catch (error) {
-        showError("Có lỗi xảy ra khi xóa danh mục!");
+        const result = await deleteCategory(categoryToDelete.id);
+        
+        if (result.success) {
+          showSuccess("Đã xóa danh mục thành công!");
+        } else {
+          showError(result.error || "Có lỗi xảy ra khi xóa danh mục!");
+        }
+      } catch (error: any) {
+        showError(error.message || "Có lỗi xảy ra khi xóa danh mục!");
       } finally {
+        setIsSubmitting(false);
         setIsDeleteDialogOpen(false);
         setCategoryToDelete(null);
       }
     }
   };
 
-  const saveCategory = () => {
+  const saveCategory = async () => {
     if (!editingCategory) return;
 
     if (!editingCategory.displayName.trim()) {
@@ -134,45 +122,69 @@ export default function AdminCategoriesPage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       // For a new category
       if (!editingCategory.id) {
-        const id = editingCategory.name
-          ? editingCategory.name.toLowerCase().replace(/\s+/g, "-")
-          : editingCategory.displayName.toLowerCase().replace(/\s+/g, "-");
-
-        const newCategory = {
-          ...editingCategory,
-          id,
-          name: editingCategory.name || id,
+        // Create a clean category object without undefined values
+        const categoryData: Record<string, any> = {
+          displayName: editingCategory.displayName.trim(),
+          displayOrder: editingCategory.displayOrder,
         };
-
-        setCategories([...categories, newCategory]);
-        showSuccess("Đã thêm danh mục mới thành công!");
+        
+        // Only include name if it's not empty
+        if (editingCategory.name && editingCategory.name.trim()) {
+          categoryData.name = editingCategory.name.trim();
+        }
+        
+        // Only include icon if it's not empty
+        if (editingCategory.icon && editingCategory.icon.trim()) {
+          categoryData.icon = editingCategory.icon.trim();
+        }
+        
+        const result = await addCategory(categoryData as Omit<Category, 'id'>);
+        
+        if (result.success) {
+          showSuccess("Đã thêm danh mục mới thành công!");
+          setIsEditDialogOpen(false);
+        } else {
+          showError(result.error || "Có lỗi xảy ra khi thêm danh mục!");
+        }
       } else {
         // For updating an existing category
-        const isDefault = editingCategory.id === "all";
-        const updatedCategories = categories.map((c) =>
-          c.id === editingCategory.id
-            ? {
-                ...editingCategory,
-                // Don't allow changing ID or name of "all" category
-                id: isDefault ? "all" : editingCategory.id,
-                name: isDefault ? "Tất cả" : editingCategory.name,
-              }
-            : c,
-        );
-        setCategories(updatedCategories);
-        showSuccess("Đã cập nhật danh mục thành công!");
+        // Create a clean update object without undefined values
+        const updateData: Record<string, any> = {
+          displayName: editingCategory.displayName.trim(),
+          displayOrder: editingCategory.displayOrder,
+        };
+        
+        // Only include name if it's not empty and not the "all" category
+        if (editingCategory.id !== "all" && editingCategory.name && editingCategory.name.trim()) {
+          updateData.name = editingCategory.name.trim();
+        }
+        
+        // Only include icon if it's not empty
+        if (editingCategory.icon && editingCategory.icon.trim()) {
+          updateData.icon = editingCategory.icon.trim();
+        }
+        
+        const result = await updateCategory(editingCategory.id, updateData as Partial<Category>);
+        
+        if (result.success) {
+          showSuccess("Đã cập nhật danh mục thành công!");
+          setIsEditDialogOpen(false);
+        } else {
+          showError(result.error || "Có lỗi xảy ra khi cập nhật danh mục!");
+        }
       }
-
-      setIsEditDialogOpen(false);
-    } catch (error) {
-      showError("Có lỗi xảy ra khi lưu danh mục!");
+    } catch (error: any) {
+      showError(error.message || "Có lỗi xảy ra khi lưu danh mục!");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const moveCategory = (index: number, direction: "up" | "down") => {
+  const moveCategory = async (index: number, direction: "up" | "down") => {
     if (
       (direction === "up" && index === 0) ||
       (direction === "down" && index === categories.length - 1)
@@ -191,10 +203,15 @@ export default function AdminCategoriesPage() {
     // Sort by displayOrder
     newCategories.sort((a, b) => a.displayOrder - b.displayOrder);
 
-    setCategories(newCategories);
+    // Update in Firebase
+    const result = await updateCategoryOrder(newCategories);
+    
+    if (!result.success) {
+      showError(result.error || "Có lỗi xảy ra khi cập nhật thứ tự danh mục!");
+    }
   };
 
-  if (loading || !isClient) {
+  if (authLoading || !isClient) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -216,99 +233,132 @@ export default function AdminCategoriesPage() {
       <AdminLayout title="Quản lý Danh mục">
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Danh mục món ăn</CardTitle>
-            <CardDescription>
-              Quản lý các danh mục món ăn hiển thị trên thực đơn
-            </CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle>Danh mục món ăn</CardTitle>
+                <CardDescription>
+                  Quản lý các danh mục món ăn hiển thị trên thực đơn
+                </CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => fetchCategories()}
+                disabled={categoriesLoading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${categoriesLoading ? 'animate-spin' : ''}`} />
+                Làm mới
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="flex justify-end mb-4">
-              <Button onClick={handleAdd}>
+              <Button onClick={handleAdd} disabled={categoriesLoading}>
                 <Plus className="mr-2 h-4 w-4" />
                 Thêm danh mục
               </Button>
             </div>
 
-            <div className="bg-white rounded-md border overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 font-medium w-12">#</th>
-                    <th className="text-left py-3 px-4 font-medium">ID</th>
-                    <th className="text-left py-3 px-4 font-medium">
-                      Tên hiển thị
-                    </th>
-                    <th className="text-left py-3 px-4 font-medium">Thứ tự</th>
-                    <th className="text-right py-3 px-4 font-medium">
-                      Thao tác
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {categories.map((category, index) => (
-                    <tr key={category.id} className="border-b">
-                      <td className="py-3 px-4">
-                        <span className="flex items-center text-gray-500">
-                          <GripVertical className="h-4 w-4" />
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 font-mono text-sm">
-                        {category.id}
-                      </td>
-                      <td className="py-3 px-4">{category.displayName}</td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center">
-                          <span className="mr-2">{category.displayOrder}</span>
-                          <div className="flex flex-col">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-5 w-5"
-                              onClick={() => moveCategory(index, "up")}
-                              disabled={index === 0}
-                            >
-                              <MoveUp className="h-3 w-3" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-5 w-5"
-                              onClick={() => moveCategory(index, "down")}
-                              disabled={index === categories.length - 1}
-                            >
-                              <MoveDown className="h-3 w-3" />
-                            </Button>
+            {categoriesLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+              </div>
+            ) : categories.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                Chưa có danh mục nào. Hãy thêm danh mục mới.
+              </div>
+            ) : (
+              <div className="bg-white rounded-md border overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 font-medium w-12">#</th>
+                      <th className="text-left py-3 px-4 font-medium">ID</th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        Tên hiển thị
+                      </th>
+                      <th className="text-left py-3 px-4 font-medium">Tên code</th>
+                      <th className="text-left py-3 px-4 font-medium">Icon</th>
+                      <th className="text-left py-3 px-4 font-medium">Thứ tự</th>
+                      <th className="text-right py-3 px-4 font-medium">
+                        Thao tác
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.map((category, index) => (
+                      <tr key={category.id} className="border-b">
+                        <td className="py-3 px-4">
+                          <span className="flex items-center text-gray-500">
+                            <GripVertical className="h-4 w-4" />
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 font-mono text-sm">
+                          {category.id}
+                        </td>
+                        <td className="py-3 px-4">{category.displayName}</td>
+                        <td className="py-3 px-4 font-mono text-sm">
+                          {category.name || "-"}
+                        </td>
+                        <td className="py-3 px-4 font-mono text-sm">
+                          {category.icon || "-"}
+                        </td>
+                        <td className="py-3 px-4">
+                          <div className="flex items-center">
+                            <span className="mr-2">{category.displayOrder}</span>
+                            <div className="flex flex-col">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5"
+                                onClick={() => moveCategory(index, "up")}
+                                disabled={index === 0 || categoriesLoading}
+                              >
+                                <MoveUp className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5"
+                                onClick={() => moveCategory(index, "down")}
+                                disabled={index === categories.length - 1 || categoriesLoading}
+                              >
+                                <MoveDown className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(category)}
-                          >
-                            <Edit className="h-4 w-4" />
-                            <span className="ml-2 hidden sm:inline">Sửa</span>
-                          </Button>
-                          {category.id !== "all" && (
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex justify-end space-x-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-                              onClick={() => handleDelete(category)}
+                              onClick={() => handleEdit(category)}
+                              disabled={categoriesLoading}
                             >
-                              <Trash2 className="h-4 w-4" />
-                              <span className="ml-2 hidden sm:inline">Xóa</span>
+                              <Edit className="h-4 w-4" />
+                              <span className="ml-2 hidden sm:inline">Sửa</span>
                             </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                            {category.id !== "all" && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+                                onClick={() => handleDelete(category)}
+                                disabled={categoriesLoading}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="ml-2 hidden sm:inline">Xóa</span>
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -330,27 +380,26 @@ export default function AdminCategoriesPage() {
 
             {editingCategory && (
               <div className="space-y-4">
-                {editingCategory.id !== "all" && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">ID/Mã</label>
-                    <Input
-                      value={editingCategory.id}
-                      onChange={(e) =>
-                        setEditingCategory({
-                          ...editingCategory,
-                          id: e.target.value,
-                        })
-                      }
-                      placeholder="ID danh mục (không dấu, dùng gạch ngang)"
-                      disabled={!!editingCategory.id} // Can't edit ID of existing category
-                    />
-                    <p className="text-xs text-gray-500">
-                      ID dùng để định danh danh mục, chỉ bao gồm chữ cái, số và
-                      dấu gạch ngang
-                    </p>
-                  </div>
-                )}
+                {/* ID field removed - will be auto-generated from display name */}
 
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Tên hiển thị</label>
+                  <Input
+                    value={editingCategory.displayName}
+                    onChange={(e) =>
+                      setEditingCategory({
+                        ...editingCategory,
+                        displayName: e.target.value,
+                      })
+                    }
+                    placeholder="Tên hiển thị cho người dùng"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Tên hiển thị cho người dùng, thường là tiếng Việt
+                  </p>
+                </div>
+
+                {/* Show name field for all categories except "all" */}
                 {editingCategory.id !== "all" && (
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Tên code</label>
@@ -372,19 +421,20 @@ export default function AdminCategoriesPage() {
                 )}
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Tên hiển thị</label>
+                  <label className="text-sm font-medium">Icon</label>
                   <Input
-                    value={editingCategory.displayName}
+                    value={editingCategory.icon || ""}
                     onChange={(e) =>
                       setEditingCategory({
                         ...editingCategory,
-                        displayName: e.target.value,
+                        icon: e.target.value,
                       })
                     }
-                    placeholder="Tên hiển thị cho người dùng"
+                    placeholder="Tên icon (ví dụ: FaUtensils, FaPizzaSlice, FaCoffee)"
                   />
                   <p className="text-xs text-gray-500">
-                    Tên hiển thị cho người dùng, thường là tiếng Việt
+                    Nhập tên icon từ thư viện React Icons (FA). Ví dụ: FaUtensils, FaPizzaSlice, FaCoffee.
+                    Xem danh sách icon tại <a href="https://react-icons.github.io/react-icons/icons?name=fa" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">React Icons</a>
                   </p>
                 </div>
 
@@ -412,12 +462,22 @@ export default function AdminCategoriesPage() {
               <Button
                 variant="outline"
                 onClick={() => setIsEditDialogOpen(false)}
+                disabled={isSubmitting}
               >
                 Hủy
               </Button>
-              <Button onClick={saveCategory}>
-                <Save className="mr-2 h-4 w-4" />
-                Lưu
+              <Button onClick={saveCategory} disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Đang lưu...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Lưu
+                  </>
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -438,11 +498,23 @@ export default function AdminCategoriesPage() {
               <Button
                 variant="outline"
                 onClick={() => setIsDeleteDialogOpen(false)}
+                disabled={isSubmitting}
               >
                 Hủy
               </Button>
-              <Button variant="destructive" onClick={confirmDelete}>
-                Xóa
+              <Button 
+                variant="destructive" 
+                onClick={confirmDelete}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Đang xóa...
+                  </>
+                ) : (
+                  "Xóa"
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
