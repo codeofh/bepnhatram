@@ -208,7 +208,7 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     setIsClient(true);
     if (!loading && !user) {
-      router.push("/admin");
+      router.push("/auth/login?redirect=" + encodeURIComponent(router.asPath));
     }
     fetchSettings();
   }, [user, loading, router]); // Add fetchSettings to dependencies if it relies on user/loading

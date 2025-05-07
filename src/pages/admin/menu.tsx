@@ -70,7 +70,7 @@ export default function AdminMenuPage() {
   useEffect(() => {
     setIsClient(true);
     if (!loading && !user) {
-      router.push("/admin");
+      router.push("/auth/login?redirect=" + encodeURIComponent(router.asPath));
     } else {
       setItems(menuItems);
     }

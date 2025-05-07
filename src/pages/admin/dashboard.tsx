@@ -38,7 +38,7 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     setIsClient(true);
     if (!loading && !user) {
-      router.push("/admin");
+      router.push("/auth/login?redirect=/admin/dashboard");
     }
 
     if (user) {
