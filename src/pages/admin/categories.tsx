@@ -78,7 +78,7 @@ export default function AdminCategoriesPage() {
   useEffect(() => {
     setIsClient(true);
     if (!loading && !user) {
-      router.push("/admin");
+      router.push("/auth/login?redirect=" + encodeURIComponent(router.asPath));
     }
   }, [user, loading, router]);
 

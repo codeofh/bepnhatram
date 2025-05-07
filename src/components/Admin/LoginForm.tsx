@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, Mail, Facebook, Loader2 } from "lucide-react";
+import { Lock, Mail, Facebook, Loader2, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -17,17 +17,30 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { siteConfig } from "@/config/siteConfig";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { User } from "firebase/auth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
   password: z.string().min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
 });
 
+const registerSchema = z.object({
+  name: z.string().min(2, { message: "Tên phải có ít nhất 2 ký tự" }),
+  email: z.string().email({ message: "Email không hợp lệ" }),
+  password: z.string().min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
+  confirmPassword: z.string().min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Mật khẩu không khớp",
+  path: ["confirmPassword"],
+});
+
 type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export function LoginForm() {
   const {
     login,
+    register,
     error: authError,
     loading,
     loginWithGoogle,
@@ -39,7 +52,7 @@ export function LoginForm() {
     null,
   );
 
-  const form = useForm<LoginFormValues>({
+  const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -47,13 +60,35 @@ export function LoginForm() {
     },
   });
 
-  async function onSubmit(data: LoginFormValues) {
+  const registerForm = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  async function onLoginSubmit(data: LoginFormValues) {
     setError(null);
     setIsSubmitting(true);
     try {
       await login(data.email, data.password);
     } catch (err: any) {
       setError(err.message || "Đăng nhập thất bại");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+  
+  async function onRegisterSubmit(data: RegisterFormValues) {
+    setError(null);
+    setIsSubmitting(true);
+    try {
+      await register(data.name, data.email, data.password);
+    } catch (err: any) {
+      setError(err.message || "Đăng ký thất bại");
     } finally {
       setIsSubmitting(false);
     }
@@ -89,7 +124,7 @@ export function LoginForm() {
     <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
       <div className="text-center">
         <h1 className="text-2xl font-bold">{siteConfig.name}</h1>
-        <p className="mt-2 text-gray-600">Đăng nhập vào trang quản trị</p>
+        <p className="mt-2 text-gray-600">Trang quản trị</p>
       </div>
 
       {(error || authError) && (
@@ -98,107 +133,263 @@ export function LoginForm() {
         </Alert>
       )}
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="admin@example.com"
-                      className="pl-10"
-                      {...field}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <Tabs defaultValue="login" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="login">Đăng nhập</TabsTrigger>
+          <TabsTrigger value="register">Đăng ký</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="login" className="mt-6">
+          <Form {...loginForm}>
+            <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-6">
+              <FormField
+                control={loginForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="admin@example.com"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Mật khẩu</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      type="password"
-                      placeholder="******"
-                      className="pl-10"
-                      {...field}
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              <FormField
+                control={loginForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mật khẩu</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          type="password"
+                          placeholder="******"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isSubmitting || loading || isSocialSubmitting !== null}
-          >
-            {isSubmitting || loading ? (
-              <>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting || loading || isSocialSubmitting !== null}
+              >
+                {isSubmitting || loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Đang đăng nhập...
+                  </>
+                ) : (
+                  "Đăng nhập"
+                )}
+              </Button>
+            </form>
+          </Form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-gray-500">
+                Hoặc đăng nhập với
+              </span>
+            </div>
+          </div>
+
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              className="w-1/2"
+              onClick={() => handleSocialLogin("facebook")}
+              disabled={isSubmitting || loading || isSocialSubmitting !== null}
+            >
+              {isSocialSubmitting === "facebook" ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Đang đăng nhập...
-              </>
-            ) : (
-              "Đăng nhập"
-            )}
-          </Button>
-        </form>
-      </Form>
+              ) : (
+                <Facebook className="mr-2 h-4 w-4" />
+              )}
+              Facebook
+            </Button>
+            <Button
+              variant="outline"
+              className="w-1/2"
+              onClick={() => handleSocialLogin("google")}
+              disabled={isSubmitting || loading || isSocialSubmitting !== null}
+            >
+              {isSocialSubmitting === "google" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Mail className="mr-2 h-4 w-4" />
+              )}
+              Google
+            </Button>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="register" className="mt-6">
+          <Form {...registerForm}>
+            <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-6">
+              <FormField
+                control={registerForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Họ tên</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <UserIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Nguyễn Văn A"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={registerForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="admin@example.com"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white px-2 text-gray-500">
-            Hoặc đăng nhập với
-          </span>
-        </div>
-      </div>
+              <FormField
+                control={registerForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mật khẩu</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          type="password"
+                          placeholder="******"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={registerForm.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Xác nhận mật khẩu</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          type="password"
+                          placeholder="******"
+                          className="pl-10"
+                          {...field}
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-      <div className="flex space-x-2">
-        <Button
-          variant="outline"
-          className="w-1/2"
-          onClick={() => handleSocialLogin("facebook")}
-          disabled={isSubmitting || loading || isSocialSubmitting !== null}
-        >
-          {isSocialSubmitting === "facebook" ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Facebook className="mr-2 h-4 w-4" />
-          )}
-          Facebook
-        </Button>
-        <Button
-          variant="outline"
-          className="w-1/2"
-          onClick={() => handleSocialLogin("google")}
-          disabled={isSubmitting || loading || isSocialSubmitting !== null}
-        >
-          {isSocialSubmitting === "google" ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Mail className="mr-2 h-4 w-4" />
-          )}
-          Google
-        </Button>
-      </div>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isSubmitting || loading || isSocialSubmitting !== null}
+              >
+                {isSubmitting || loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Đang đăng ký...
+                  </>
+                ) : (
+                  "Đăng ký"
+                )}
+              </Button>
+            </form>
+          </Form>
+          
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-gray-500">
+                Hoặc đăng ký với
+              </span>
+            </div>
+          </div>
+
+          <div className="flex space-x-2">
+            <Button
+              variant="outline"
+              className="w-1/2"
+              onClick={() => handleSocialLogin("facebook")}
+              disabled={isSubmitting || loading || isSocialSubmitting !== null}
+            >
+              {isSocialSubmitting === "facebook" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Facebook className="mr-2 h-4 w-4" />
+              )}
+              Facebook
+            </Button>
+            <Button
+              variant="outline"
+              className="w-1/2"
+              onClick={() => handleSocialLogin("google")}
+              disabled={isSubmitting || loading || isSocialSubmitting !== null}
+            >
+              {isSocialSubmitting === "google" ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Mail className="mr-2 h-4 w-4" />
+              )}
+              Google
+            </Button>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

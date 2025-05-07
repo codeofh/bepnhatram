@@ -79,7 +79,7 @@ export default function AdminOrderDetailPage() {
   useEffect(() => {
     setIsClient(true);
     if (!authLoading && !user) {
-      router.push("/admin");
+      router.push("/auth/login?redirect=" + encodeURIComponent(router.asPath));
     } else if (user && id && typeof id === "string" && !hasFetched) {
       fetchOrder(id);
     }
