@@ -16,7 +16,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useCategories } from "@/hooks/useCategories";
-import { getCategoryIcon } from "@/data/categories";
+import { getCategoryIconName } from "@/data/categories";
 
 interface SidebarProps {
   activeCategory: string;
@@ -47,6 +47,28 @@ export function Sidebar({
     }`;
   };
 
+  // Function to render category icon based on category ID
+  const renderCategoryIcon = (categoryId: string) => {
+    const iconName = getCategoryIconName(categoryId);
+
+    switch (iconName) {
+      case "LayoutGrid":
+        return <LayoutGrid size={20} className="text-gray-500" />;
+      case "Star":
+        return <Star size={20} className="text-purple-500" />;
+      case "Coffee":
+        return <Coffee size={20} className="text-orange-500" />;
+      case "Beef":
+        return <Beef size={20} className="text-amber-500" />;
+      case "Drumstick":
+        return <Drumstick size={20} className="text-red-500" />;
+      case "GlassWater":
+        return <GlassWater size={20} className="text-blue-500" />;
+      default:
+        return <LayoutGrid size={20} className="text-gray-500" />;
+    }
+  };
+
   return (
     <div className="w-full h-full bg-white p-4 rounded-lg shadow-sm">
       {isHomePage && (
@@ -75,7 +97,9 @@ export function Sidebar({
                       : "text-gray-700 hover:bg-gray-50"
                   }`}
                 >
-                  <span className="mr-3">{getCategoryIcon(category.id)}</span>
+                  <span className="mr-3">
+                    {renderCategoryIcon(category.id)}
+                  </span>
                   <span>{category.displayName}</span>
                 </button>
               ))}
