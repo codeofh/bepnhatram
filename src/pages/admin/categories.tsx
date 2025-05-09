@@ -63,6 +63,7 @@ export default function AdminCategoriesPage() {
     null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImportingData, setIsImportingData] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -224,6 +225,23 @@ export default function AdminCategoriesPage() {
     }
   };
 
+  const handleImportSampleData = async () => {
+    setIsImportingData(true);
+    try {
+      const result = await importSampleCategories();
+      if (result.success) {
+        showSuccess("Đã nhập dữ liệu mẫu thành công!");
+      } else {
+        showError(result.error || "Có lỗi xảy ra khi nhập dữ liệu mẫu!");
+      }
+    } catch (error: any) {
+      console.error("Error importing sample data:", error);
+      showError(error.message || "Có lỗi xảy ra khi nhập dữ liệu mẫu!");
+    } finally {
+      setIsImportingData(false);
+    }
+  };
+
   if (authLoading || !isClient) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -270,34 +288,25 @@ export default function AdminCategoriesPage() {
             <div className="flex justify-between mb-4">
               <Button
                 variant="outline"
-                onClick={async () => {
-                  try {
-                    setIsSubmitting(true);
-                    const result = await importSampleCategories();
-                    if (result.success) {
-                      showSuccess("Nhập dữ liệu mẫu thành công!");
-                    } else {
-                      showError(
-                        result.error || "Có lỗi xảy ra khi nhập dữ liệu mẫu!",
-                      );
-                    }
-                  } catch (error: any) {
-                    showError(
-                      error.message || "Có lỗi xảy ra khi nhập dữ liệu mẫu!",
-                    );
-                  } finally {
-                    setIsSubmitting(false);
-                  }
-                }}
-                disabled={categoriesLoading || isSubmitting}
+                onClick={handleImportSampleData}
+                disabled={categoriesLoading || isImportingData || isSubmitting}
               >
-                <DownloadCloud className="mr-2 h-4 w-4" />
-                Nhập dữ liệu mẫu
+                {isImportingData ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Đang nhập...
+                  </>
+                ) : (
+                  <>
+                    <DownloadCloud className="mr-2 h-4 w-4" />
+                    Nhập dữ liệu mẫu
+                  </>
+                )}
               </Button>
 
               <Button
                 onClick={handleAdd}
-                disabled={categoriesLoading || isSubmitting}
+                disabled={categoriesLoading || isImportingData || isSubmitting}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Thêm danh mục
@@ -316,31 +325,20 @@ export default function AdminCategoriesPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={async () => {
-                      try {
-                        setIsSubmitting(true);
-                        const result = await importSampleCategories();
-                        if (result.success) {
-                          showSuccess("Nhập dữ liệu mẫu thành công!");
-                        } else {
-                          showError(
-                            result.error ||
-                              "Có lỗi xảy ra khi nhập dữ liệu mẫu!",
-                          );
-                        }
-                      } catch (error: any) {
-                        showError(
-                          error.message ||
-                            "Có lỗi xảy ra khi nhập dữ liệu mẫu!",
-                        );
-                      } finally {
-                        setIsSubmitting(false);
-                      }
-                    }}
-                    disabled={isSubmitting}
+                    onClick={handleImportSampleData}
+                    disabled={isImportingData}
                   >
-                    <DownloadCloud className="mr-2 h-4 w-4" />
-                    Nhập dữ liệu mẫu
+                    {isImportingData ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Đang nhập...
+                      </>
+                    ) : (
+                      <>
+                        <DownloadCloud className="mr-2 h-4 w-4" />
+                        Nhập dữ liệu mẫu
+                      </>
+                    )}
                   </Button>
                   <Button size="sm" onClick={handleAdd} disabled={isSubmitting}>
                     <Plus className="mr-2 h-4 w-4" />
@@ -505,7 +503,7 @@ export default function AdminCategoriesPage() {
                           name: e.target.value,
                         })
                       }
-                      placeholder="Tên code cho danh mục"
+                      placeholder="T��n code cho danh mục"
                       disabled={editingCategory.id === "all"} // Can't edit name of "all" category
                     />
                     <p className="text-xs text-gray-500">
