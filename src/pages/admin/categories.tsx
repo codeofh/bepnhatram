@@ -10,6 +10,9 @@ import {
   MoveDown,
   GripVertical,
   RefreshCw,
+  Database,
+  AlertTriangle,
+  DownloadCloud,
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -39,24 +42,28 @@ export default function AdminCategoriesPage() {
   const router = useRouter();
   const { showSuccess, showError } = useToastContext();
   const [isClient, setIsClient] = useState(false);
-  
+
   // Use the categories hook
-  const { 
-    categories, 
-    loading: categoriesLoading, 
+  const {
+    categories,
+    loading: categoriesLoading,
     error: categoriesError,
     fetchCategories,
     addCategory,
     updateCategory,
     deleteCategory,
-    updateCategoryOrder
+    updateCategoryOrder,
+    importSampleCategories,
   } = useCategories();
-  
+
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(
+    null,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isImportingData, setIsImportingData] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -98,7 +105,7 @@ export default function AdminCategoriesPage() {
       setIsSubmitting(true);
       try {
         const result = await deleteCategory(categoryToDelete.id);
-        
+
         if (result.success) {
           showSuccess("Đã xóa danh mục thành công!");
         } else {
@@ -131,19 +138,19 @@ export default function AdminCategoriesPage() {
           displayName: editingCategory.displayName.trim(),
           displayOrder: editingCategory.displayOrder,
         };
-        
+
         // Only include name if it's not empty
         if (editingCategory.name && editingCategory.name.trim()) {
           categoryData.name = editingCategory.name.trim();
         }
-        
+
         // Only include icon if it's not empty
         if (editingCategory.icon && editingCategory.icon.trim()) {
           categoryData.icon = editingCategory.icon.trim();
         }
-        
-        const result = await addCategory(categoryData as Omit<Category, 'id'>);
-        
+
+        const result = await addCategory(categoryData as Omit<Category, "id">);
+
         if (result.success) {
           showSuccess("Đã thêm danh mục mới thành công!");
           setIsEditDialogOpen(false);
@@ -157,19 +164,26 @@ export default function AdminCategoriesPage() {
           displayName: editingCategory.displayName.trim(),
           displayOrder: editingCategory.displayOrder,
         };
-        
+
         // Only include name if it's not empty and not the "all" category
-        if (editingCategory.id !== "all" && editingCategory.name && editingCategory.name.trim()) {
+        if (
+          editingCategory.id !== "all" &&
+          editingCategory.name &&
+          editingCategory.name.trim()
+        ) {
           updateData.name = editingCategory.name.trim();
         }
-        
+
         // Only include icon if it's not empty
         if (editingCategory.icon && editingCategory.icon.trim()) {
           updateData.icon = editingCategory.icon.trim();
         }
-        
-        const result = await updateCategory(editingCategory.id, updateData as Partial<Category>);
-        
+
+        const result = await updateCategory(
+          editingCategory.id,
+          updateData as Partial<Category>,
+        );
+
         if (result.success) {
           showSuccess("Đã cập nhật danh mục thành công!");
           setIsEditDialogOpen(false);
@@ -205,9 +219,26 @@ export default function AdminCategoriesPage() {
 
     // Update in Firebase
     const result = await updateCategoryOrder(newCategories);
-    
+
     if (!result.success) {
       showError(result.error || "Có lỗi xảy ra khi cập nhật thứ tự danh mục!");
+    }
+  };
+
+  const handleImportSampleData = async () => {
+    setIsImportingData(true);
+    try {
+      const result = await importSampleCategories();
+      if (result.success) {
+        showSuccess("Đã nhập dữ liệu mẫu thành công!");
+      } else {
+        showError(result.error || "Có lỗi xảy ra khi nhập dữ liệu mẫu!");
+      }
+    } catch (error: any) {
+      console.error("Error importing sample data:", error);
+      showError(error.message || "Có lỗi xảy ra khi nhập dữ liệu mẫu!");
+    } finally {
+      setIsImportingData(false);
     }
   };
 
@@ -240,20 +271,43 @@ export default function AdminCategoriesPage() {
                   Quản lý các danh mục món ăn hiển thị trên thực đơn
                 </CardDescription>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => fetchCategories()}
                 disabled={categoriesLoading}
               >
-                <RefreshCw className={`h-4 w-4 mr-2 ${categoriesLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw
+                  className={`h-4 w-4 mr-2 ${categoriesLoading ? "animate-spin" : ""}`}
+                />
                 Làm mới
               </Button>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-end mb-4">
-              <Button onClick={handleAdd} disabled={categoriesLoading}>
+            <div className="flex justify-between mb-4">
+              <Button
+                variant="outline"
+                onClick={handleImportSampleData}
+                disabled={categoriesLoading || isImportingData || isSubmitting}
+              >
+                {isImportingData ? (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                    Đang nhập...
+                  </>
+                ) : (
+                  <>
+                    <DownloadCloud className="mr-2 h-4 w-4" />
+                    Nhập dữ liệu mẫu
+                  </>
+                )}
+              </Button>
+
+              <Button
+                onClick={handleAdd}
+                disabled={categoriesLoading || isImportingData || isSubmitting}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Thêm danh mục
               </Button>
@@ -264,22 +318,53 @@ export default function AdminCategoriesPage() {
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
               </div>
             ) : categories.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                Chưa có danh mục nào. Hãy thêm danh mục mới.
+              <div className="text-center py-12 space-y-4">
+                <AlertTriangle className="h-12 w-12 mx-auto text-amber-500" />
+                <p className="text-gray-600">Chưa có danh mục nào.</p>
+                <div className="flex justify-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleImportSampleData}
+                    disabled={isImportingData}
+                  >
+                    {isImportingData ? (
+                      <>
+                        <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                        Đang nhập...
+                      </>
+                    ) : (
+                      <>
+                        <DownloadCloud className="mr-2 h-4 w-4" />
+                        Nhập dữ liệu mẫu
+                      </>
+                    )}
+                  </Button>
+                  <Button size="sm" onClick={handleAdd} disabled={isSubmitting}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Thêm danh mục mới
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="bg-white rounded-md border overflow-hidden">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-medium w-12">#</th>
+                      <th className="text-left py-3 px-4 font-medium w-12">
+                        #
+                      </th>
                       <th className="text-left py-3 px-4 font-medium">ID</th>
                       <th className="text-left py-3 px-4 font-medium">
                         Tên hiển thị
                       </th>
-                      <th className="text-left py-3 px-4 font-medium">Tên code</th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        Tên code
+                      </th>
                       <th className="text-left py-3 px-4 font-medium">Icon</th>
-                      <th className="text-left py-3 px-4 font-medium">Thứ tự</th>
+                      <th className="text-left py-3 px-4 font-medium">
+                        Thứ tự
+                      </th>
                       <th className="text-right py-3 px-4 font-medium">
                         Thao tác
                       </th>
@@ -305,7 +390,9 @@ export default function AdminCategoriesPage() {
                         </td>
                         <td className="py-3 px-4">
                           <div className="flex items-center">
-                            <span className="mr-2">{category.displayOrder}</span>
+                            <span className="mr-2">
+                              {category.displayOrder}
+                            </span>
                             <div className="flex flex-col">
                               <Button
                                 variant="ghost"
@@ -321,7 +408,10 @@ export default function AdminCategoriesPage() {
                                 size="icon"
                                 className="h-5 w-5"
                                 onClick={() => moveCategory(index, "down")}
-                                disabled={index === categories.length - 1 || categoriesLoading}
+                                disabled={
+                                  index === categories.length - 1 ||
+                                  categoriesLoading
+                                }
                               >
                                 <MoveDown className="h-3 w-3" />
                               </Button>
@@ -348,7 +438,9 @@ export default function AdminCategoriesPage() {
                                 disabled={categoriesLoading}
                               >
                                 <Trash2 className="h-4 w-4" />
-                                <span className="ml-2 hidden sm:inline">Xóa</span>
+                                <span className="ml-2 hidden sm:inline">
+                                  Xóa
+                                </span>
                               </Button>
                             )}
                           </div>
@@ -411,7 +503,7 @@ export default function AdminCategoriesPage() {
                           name: e.target.value,
                         })
                       }
-                      placeholder="Tên code cho danh mục"
+                      placeholder="T��n code cho danh mục"
                       disabled={editingCategory.id === "all"} // Can't edit name of "all" category
                     />
                     <p className="text-xs text-gray-500">
@@ -433,8 +525,16 @@ export default function AdminCategoriesPage() {
                     placeholder="Tên icon (ví dụ: FaUtensils, FaPizzaSlice, FaCoffee)"
                   />
                   <p className="text-xs text-gray-500">
-                    Nhập tên icon từ thư viện React Icons (FA). Ví dụ: FaUtensils, FaPizzaSlice, FaCoffee.
-                    Xem danh sách icon tại <a href="https://react-icons.github.io/react-icons/icons?name=fa" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">React Icons</a>
+                    Nhập tên icon từ thư viện React Icons (FA). Ví dụ:
+                    FaUtensils, FaPizzaSlice, FaCoffee. Xem danh sách icon tại{" "}
+                    <a
+                      href="https://react-icons.github.io/react-icons/icons?name=fa"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      React Icons
+                    </a>
                   </p>
                 </div>
 
@@ -502,8 +602,8 @@ export default function AdminCategoriesPage() {
               >
                 Hủy
               </Button>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={confirmDelete}
                 disabled={isSubmitting}
               >

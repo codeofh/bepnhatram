@@ -1,176 +1,228 @@
-import React, { useState } from "react";
-import { MenuItem } from "./MenuItem";
-import { removeDiacritics } from "@/lib/utils";
+import React, { useState, useEffect } from "react";
+import { MenuItem } from "@/components/Menu/MenuItem";
+import { MenuItem as MenuItemType } from "@/data/menuItems";
+import {
+  Search,
+  ChefHat,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Toaster } from "sonner";
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface MenuGridProps {
-  items: {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    image: string;
-    category: string;
-    rating: number;
-    displayOrder?: number;
-  }[];
+  items: MenuItemType[];
   activeCategory: string;
-  searchQuery?: string;
+  searchQuery: string;
 }
 
 export function MenuGrid({
   items,
   activeCategory,
-  searchQuery = "",
+  searchQuery,
 }: MenuGridProps) {
-  const ITEMS_PER_PAGE = 20;
+  // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9; // 3x3 grid on large screens
 
-  // Filter items by active category and search query
-  const filteredItems = items
-    .filter((item) => {
-      // Filter by category
-      if (activeCategory && activeCategory !== "all") {
-        if (item.category !== activeCategory) return false;
-      }
+  // Filter items based on category and search query
+  const filteredItems = items.filter((item) => {
+    const matchesCategory =
+      activeCategory === "all" || activeCategory === item.category;
+    const matchesSearch =
+      !searchQuery ||
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
-      // Filter by search query
-      if (searchQuery.trim() !== "") {
-        const query = searchQuery.toLowerCase().trim();
-        const queryNoDiacritics = removeDiacritics(query);
+  // Sort items by displayOrder if available or id
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
+      return a.displayOrder - b.displayOrder;
+    }
+    return a.id.localeCompare(b.id);
+  });
 
-        const nameMatches =
-          item.name.toLowerCase().includes(query) ||
-          removeDiacritics(item.name.toLowerCase()).includes(queryNoDiacritics);
+  // Calculate total pages
+  const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
 
-        const descriptionMatches =
-          item.description.toLowerCase().includes(query) ||
-          removeDiacritics(item.description.toLowerCase()).includes(
-            queryNoDiacritics,
-          );
-
-        return nameMatches || descriptionMatches;
-      }
-
-      return true;
-    })
-    .sort((a, b) => {
-      if (a.displayOrder !== undefined && b.displayOrder !== undefined) {
-        return a.displayOrder - b.displayOrder;
-      }
-      if (a.displayOrder !== undefined) return -1;
-      if (b.displayOrder !== undefined) return 1;
-      return 0;
-    });
-
-  // Calculate pagination
-  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedItems = filteredItems.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE,
+  // Get current items
+  const currentItems = sortedItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
   );
 
-  // Reset to first page when category or search changes
-  React.useEffect(() => {
+  // Reset to first page when filters change
+  useEffect(() => {
     setCurrentPage(1);
   }, [activeCategory, searchQuery]);
 
-  const renderPagination = () => {
-    if (totalPages <= 1) return null;
-
-    return (
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                if (currentPage > 1) setCurrentPage(currentPage - 1);
-              }}
-              aria-disabled={currentPage === 1}
-              className={
-                currentPage === 1 ? "pointer-events-none opacity-50" : ""
-              }
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span>Trước</span>
-            </PaginationPrevious>
-          </PaginationItem>
-
-          {[...Array(totalPages)].map((_, i) => (
-            <PaginationItem key={i + 1}>
-              <PaginationLink
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setCurrentPage(i + 1);
-                }}
-                isActive={currentPage === i + 1}
-              >
-                {i + 1}
-              </PaginationLink>
-            </PaginationItem>
-          ))}
-
-          <PaginationItem>
-            <PaginationNext
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-              }}
-              aria-disabled={currentPage === totalPages}
-              className={
-                currentPage === totalPages
-                  ? "pointer-events-none opacity-50"
-                  : ""
-              }
-            >
-              <span>Tiếp</span>
-              <ChevronRight className="h-4 w-4" />
-            </PaginationNext>
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
-    );
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of the grid
+    window.scrollTo({
+      top: document.getElementById("menu-grid")?.offsetTop || 0,
+      behavior: "smooth",
+    });
   };
 
-  return (
-    <>
-      {/* Menu Grid */}
-      {paginatedItems.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {paginatedItems.map((item) => (
-            <MenuItem key={item.id} {...item} />
-          ))}
+  // EmptyState component for when no items match filters
+  const EmptyState = () => (
+    <div className="col-span-full py-12 text-center">
+      {searchQuery ? (
+        <div className="space-y-3">
+          <Search className="h-12 w-12 mx-auto text-gray-300" />
+          <h3 className="text-lg font-medium">Không tìm thấy món ăn</h3>
+          <p className="text-gray-500 max-w-md mx-auto">
+            Không tìm thấy món ăn nào phù hợp với từ khóa "{searchQuery}"
+            {activeCategory !== "all" && " trong danh mục này"}.
+          </p>
+          <Button
+            variant="outline"
+            onClick={() => window.location.reload()}
+            className="mt-2"
+          >
+            Xem tất cả món ăn
+          </Button>
+        </div>
+      ) : activeCategory !== "all" ? (
+        <div className="space-y-3">
+          <Filter className="h-12 w-12 mx-auto text-gray-300" />
+          <h3 className="text-lg font-medium">Danh mục trống</h3>
+          <p className="text-gray-500 max-w-md mx-auto">
+            Hiện chưa có món ăn nào trong danh mục này.
+          </p>
         </div>
       ) : (
-        <div className="text-center py-10">
-          <h3 className="text-xl font-medium text-gray-700 mb-2">
-            Không tìm thấy món ăn
-          </h3>
-          <p className="text-gray-500">
-            {searchQuery
-              ? `Không tìm thấy món ăn nào phù hợp với từ khóa "${searchQuery}"`
-              : "Không có món ăn nào trong danh mục này"}
+        <div className="space-y-3">
+          <ChefHat className="h-12 w-12 mx-auto text-gray-300" />
+          <h3 className="text-lg font-medium">Ch��a có món ăn nào</h3>
+          <p className="text-gray-500 max-w-md mx-auto">
+            Hiện tại chưa có món ăn nào được thêm vào thực đơn.
           </p>
         </div>
       )}
+    </div>
+  );
 
-      {/* Bottom Pagination for all screen sizes */}
-      {filteredItems.length > 0 && (
-        <div className="mt-8">{renderPagination()}</div>
+  return (
+    <div id="menu-grid">
+      {/* Toast notification container for cart actions */}
+      <Toaster />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {currentItems.length > 0 ? (
+          currentItems.map((item) => <MenuItem key={item.id} item={item} />)
+        ) : (
+          <EmptyState />
+        )}
+      </div>
+
+      {/* Pagination */}
+      {sortedItems.length > itemsPerPage && (
+        <div className="mt-8">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                  className={
+                    currentPage <= 1 ? "pointer-events-none opacity-50" : ""
+                  }
+                />
+              </PaginationItem>
+
+              {/* First page */}
+              {currentPage > 3 && (
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePageChange(1)}>
+                    1
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+
+              {/* Ellipsis for many pages */}
+              {currentPage > 4 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+
+              {/* Page before current */}
+              {currentPage > 1 && (
+                <PaginationItem>
+                  <PaginationLink
+                    onClick={() => handlePageChange(currentPage - 1)}
+                  >
+                    {currentPage - 1}
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+
+              {/* Current page */}
+              <PaginationItem>
+                <PaginationLink
+                  isActive
+                  onClick={() => handlePageChange(currentPage)}
+                >
+                  {currentPage}
+                </PaginationLink>
+              </PaginationItem>
+
+              {/* Page after current */}
+              {currentPage < totalPages && (
+                <PaginationItem>
+                  <PaginationLink
+                    onClick={() => handlePageChange(currentPage + 1)}
+                  >
+                    {currentPage + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+
+              {/* Ellipsis for many pages */}
+              {currentPage < totalPages - 3 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+
+              {/* Last page */}
+              {currentPage < totalPages - 2 && (
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePageChange(totalPages)}>
+                    {totalPages}
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    handlePageChange(Math.min(totalPages, currentPage + 1))
+                  }
+                  className={
+                    currentPage >= totalPages
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       )}
-    </>
+    </div>
   );
 }

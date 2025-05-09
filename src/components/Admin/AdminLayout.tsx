@@ -16,6 +16,8 @@ import {
   Globe,
   User,
   ShoppingBag,
+  ImageIcon,
+  Layers,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -87,6 +89,11 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
       name: "Danh mục",
       path: "/admin/categories",
       icon: <Tags size={20} />,
+    },
+    {
+      name: "Slider",
+      path: "/admin/sliders",
+      icon: <Layers size={20} />,
     },
     {
       name: "Người dùng",

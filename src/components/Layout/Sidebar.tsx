@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import {
@@ -13,7 +13,9 @@ import {
   Phone,
   Home,
   FileText,
+  Loader2,
 } from "lucide-react";
+import { useCategories } from "@/hooks/useCategories";
 
 interface SidebarProps {
   activeCategory: string;
@@ -33,26 +35,7 @@ export function Sidebar({
   const isContactPage =
     router.pathname === "/contact" || router.pathname.startsWith("/contact/");
 
-  const categoryIcons = [
-    { id: "all", icon: <LayoutGrid size={20} className="text-gray-500" /> },
-    { id: "special", icon: <Star size={20} className="text-purple-500" /> },
-    { id: "main", icon: <Coffee size={20} className="text-orange-500" /> },
-    { id: "chicken", icon: <Beef size={20} className="text-amber-500" /> },
-    {
-      id: "chicken-feet",
-      icon: <Drumstick size={20} className="text-red-500" />,
-    },
-    { id: "drinks", icon: <GlassWater size={20} className="text-blue-500" /> },
-  ];
-
-  const categories = [
-    { id: "all", name: "Tất cả" },
-    { id: "special", name: "Đặc biệt" },
-    { id: "main", name: "Món chính" },
-    { id: "chicken", name: "Gà ủ muối" },
-    { id: "chicken-feet", name: "Chân gà" },
-    { id: "drinks", name: "Đồ uống" },
-  ];
+  const { categories, loading: categoriesLoading } = useCategories();
 
   // Function to get navigation link classes based on active state
   const getNavLinkClasses = (isActive: boolean) => {
@@ -63,6 +46,36 @@ export function Sidebar({
     }`;
   };
 
+  // Function to render category icon based on category ID
+  const renderCategoryIcon = (categoryId: string) => {
+    switch (categoryId) {
+      case "all":
+        return <LayoutGrid size={20} className="text-gray-500" />;
+      case "special":
+        return <Star size={20} className="text-purple-500" />;
+      case "main":
+        return <Coffee size={20} className="text-orange-500" />;
+      case "chicken":
+        return <Beef size={20} className="text-amber-500" />;
+      case "chicken-feet":
+        return <Drumstick size={20} className="text-red-500" />;
+      case "drinks":
+        return <GlassWater size={20} className="text-blue-500" />;
+      default:
+        return <LayoutGrid size={20} className="text-gray-500" />;
+    }
+  };
+
+  // Default static categories as fallback
+  const defaultCategories = [
+    { id: "all", displayName: "Tất cả" },
+    { id: "special", displayName: "Đặc biệt" },
+    { id: "main", displayName: "Món chính" },
+    { id: "chicken", displayName: "Gà ủ muối" },
+    { id: "chicken-feet", displayName: "Chân gà" },
+    { id: "drinks", displayName: "Đồ uống" },
+  ];
+
   return (
     <div className="w-full h-full bg-white p-4 rounded-lg shadow-sm">
       {isHomePage && (
@@ -72,27 +85,35 @@ export function Sidebar({
             <h2 className="text-xl font-bold">Danh mục</h2>
           </div>
 
-          <div className="space-y-2">
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => {
-                  setActiveCategory(category.id);
-                  onClose?.();
-                }}
-                className={`w-full flex items-center p-3 rounded-md transition-colors ${
-                  activeCategory === category.id
-                    ? "bg-gray-100 text-gray-900 font-medium"
-                    : "text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <span className="mr-3">
-                  {categoryIcons.find((icon) => icon.id === category.id)?.icon}
-                </span>
-                <span>{category.name}</span>
-              </button>
-            ))}
-          </div>
+          {categoriesLoading ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {(categories.length > 0 ? categories : defaultCategories).map(
+                (category) => (
+                  <button
+                    key={category.id}
+                    onClick={() => {
+                      setActiveCategory(category.id);
+                      onClose?.();
+                    }}
+                    className={`w-full flex items-center p-3 rounded-md transition-colors ${
+                      activeCategory === category.id
+                        ? "bg-gray-100 text-gray-900 font-medium"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`}
+                  >
+                    <span className="mr-3">
+                      {renderCategoryIcon(category.id)}
+                    </span>
+                    <span>{category.displayName}</span>
+                  </button>
+                ),
+              )}
+            </div>
+          )}
         </>
       )}
 
