@@ -1,8 +1,15 @@
 import React from "react";
 import { MapPin, Phone } from "lucide-react";
-import { siteConfig } from "@/config/siteConfig";
+import { SiteSettings } from "@/lib/firebaseSettings";
+import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
 
-export function LocationMap() {
+interface LocationMapProps {
+  siteSettings?: SiteSettings;
+}
+
+export function LocationMap({
+  siteSettings = defaultSiteConfig,
+}: LocationMapProps) {
   return (
     <section className="bg-white py-8">
       <div className="container mx-auto px-4">
@@ -13,7 +20,9 @@ export function LocationMap() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-2 h-[280px] rounded-lg overflow-hidden shadow-md">
             <iframe
-              src={siteConfig.maps.embedUrl}
+              src={
+                siteSettings.maps?.embedUrl || defaultSiteConfig.maps.embedUrl
+              }
               width="100%"
               height="100%"
               style={{ border: 0 }}
@@ -33,9 +42,15 @@ export function LocationMap() {
                 <MapPin className="w-5 h-5 text-blue-600 mt-1 mr-3 flex-shrink-0" />
                 <div>
                   <h4 className="font-medium">Địa chỉ:</h4>
-                  <p className="text-gray-600">{siteConfig.contact.address}</p>
+                  <p className="text-gray-600">
+                    {siteSettings.contact?.address ||
+                      defaultSiteConfig.contact.address}
+                  </p>
                   <a
-                    href={siteConfig.maps.directionsUrl}
+                    href={
+                      siteSettings.maps?.directionsUrl ||
+                      defaultSiteConfig.maps.directionsUrl
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 text-sm hover:underline mt-1 inline-block"
@@ -49,7 +64,10 @@ export function LocationMap() {
                 <Phone className="w-5 h-5 text-blue-600 mt-1 mr-3 flex-shrink-0" />
                 <div>
                   <h4 className="font-medium">Điện thoại:</h4>
-                  <p className="text-gray-600">{siteConfig.contact.phone}</p>
+                  <p className="text-gray-600">
+                    {siteSettings.contact?.phone ||
+                      defaultSiteConfig.contact.phone}
+                  </p>
                 </div>
               </div>
             </div>
