@@ -14,22 +14,15 @@ import {
   X,
   Loader2,
   DownloadCloud,
+  AlertTriangle,
+  Database,
 } from "lucide-react";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { MenuItemForm } from "@/components/Admin/MenuItemForm";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useToastContext } from "@/contexts/ToastContext";
 import { siteConfig } from "@/config/siteConfig";
-import { MenuItem, menuItems as staticMenuItems } from "@/data/menuItems";
-import { useMenuManagement } from "@/hooks/useMenuManagement";
+import { MenuItem } from "@/data/menuItems";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,7 +55,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToastContext } from "@/contexts/ToastContext";
+import { useMenuManagement } from "@/hooks/useMenuManagement";
 
 export default function AdminMenuPage() {
   const { user, loading: authLoading } = useAuthContext();
@@ -70,24 +63,6 @@ export default function AdminMenuPage() {
   const { showSuccess, showError } = useToastContext();
   const [isClient, setIsClient] = useState(false);
   const [items, setItems] = useState<MenuItem[]>([]);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [showInitializeConfirm, setShowInitializeConfirm] = useState(false);
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const itemsPerPage = 20;
-
-  const {
-    getAllMenuItems,
-    addMenuItem,
-    updateMenuItem,
-    deleteMenuItem,
-    initializeMenuCollection,
-    loading: firebaseLoading,
-    error: firebaseError,
-  } = useMenuManagement();
   const [currentItem, setCurrentItem] = useState<MenuItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
@@ -96,26 +71,28 @@ export default function AdminMenuPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortField, setSortField] = useState<keyof MenuItem>("displayOrder");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  // Fetch menu items from Firebase with pagination
+  const {
+    getAllMenuItems,
+    addMenuItem,
+    updateMenuItem,
+    deleteMenuItem,
+    importSampleMenuItems,
+    loading: firebaseLoading,
+    error: firebaseError,
+  } = useMenuManagement();
+
+  // Fetch menu items from Firebase
   const fetchItems = useCallback(async () => {
     try {
-      // Use the sort field and direction from state
-      const result = await getAllMenuItems(
-        currentPage,
-        itemsPerPage,
-        sortField,
-        sortDirection,
-      );
-
-      setItems(result.items);
-      setTotalPages(result.totalPages);
-      setTotalItems(result.totalItems);
+      const result = await getAllMenuItems();
+      setItems(result.items || []);
     } catch (error) {
       console.error("Error fetching menu items:", error);
       showError("Không thể tải danh sách món ăn từ cơ sở dữ liệu");
     }
-  }, [getAllMenuItems, showError, currentPage, sortField, sortDirection]);
+  }, [getAllMenuItems, showError]);
 
   useEffect(() => {
     setIsClient(true);
@@ -126,13 +103,6 @@ export default function AdminMenuPage() {
     }
   }, [user, authLoading, router, fetchItems, refreshTrigger]);
 
-  // Re-fetch when pagination, sort or filters change
-  useEffect(() => {
-    if (user) {
-      fetchItems();
-    }
-  }, [currentPage, sortField, sortDirection, fetchItems, user]);
-
   const handleSortChange = (field: keyof MenuItem) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -140,26 +110,30 @@ export default function AdminMenuPage() {
       setSortField(field);
       setSortDirection("asc");
     }
-    // Reset to first page when sort changes
-    setCurrentPage(1);
   };
 
-  // Apply local filtering to the paginated items
-  const filteredItems = items.filter((item) => {
-    const matchesSearch = item.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      categoryFilter === "all" || item.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
+  const filteredItems = items
+    .filter((item) => {
+      const matchesSearch = item.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        categoryFilter === "all" || item.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
 
-  // Handle page change
-  const handlePageChange = (page: number) => {
-    // Validate page
-    if (page < 1 || page > totalPages) return;
-    setCurrentPage(page);
-  };
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return sortDirection === "asc"
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      } else if (typeof aValue === "number" && typeof bValue === "number") {
+        return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+      }
+      return 0;
+    });
 
   const handleCreateItem = () => {
     setCurrentItem(null);
@@ -217,23 +191,6 @@ export default function AdminMenuPage() {
     }
   };
 
-  // Initialize menu collection with sample data
-  const handleInitializeData = async () => {
-    setShowInitializeConfirm(false);
-    try {
-      // Make sure we pass a copy of the static menu items to avoid mutation issues
-      const menuItemsCopy = JSON.parse(JSON.stringify(staticMenuItems));
-      const success = await initializeMenuCollection(menuItemsCopy);
-      if (success) {
-        // Refresh the data after initialization
-        setRefreshTrigger((prev) => prev + 1);
-      }
-    } catch (error) {
-      console.error("Error initializing data:", error);
-      showError("Có lỗi xảy ra khi khởi tạo dữ liệu!");
-    }
-  };
-
   if (authLoading || !isClient) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -243,7 +200,6 @@ export default function AdminMenuPage() {
   }
 
   if (!user) {
-    router.push("/auth/login?redirect=" + encodeURIComponent(router.asPath));
     return null;
   }
 
@@ -290,7 +246,7 @@ export default function AdminMenuPage() {
                   <SelectItem value="all">Tất cả danh mục</SelectItem>
                   <SelectItem value="special">Đặc biệt</SelectItem>
                   <SelectItem value="main">Món chính</SelectItem>
-                  <SelectItem value="chicken">Gà ủ mu��i</SelectItem>
+                  <SelectItem value="chicken">Gà ủ muối</SelectItem>
                   <SelectItem value="chicken-feet">Chân gà</SelectItem>
                   <SelectItem value="drinks">Đồ uống</SelectItem>
                 </SelectContent>
@@ -298,17 +254,33 @@ export default function AdminMenuPage() {
             </div>
           </div>
 
-          <div className="flex flex-col md:flex-row gap-2">
-            {items.length === 0 && (
-              <Button
-                onClick={() => setShowInitializeConfirm(true)}
-                variant="outline"
-                className="w-full md:w-auto"
-              >
-                <DownloadCloud className="mr-2 h-4 w-4" />
-                Nhập dữ liệu mẫu
-              </Button>
-            )}
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  const success = await importSampleMenuItems();
+                  if (success) {
+                    setRefreshTrigger((prev) => prev + 1);
+                  }
+                } catch (error) {
+                  showError("Có lỗi xảy ra khi nhập dữ liệu mẫu!");
+                }
+              }}
+              disabled={firebaseLoading}
+            >
+              {firebaseLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Đang nhập...
+                </>
+              ) : (
+                <>
+                  <DownloadCloud className="mr-2 h-4 w-4" />
+                  Nhập dữ liệu mẫu
+                </>
+              )}
+            </Button>
             <Button onClick={handleCreateItem} className="w-full md:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               Thêm món ăn
@@ -316,7 +288,7 @@ export default function AdminMenuPage() {
           </div>
         </div>
 
-        {/* Menu items table */}
+        {/* Loading and error states */}
         {firebaseLoading && (
           <div className="flex justify-center items-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -334,250 +306,181 @@ export default function AdminMenuPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-md border overflow-hidden">
-          <div className="px-4 py-2 bg-gray-50 border-b">
-            <p className="text-sm text-gray-500">
-              {totalItems > 0 ? (
-                <>
-                  Hiển thị {(currentPage - 1) * itemsPerPage + 1} -{" "}
-                  {Math.min(currentPage * itemsPerPage, totalItems)} trên tổng
-                  số {totalItems} món ăn
-                </>
-              ) : (
-                <>Không có món ăn nào</>
-              )}
+        {/* Empty state */}
+        {!firebaseLoading && items.length === 0 ? (
+          <div className="bg-white rounded-md border p-8 text-center">
+            <AlertTriangle className="h-12 w-12 mx-auto text-amber-500 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              Chưa có món ăn nào
+            </h3>
+            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              Hiện chưa có món ăn nào trong hệ thống. Bạn có thể thêm món ăn mới
+              hoặc nhập dữ liệu mẫu.
             </p>
+            <div className="flex justify-center gap-3">
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  try {
+                    const success = await importSampleMenuItems();
+                    if (success) {
+                      setRefreshTrigger((prev) => prev + 1);
+                    }
+                  } catch (error) {
+                    showError("Có lỗi xảy ra khi nhập dữ liệu mẫu!");
+                  }
+                }}
+                disabled={firebaseLoading}
+              >
+                <DownloadCloud className="mr-2 h-4 w-4" />
+                Nhập dữ liệu mẫu
+              </Button>
+              <Button onClick={handleCreateItem}>
+                <Plus className="mr-2 h-4 w-4" />
+                Thêm món ăn
+              </Button>
+            </div>
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">Ảnh</TableHead>
-                <TableHead className="min-w-40">
-                  <Button
-                    variant="ghost"
-                    className="p-0 font-bold"
-                    onClick={() => handleSortChange("name")}
-                  >
-                    Tên món
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead className="hidden md:table-cell">Mô tả</TableHead>
-                <TableHead>
-                  <Button
-                    variant="ghost"
-                    className="p-0 font-bold"
-                    onClick={() => handleSortChange("price")}
-                  >
-                    Giá
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead className="hidden md:table-cell">
-                  <Button
-                    variant="ghost"
-                    className="p-0 font-bold"
-                    onClick={() => handleSortChange("category")}
-                  >
-                    Danh mục
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead className="w-20 text-right">Thao tác</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredItems.length === 0 ? (
+        ) : (
+          /* Menu items table */
+          <div className="bg-white rounded-md border overflow-hidden">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="text-center py-6 text-gray-500"
-                  >
-                    Không tìm thấy món ăn nào
-                  </TableCell>
+                  <TableHead className="w-12">Ảnh</TableHead>
+                  <TableHead className="min-w-40">
+                    <Button
+                      variant="ghost"
+                      className="p-0 font-bold"
+                      onClick={() => handleSortChange("name")}
+                    >
+                      Tên món
+                      <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">Mô tả</TableHead>
+                  <TableHead>
+                    <Button
+                      variant="ghost"
+                      className="p-0 font-bold"
+                      onClick={() => handleSortChange("price")}
+                    >
+                      Giá
+                      <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    <Button
+                      variant="ghost"
+                      className="p-0 font-bold"
+                      onClick={() => handleSortChange("category")}
+                    >
+                      Danh mục
+                      <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </TableHead>
+                  <TableHead className="w-20 text-right">Thao tác</TableHead>
                 </TableRow>
-              ) : (
-                filteredItems.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <div className="w-10 h-10 rounded-md overflow-hidden">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{item.name}</TableCell>
-                    <TableCell className="hidden md:table-cell max-w-52 truncate">
-                      {item.description}
-                    </TableCell>
-                    <TableCell>
-                      {item.price.toLocaleString()}đ
-                      {item.sizes && item.sizes.length > 0 && (
-                        <span className="text-xs text-gray-500 block">
-                          + {item.sizes.length} tùy chọn
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize">
-                        {item.category === "special" && (
-                          <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                            Đặc biệt
-                          </span>
-                        )}
-                        {item.category === "main" && (
-                          <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                            Món chính
-                          </span>
-                        )}
-                        {item.category === "chicken" && (
-                          <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
-                            Gà ủ muối
-                          </span>
-                        )}
-                        {item.category === "chicken-feet" && (
-                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full">
-                            Chân gà
-                          </span>
-                        )}
-                        {item.category === "drinks" && (
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                            Đồ uống
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleEditItem(item)}
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Chỉnh sửa
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            Xem trước
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDeleteItem(item)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Xóa
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              </TableHeader>
+              <TableBody>
+                {filteredItems.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={6}
+                      className="text-center py-6 text-gray-500"
+                    >
+                      Không tìm thấy món ăn nào
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-
-          {totalPages > 1 && (
-            <div className="p-4 border-t">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      className={
-                        currentPage <= 1 ? "pointer-events-none opacity-50" : ""
-                      }
-                    />
-                  </PaginationItem>
-
-                  {/* First page */}
-                  {currentPage > 3 && (
-                    <PaginationItem>
-                      <PaginationLink onClick={() => handlePageChange(1)}>
-                        1
-                      </PaginationLink>
-                    </PaginationItem>
-                  )}
-
-                  {/* Ellipsis for many pages */}
-                  {currentPage > 4 && (
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  )}
-
-                  {/* Page before current */}
-                  {currentPage > 1 && (
-                    <PaginationItem>
-                      <PaginationLink
-                        onClick={() => handlePageChange(currentPage - 1)}
-                      >
-                        {currentPage - 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )}
-
-                  {/* Current page */}
-                  <PaginationItem>
-                    <PaginationLink
-                      isActive
-                      onClick={() => handlePageChange(currentPage)}
-                    >
-                      {currentPage}
-                    </PaginationLink>
-                  </PaginationItem>
-
-                  {/* Page after current */}
-                  {currentPage < totalPages && (
-                    <PaginationItem>
-                      <PaginationLink
-                        onClick={() => handlePageChange(currentPage + 1)}
-                      >
-                        {currentPage + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )}
-
-                  {/* Ellipsis for many pages */}
-                  {currentPage < totalPages - 3 && (
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  )}
-
-                  {/* Last page */}
-                  {currentPage < totalPages - 2 && (
-                    <PaginationItem>
-                      <PaginationLink
-                        onClick={() => handlePageChange(totalPages)}
-                      >
-                        {totalPages}
-                      </PaginationLink>
-                    </PaginationItem>
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      className={
-                        currentPage >= totalPages
-                          ? "pointer-events-none opacity-50"
-                          : ""
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
-        </div>
+                ) : (
+                  filteredItems.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <div className="w-10 h-10 rounded-md overflow-hidden">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{item.name}</TableCell>
+                      <TableCell className="hidden md:table-cell max-w-52 truncate">
+                        {item.description}
+                      </TableCell>
+                      <TableCell>
+                        {item.price.toLocaleString()}đ
+                        {item.sizes && item.sizes.length > 0 && (
+                          <span className="text-xs text-gray-500 block">
+                            + {item.sizes.length} tùy chọn
+                          </span>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize">
+                          {item.category === "special" && (
+                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                              Đặc biệt
+                            </span>
+                          )}
+                          {item.category === "main" && (
+                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                              Món chính
+                            </span>
+                          )}
+                          {item.category === "chicken" && (
+                            <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
+                              Gà ủ muối
+                            </span>
+                          )}
+                          {item.category === "chicken-feet" && (
+                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                              Chân gà
+                            </span>
+                          )}
+                          {item.category === "drinks" && (
+                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                              Đồ uống
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleEditItem(item)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Chỉnh sửa
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Eye className="mr-2 h-4 w-4" />
+                              Xem trước
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDeleteItem(item)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Xóa
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
         {/* Add/Edit Menu Item Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -630,40 +533,6 @@ export default function AdminMenuPage() {
                   </>
                 ) : (
                   "Xóa"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        {/* Initialize Data Confirmation Dialog */}
-        <Dialog
-          open={showInitializeConfirm}
-          onOpenChange={setShowInitializeConfirm}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Khởi tạo dữ liệu mẫu</DialogTitle>
-              <DialogDescription>
-                Thao tác này sẽ nhập các món ăn mẫu vào cơ sở dữ liệu. Bạn có
-                chắc chắn muốn tiếp tục không?
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowInitializeConfirm(false)}
-                disabled={firebaseLoading}
-              >
-                Hủy
-              </Button>
-              <Button onClick={handleInitializeData} disabled={firebaseLoading}>
-                {firebaseLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Đang xử lý...
-                  </>
-                ) : (
-                  "Khởi tạo dữ liệu"
                 )}
               </Button>
             </DialogFooter>
