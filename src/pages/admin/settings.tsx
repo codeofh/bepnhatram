@@ -83,15 +83,27 @@ export default function AdminSettingsPage() {
     setIsSubmitting(true);
 
     try {
+      console.log("[AdminSettings] Submitting form data:", formData);
       const success = await updateSettings(formData);
+
+      console.log("[AdminSettings] Update result:", success);
+
       if (success) {
         showSuccess("Cài đặt đã được cập nhật thành công!");
       } else {
+        console.error(
+          "[AdminSettings] Update failed. Current error state:",
+          settingsError,
+        );
         showError("Không thể cập nhật cài đặt. Vui lòng thử lại.");
+        showError(settingsError || "Lỗi không xác định");
       }
-    } catch (error) {
-      console.error("Error updating settings:", error);
-      showError("Đã xảy ra lỗi khi cập nhật cài đặt");
+    } catch (error: any) {
+      console.error("[AdminSettings] Exception during settings update:", error);
+      console.error("[AdminSettings] Error message:", error.message);
+      console.error("[AdminSettings] Error stack:", error.stack);
+
+      showError(`Đã xảy ra lỗi khi cập nhật cài đặt: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -104,16 +116,33 @@ export default function AdminSettingsPage() {
       )
     ) {
       try {
+        console.log("[AdminSettings] Attempting to reset settings to defaults");
         const success = await resetToDefaults();
+
+        console.log("[AdminSettings] Reset result:", success);
+
         if (success) {
           setFormData(defaultSiteConfig);
           showSuccess("Đã khôi phục về cài đặt mặc định!");
         } else {
+          console.error(
+            "[AdminSettings] Reset failed. Current error state:",
+            settingsError,
+          );
           showError("Không thể khôi phục cài đặt mặc định. Vui lòng thử lại.");
+          showError(settingsError || "Lỗi không xác định");
         }
-      } catch (error) {
-        console.error("Error resetting settings:", error);
-        showError("Đã xảy ra lỗi khi khôi phục cài đặt mặc định");
+      } catch (error: any) {
+        console.error(
+          "[AdminSettings] Exception during settings reset:",
+          error,
+        );
+        console.error("[AdminSettings] Error message:", error.message);
+        console.error("[AdminSettings] Error stack:", error.stack);
+
+        showError(
+          `Đã xảy ra lỗi khi khôi phục cài đặt mặc định: ${error.message}`,
+        );
       }
     }
   };

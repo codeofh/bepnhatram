@@ -158,26 +158,52 @@ export function useSettings(): UseSettingsReturn {
   ): Promise<boolean> => {
     try {
       if (!isFirebaseInitialized()) {
-        setError("Firebase không được khởi tạo");
+        const errorMsg = "Firebase không được khởi tạo";
+        console.error(`[useSettings] ${errorMsg}`);
+        setError(errorMsg);
         return false;
       }
 
+      console.log("[useSettings] Attempting to update settings:", newSettings);
+
       const docRef = doc(db!, SETTINGS_COLLECTION, SETTINGS_DOC_ID);
+      console.log(
+        "[useSettings] Document reference created for:",
+        SETTINGS_COLLECTION,
+        SETTINGS_DOC_ID,
+      );
+
       const docSnap = await getDoc(docRef);
+      console.log("[useSettings] Document exists:", docSnap.exists());
 
       if (docSnap.exists()) {
         // Update existing settings
+        console.log("[useSettings] Updating existing document with:", {
+          ...newSettings,
+          updatedAt: new Date(),
+        });
+
         await updateDoc(docRef, {
           ...newSettings,
           updatedAt: new Date(),
         });
+
+        console.log("[useSettings] Document successfully updated");
       } else {
         // Create new settings document
+        console.log("[useSettings] Creating new document with:", {
+          ...defaultSiteConfig,
+          ...newSettings,
+          updatedAt: new Date(),
+        });
+
         await setDoc(docRef, {
           ...defaultSiteConfig,
           ...newSettings,
           updatedAt: new Date(),
         });
+
+        console.log("[useSettings] Document successfully created");
       }
 
       // Update local state
@@ -187,10 +213,31 @@ export function useSettings(): UseSettingsReturn {
         updatedAt: new Date(),
       }));
 
+      console.log("[useSettings] Local state updated successfully");
       return true;
     } catch (err: any) {
-      console.error("Error updating site settings:", err);
-      setError(`Không thể cập nhật cài đặt: ${err.message}`);
+      console.error("[useSettings] Error updating site settings:", err);
+      console.error("[useSettings] Error code:", err.code);
+      console.error("[useSettings] Error message:", err.message);
+      console.error("[useSettings] Error stack:", err.stack);
+
+      // Check for specific Firestore errors
+      if (err.code) {
+        if (err.code === "permission-denied") {
+          setError(
+            `Không đủ quyền để cập nhật cài đặt. Vui lòng kiểm tra quyền truy cập.`,
+          );
+        } else if (err.code === "unavailable") {
+          setError(
+            `Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.`,
+          );
+        } else {
+          setError(`Không thể cập nhật cài đặt: ${err.code} - ${err.message}`);
+        }
+      } else {
+        setError(`Không thể cập nhật cài đặt: ${err.message}`);
+      }
+
       return false;
     }
   };

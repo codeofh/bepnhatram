@@ -165,21 +165,41 @@ export const safeFirestoreOperation = async <T>(
 ): Promise<T> => {
   try {
     if (!isFirebaseInitialized()) {
-      console.warn("Firebase not initialized, cannot perform operation");
+      console.warn(
+        "[Firebase] Firebase not initialized, cannot perform operation",
+      );
       return fallback;
     }
 
     return await operation();
   } catch (error: any) {
+    // Log detailed error information
+    console.error("[Firebase] Firestore operation failed:", error);
+    console.error("[Firebase] Error code:", error.code);
+    console.error("[Firebase] Error message:", error.message);
+
     // Check if it's an offline error
     if (
       error.message?.includes("offline") ||
       error.code === "unavailable" ||
       error.code === "failed-precondition"
     ) {
-      console.warn("Operation failed due to network issues:", error);
+      console.warn("[Firebase] Operation failed due to network issues:", error);
       networkStatus.wasEverOffline = true;
       return fallback;
+    }
+
+    // Log permission issues
+    if (error.code === "permission-denied") {
+      console.error("[Firebase] Permission denied for Firestore operation");
+    }
+
+    // Log validation issues
+    if (error.code === "invalid-argument") {
+      console.error(
+        "[Firebase] Invalid argument for Firestore operation:",
+        error.message,
+      );
     }
 
     throw error;
