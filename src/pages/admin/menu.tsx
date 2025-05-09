@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import {
@@ -12,12 +12,15 @@ import {
   ArrowUpDown,
   MoreHorizontal,
   X,
+  Loader2,
+  DownloadCloud,
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { MenuItemForm } from "@/components/Admin/MenuItemForm";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
-import { MenuItem, menuItems } from "@/data/menuItems";
+import { MenuItem, menuItems as staticMenuItems } from "@/data/menuItems";
+import { useMenuManagement } from "@/hooks/useMenuManagement";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,11 +56,23 @@ import {
 import { useToastContext } from "@/contexts/ToastContext";
 
 export default function AdminMenuPage() {
-  const { user, loading } = useAuthContext();
+  const { user, loading: authLoading } = useAuthContext();
   const router = useRouter();
   const { showSuccess, showError } = useToastContext();
   const [isClient, setIsClient] = useState(false);
   const [items, setItems] = useState<MenuItem[]>([]);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [showInitializeConfirm, setShowInitializeConfirm] = useState(false);
+
+  const {
+    getAllMenuItems,
+    addMenuItem,
+    updateMenuItem,
+    deleteMenuItem,
+    initializeMenuCollection,
+    loading: firebaseLoading,
+    error: firebaseError,
+  } = useMenuManagement();
   const [currentItem, setCurrentItem] = useState<MenuItem | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isConfirmDelete, setIsConfirmDelete] = useState(false);
@@ -67,14 +82,25 @@ export default function AdminMenuPage() {
   const [sortField, setSortField] = useState<keyof MenuItem>("displayOrder");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
+  // Fetch menu items from Firebase
+  const fetchItems = useCallback(async () => {
+    try {
+      const menuItems = await getAllMenuItems();
+      setItems(menuItems);
+    } catch (error) {
+      console.error("Error fetching menu items:", error);
+      showError("Không thể tải danh sách món ăn từ cơ sở dữ liệu");
+    }
+  }, [getAllMenuItems, showError]);
+
   useEffect(() => {
     setIsClient(true);
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       router.push("/auth/login?redirect=" + encodeURIComponent(router.asPath));
-    } else {
-      setItems(menuItems);
+    } else if (user) {
+      fetchItems();
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router, fetchItems, refreshTrigger]);
 
   const handleSortChange = (field: keyof MenuItem) => {
     if (sortField === field) {
@@ -123,13 +149,13 @@ export default function AdminMenuPage() {
     setIsConfirmDelete(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (currentItem) {
       try {
-        // In a real app, here you would delete from Firebase
-        const newItems = items.filter((item) => item.id !== currentItem.id);
-        setItems(newItems);
-        showSuccess("Đã xóa món ăn thành công!");
+        const success = await deleteMenuItem(currentItem.id);
+        if (success) {
+          setRefreshTrigger((prev) => prev + 1);
+        }
       } catch (error) {
         showError("Có lỗi xảy ra khi xóa món ăn!");
       } finally {
@@ -142,25 +168,21 @@ export default function AdminMenuPage() {
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true);
     try {
-      // In a real app, this would save to Firebase
       if (currentItem) {
         // Update existing item
-        const updatedItems = items.map((item) =>
-          item.id === currentItem.id ? { ...data, id: currentItem.id } : item,
-        );
-        setItems(updatedItems);
-        showSuccess("Đã cập nhật món ăn thành công!");
+        const success = await updateMenuItem(currentItem.id, data);
+        if (success) {
+          setRefreshTrigger((prev) => prev + 1);
+          setIsDialogOpen(false);
+        }
       } else {
         // Create new item
-        const newItem = {
-          ...data,
-          id: `temp-${Date.now()}`, // In real app, this would be a Firebase ID
-          rating: data.rating || 4,
-        };
-        setItems([...items, newItem]);
-        showSuccess("Đã thêm món ăn mới thành công!");
+        const newItemId = await addMenuItem(data);
+        if (newItemId) {
+          setRefreshTrigger((prev) => prev + 1);
+          setIsDialogOpen(false);
+        }
       }
-      setIsDialogOpen(false);
     } catch (error) {
       showError("Có lỗi xảy ra khi lưu món ăn!");
     } finally {
@@ -168,7 +190,20 @@ export default function AdminMenuPage() {
     }
   };
 
-  if (loading || !isClient) {
+  // Initialize menu collection with sample data
+  const handleInitializeData = async () => {
+    setShowInitializeConfirm(false);
+    try {
+      const success = await initializeMenuCollection(staticMenuItems);
+      if (success) {
+        setRefreshTrigger((prev) => prev + 1);
+      }
+    } catch (error) {
+      showError("Có lỗi xảy ra khi khởi tạo dữ liệu!");
+    }
+  };
+
+  if (authLoading || !isClient) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -177,6 +212,7 @@ export default function AdminMenuPage() {
   }
 
   if (!user) {
+    router.push("/auth/login?redirect=" + encodeURIComponent(router.asPath));
     return null;
   }
 
@@ -231,13 +267,42 @@ export default function AdminMenuPage() {
             </div>
           </div>
 
-          <Button onClick={handleCreateItem} className="w-full md:w-auto">
-            <Plus className="mr-2 h-4 w-4" />
-            Thêm món ăn
-          </Button>
+          <div className="flex flex-col md:flex-row gap-2">
+            {items.length === 0 && (
+              <Button
+                onClick={() => setShowInitializeConfirm(true)}
+                variant="outline"
+                className="w-full md:w-auto"
+              >
+                <DownloadCloud className="mr-2 h-4 w-4" />
+                Nhập dữ liệu mẫu
+              </Button>
+            )}
+            <Button onClick={handleCreateItem} className="w-full md:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
+              Thêm món ăn
+            </Button>
+          </div>
         </div>
 
         {/* Menu items table */}
+        {firebaseLoading && (
+          <div className="flex justify-center items-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2">Đang tải dữ liệu...</span>
+          </div>
+        )}
+
+        {firebaseError && (
+          <div
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative my-4"
+            role="alert"
+          >
+            <strong className="font-bold">Lỗi! </strong>
+            <span className="block sm:inline">{firebaseError}</span>
+          </div>
+        )}
+
         <div className="bg-white rounded-md border overflow-hidden">
           <Table>
             <TableHeader>
@@ -411,11 +476,57 @@ export default function AdminMenuPage() {
               <Button
                 variant="outline"
                 onClick={() => setIsConfirmDelete(false)}
+                disabled={firebaseLoading}
               >
                 Hủy
               </Button>
-              <Button variant="destructive" onClick={confirmDelete}>
-                Xóa
+              <Button
+                variant="destructive"
+                onClick={confirmDelete}
+                disabled={firebaseLoading}
+              >
+                {firebaseLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Đang xóa...
+                  </>
+                ) : (
+                  "Xóa"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        {/* Initialize Data Confirmation Dialog */}
+        <Dialog
+          open={showInitializeConfirm}
+          onOpenChange={setShowInitializeConfirm}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Khởi tạo dữ liệu mẫu</DialogTitle>
+              <DialogDescription>
+                Thao tác này sẽ nhập các món ăn mẫu vào cơ sở dữ liệu. Bạn có
+                chắc chắn muốn tiếp tục không?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowInitializeConfirm(false)}
+                disabled={firebaseLoading}
+              >
+                Hủy
+              </Button>
+              <Button onClick={handleInitializeData} disabled={firebaseLoading}>
+                {firebaseLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Đang xử lý...
+                  </>
+                ) : (
+                  "Khởi tạo dữ liệu"
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>

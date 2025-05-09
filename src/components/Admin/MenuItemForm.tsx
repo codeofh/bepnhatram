@@ -351,11 +351,16 @@ export function MenuItemForm({
 
         <div className="flex justify-end space-x-2">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting
-              ? "Đang lưu..."
-              : initialData
-                ? "Cập nhật"
-                : "Thêm món ăn"}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {initialData ? "Đang cập nhật..." : "Đang thêm..."}
+              </>
+            ) : initialData ? (
+              "Cập nhật"
+            ) : (
+              "Thêm món ăn"
+            )}
           </Button>
         </div>
       </form>
