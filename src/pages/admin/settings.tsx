@@ -136,6 +136,38 @@ export default function AdminSettingsPage() {
     }
   };
 
+  // Ensure nested objects exist in form data
+  const ensureNestedObjects = (data: Partial<SiteSettings>): SiteSettings => {
+    return {
+      ...defaultSiteConfig,
+      ...data,
+      contact: {
+        ...defaultSiteConfig.contact,
+        ...(data.contact || {}),
+      },
+      social: {
+        ...defaultSiteConfig.social,
+        ...(data.social || {}),
+      },
+      ordering: {
+        ...defaultSiteConfig.ordering,
+        ...(data.ordering || {}),
+      },
+      maps: {
+        ...defaultSiteConfig.maps,
+        ...(data.maps || {}),
+      },
+      seo: {
+        ...defaultSiteConfig.seo,
+        ...(data.seo || {}),
+      },
+      settings: {
+        ...defaultSiteConfig.settings,
+        ...(data.settings || {}),
+      },
+    };
+  };
+
   // Load settings on mount
   useEffect(() => {
     async function loadSettings() {
@@ -146,13 +178,21 @@ export default function AdminSettingsPage() {
         if (error) {
           setSettingsError(error);
         } else {
-          setSettings(loadedSettings);
-          setFormData(loadedSettings);
+          // Ensure all nested objects exist in the loaded settings
+          const safeSettings = ensureNestedObjects(loadedSettings);
+
+          setSettings(safeSettings);
+          setFormData(safeSettings);
           setSettingsError(null);
         }
       } catch (err: any) {
         console.error("[AdminSettings] Error loading settings:", err);
         setSettingsError(err.message || "Không thể tải cài đặt");
+
+        // On error, use default settings with all nested objects
+        const safeSettings = ensureNestedObjects({});
+        setSettings(safeSettings);
+        setFormData(safeSettings);
       } finally {
         setSettingsLoading(false);
       }
@@ -186,13 +226,18 @@ export default function AdminSettingsPage() {
         [section]: value,
       }));
     } else {
-      setFormData((prev) => ({
-        ...prev,
-        [section]: {
-          ...prev[section],
-          [field]: value,
-        },
-      }));
+      setFormData((prev) => {
+        // Create section if it doesn't exist
+        const existingSection = prev[section] || {};
+
+        return {
+          ...prev,
+          [section]: {
+            ...existingSection,
+            [field]: value,
+          },
+        };
+      });
     }
   };
 
@@ -253,7 +298,10 @@ export default function AdminSettingsPage() {
 
       if (success) {
         // Update local settings state if successful
-        setSettings(formData);
+        // Ensure all nested objects exist in the formData
+        const safeFormData = ensureNestedObjects(formData);
+        setSettings(safeFormData);
+        setFormData(safeFormData);
         showSuccess("Cài đặt đã được cập nhật thành công!");
       } else {
         console.error("[AdminSettings] Update failed. Error:", settingsError);
@@ -294,8 +342,10 @@ export default function AdminSettingsPage() {
         console.log("[AdminSettings] Reset result:", success);
 
         if (success) {
-          setFormData(defaultSiteConfig);
-          setSettings(defaultSiteConfig);
+          // Make sure we have all nested objects
+          const safeDefaultSettings = ensureNestedObjects(defaultSiteConfig);
+          setFormData(safeDefaultSettings);
+          setSettings(safeDefaultSettings);
           showSuccess("Đã khôi phục về cài đặt mặc định!");
         } else {
           console.error("[AdminSettings] Reset failed. Error:", error);
@@ -465,7 +515,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="phone">Số điện thoại</Label>
                           <Input
                             id="phone"
-                            value={formData.contact.phone}
+                            value={formData.contact?.phone || ""}
                             onChange={(e) =>
                               handleChange("contact", "phone", e.target.value)
                             }
@@ -477,7 +527,7 @@ export default function AdminSettingsPage() {
                           <Input
                             id="email"
                             type="email"
-                            value={formData.contact.email}
+                            value={formData.contact?.email || ""}
                             onChange={(e) =>
                               handleChange("contact", "email", e.target.value)
                             }
@@ -488,7 +538,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="address">Địa chỉ</Label>
                           <Input
                             id="address"
-                            value={formData.contact.address}
+                            value={formData.contact?.address || ""}
                             onChange={(e) =>
                               handleChange("contact", "address", e.target.value)
                             }
@@ -499,7 +549,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="openingHours">Giờ mở cửa</Label>
                           <Input
                             id="openingHours"
-                            value={formData.contact.openingHours}
+                            value={formData.contact?.openingHours || ""}
                             onChange={(e) =>
                               handleChange(
                                 "contact",
@@ -515,7 +565,7 @@ export default function AdminSettingsPage() {
                             <Label htmlFor="city">Thành phố</Label>
                             <Input
                               id="city"
-                              value={formData.contact.city}
+                              value={formData.contact?.city || ""}
                               onChange={(e) =>
                                 handleChange("contact", "city", e.target.value)
                               }
@@ -526,7 +576,7 @@ export default function AdminSettingsPage() {
                             <Label htmlFor="region">Khu vực</Label>
                             <Input
                               id="region"
-                              value={formData.contact.region}
+                              value={formData.contact?.region || ""}
                               onChange={(e) =>
                                 handleChange(
                                   "contact",
@@ -543,7 +593,7 @@ export default function AdminSettingsPage() {
                             <Label htmlFor="postalCode">Mã bưu chính</Label>
                             <Input
                               id="postalCode"
-                              value={formData.contact.postalCode}
+                              value={formData.contact?.postalCode || ""}
                               onChange={(e) =>
                                 handleChange(
                                   "contact",
@@ -558,7 +608,7 @@ export default function AdminSettingsPage() {
                             <Label htmlFor="countryCode">Mã quốc gia</Label>
                             <Input
                               id="countryCode"
-                              value={formData.contact.countryCode}
+                              value={formData.contact?.countryCode || ""}
                               onChange={(e) =>
                                 handleChange(
                                   "contact",
@@ -588,7 +638,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="facebook">Facebook</Label>
                           <Input
                             id="facebook"
-                            value={formData.social.facebook}
+                            value={formData.social?.facebook || ""}
                             onChange={(e) =>
                               handleChange("social", "facebook", e.target.value)
                             }
@@ -600,7 +650,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="facebookHandle">Tên Facebook</Label>
                           <Input
                             id="facebookHandle"
-                            value={formData.social.facebookHandle}
+                            value={formData.social?.facebookHandle || ""}
                             onChange={(e) =>
                               handleChange(
                                 "social",
@@ -616,7 +666,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="instagram">Instagram</Label>
                           <Input
                             id="instagram"
-                            value={formData.social.instagram}
+                            value={formData.social?.instagram || ""}
                             onChange={(e) =>
                               handleChange(
                                 "social",
@@ -632,7 +682,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="tiktok">TikTok</Label>
                           <Input
                             id="tiktok"
-                            value={formData.social.tiktok}
+                            value={formData.social?.tiktok || ""}
                             onChange={(e) =>
                               handleChange("social", "tiktok", e.target.value)
                             }
@@ -644,7 +694,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="tiktokHandle">Tên TikTok</Label>
                           <Input
                             id="tiktokHandle"
-                            value={formData.social.tiktokHandle}
+                            value={formData.social?.tiktokHandle || ""}
                             onChange={(e) =>
                               handleChange(
                                 "social",
@@ -660,7 +710,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="zalo">Zalo</Label>
                           <Input
                             id="zalo"
-                            value={formData.social.zalo}
+                            value={formData.social?.zalo || ""}
                             onChange={(e) =>
                               handleChange("social", "zalo", e.target.value)
                             }
@@ -672,7 +722,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="messenger">Messenger</Label>
                           <Input
                             id="messenger"
-                            value={formData.social.messenger}
+                            value={formData.social?.messenger || ""}
                             onChange={(e) =>
                               handleChange(
                                 "social",
@@ -702,7 +752,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="shopeeFood">ShopeeFood</Label>
                           <Input
                             id="shopeeFood"
-                            value={formData.ordering.shopeeFood}
+                            value={formData.ordering?.shopeeFood || ""}
                             onChange={(e) =>
                               handleChange(
                                 "ordering",
@@ -718,7 +768,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="grabFood">GrabFood</Label>
                           <Input
                             id="grabFood"
-                            value={formData.ordering.grabFood}
+                            value={formData.ordering?.grabFood || ""}
                             onChange={(e) =>
                               handleChange(
                                 "ordering",
@@ -748,7 +798,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="embedUrl">URL nhúng bản đồ</Label>
                           <Textarea
                             id="embedUrl"
-                            value={formData.maps.embedUrl}
+                            value={formData.maps?.embedUrl || ""}
                             onChange={(e) =>
                               handleChange("maps", "embedUrl", e.target.value)
                             }
@@ -761,7 +811,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="directionsUrl">URL chỉ đường</Label>
                           <Input
                             id="directionsUrl"
-                            value={formData.maps.directionsUrl}
+                            value={formData.maps?.directionsUrl || ""}
                             onChange={(e) =>
                               handleChange(
                                 "maps",
@@ -778,7 +828,7 @@ export default function AdminSettingsPage() {
                             <Label htmlFor="latitude">Vĩ độ</Label>
                             <Input
                               id="latitude"
-                              value={formData.maps.latitude}
+                              value={formData.maps?.latitude || ""}
                               onChange={(e) =>
                                 handleChange("maps", "latitude", e.target.value)
                               }
@@ -790,7 +840,7 @@ export default function AdminSettingsPage() {
                             <Label htmlFor="longitude">Kinh độ</Label>
                             <Input
                               id="longitude"
-                              value={formData.maps.longitude}
+                              value={formData.maps?.longitude || ""}
                               onChange={(e) =>
                                 handleChange(
                                   "maps",
@@ -821,7 +871,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="titleTemplate">Mẫu tiêu đề</Label>
                           <Input
                             id="titleTemplate"
-                            value={formData.seo.titleTemplate}
+                            value={formData.seo?.titleTemplate || ""}
                             onChange={(e) =>
                               handleChange(
                                 "seo",
@@ -840,7 +890,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="defaultTitle">Tiêu đề mặc định</Label>
                           <Input
                             id="defaultTitle"
-                            value={formData.seo.defaultTitle}
+                            value={formData.seo?.defaultTitle || ""}
                             onChange={(e) =>
                               handleChange(
                                 "seo",
@@ -857,7 +907,7 @@ export default function AdminSettingsPage() {
                           </Label>
                           <Textarea
                             id="defaultDescription"
-                            value={formData.seo.defaultDescription}
+                            value={formData.seo?.defaultDescription || ""}
                             onChange={(e) =>
                               handleChange(
                                 "seo",
@@ -875,7 +925,7 @@ export default function AdminSettingsPage() {
                           </Label>
                           <Input
                             id="ogImageUrl"
-                            value={formData.seo.ogImageUrl}
+                            value={formData.seo?.ogImageUrl || ""}
                             onChange={(e) =>
                               handleChange("seo", "ogImageUrl", e.target.value)
                             }
@@ -887,7 +937,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="keywords">Từ khóa</Label>
                           <Textarea
                             id="keywords"
-                            value={formData.seo.keywords}
+                            value={formData.seo?.keywords || ""}
                             onChange={(e) =>
                               handleChange("seo", "keywords", e.target.value)
                             }
@@ -904,7 +954,7 @@ export default function AdminSettingsPage() {
                           </Label>
                           <Input
                             id="homePageTitle"
-                            value={formData.seo.homePageTitle}
+                            value={formData.seo?.homePageTitle || ""}
                             onChange={(e) =>
                               handleChange(
                                 "seo",
@@ -931,7 +981,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="currency">Tiền tệ</Label>
                           <Input
                             id="currency"
-                            value={formData.settings.currency}
+                            value={formData.settings?.currency || ""}
                             onChange={(e) =>
                               handleChange(
                                 "settings",
@@ -948,7 +998,7 @@ export default function AdminSettingsPage() {
                           </Label>
                           <Input
                             id="currencySymbol"
-                            value={formData.settings.currencySymbol}
+                            value={formData.settings?.currencySymbol || ""}
                             onChange={(e) =>
                               handleChange(
                                 "settings",
@@ -963,7 +1013,7 @@ export default function AdminSettingsPage() {
                           <Label htmlFor="locale">Ngôn ngữ</Label>
                           <Input
                             id="locale"
-                            value={formData.settings.locale}
+                            value={formData.settings?.locale || ""}
                             onChange={(e) =>
                               handleChange("settings", "locale", e.target.value)
                             }

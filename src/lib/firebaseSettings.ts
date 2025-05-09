@@ -194,6 +194,40 @@ export async function updateSiteSettings(
 /**
  * Get current settings from Firebase
  */
+/**
+ * Ensure all nested objects exist in settings
+ */
+function ensureCompleteSettings(settings: Partial<SiteSettings>): SiteSettings {
+  return {
+    ...defaultSiteConfig,
+    ...settings,
+    contact: {
+      ...defaultSiteConfig.contact,
+      ...(settings.contact || {}),
+    },
+    social: {
+      ...defaultSiteConfig.social,
+      ...(settings.social || {}),
+    },
+    ordering: {
+      ...defaultSiteConfig.ordering,
+      ...(settings.ordering || {}),
+    },
+    maps: {
+      ...defaultSiteConfig.maps,
+      ...(settings.maps || {}),
+    },
+    seo: {
+      ...defaultSiteConfig.seo,
+      ...(settings.seo || {}),
+    },
+    settings: {
+      ...defaultSiteConfig.settings,
+      ...(settings.settings || {}),
+    },
+  };
+}
+
 export async function getSiteSettings(): Promise<{
   settings: SiteSettings;
   error?: string;
@@ -210,11 +244,20 @@ export async function getSiteSettings(): Promise<{
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      const settings = docSnap.data() as SiteSettings;
-      return { settings };
+      // Get settings data and ensure all nested objects exist
+      const settingsData = docSnap.data();
+      const completeSettings = ensureCompleteSettings(
+        settingsData as Partial<SiteSettings>,
+      );
+
+      console.log(
+        "[firebaseSettings] Settings loaded successfully with nested objects",
+      );
+      return { settings: completeSettings };
     } else {
       // Create settings document with defaults if it doesn't exist
       try {
+        console.log("[firebaseSettings] Creating default settings document");
         await setDoc(docRef, {
           ...defaultSiteConfig,
           updatedAt: serverTimestamp(),
