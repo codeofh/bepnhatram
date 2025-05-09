@@ -7,7 +7,7 @@ import { MenuItem, menuItems as staticMenuItems } from "@/data/menuItems";
 import { Layout } from "@/components/Layout/Layout";
 import { SEO } from "@/components/SEO/SEO";
 import { StructuredData } from "@/components/SEO/StructuredData";
-import { siteConfig } from "@/config/siteConfig";
+import { useSettingsContext } from "@/contexts/SettingsContext";
 import { useMenuManagement } from "@/hooks/useMenuManagement";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Loader2, RefreshCw, WifiOff, AlertTriangle } from "lucide-react";
@@ -27,6 +27,7 @@ export default function Home() {
 
   const { getAllMenuItems } = useMenuManagement();
   const { showError, showInfo } = useToastContext();
+  const { settings, loading: settingsLoading } = useSettingsContext();
 
   // Use useCallback to prevent function recreation on each render
   const fetchMenuItems = useCallback(
@@ -57,7 +58,7 @@ export default function Home() {
         // Set a more user-friendly error message based on the type of error
         if (err.code === "unavailable" || err.message?.includes("network")) {
           setError(
-            "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet của bạn."
+            "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet của bạn.",
           );
         } else if (err.code === "permission-denied") {
           setError("Bạn không có quyền truy cập dữ liệu này.");
@@ -65,7 +66,7 @@ export default function Home() {
           setError(
             `Không thể tải dữ liệu thực đơn: ${
               err.message || "Lỗi không xác định"
-            }`
+            }`,
           );
         }
 
@@ -81,7 +82,7 @@ export default function Home() {
         setIsRetrying(false);
       }
     },
-    [getAllMenuItems, showError, showInfo]
+    [getAllMenuItems, showError, showInfo],
   );
 
   // Retry function with exponential backoff
@@ -100,8 +101,8 @@ export default function Home() {
   return (
     <>
       <SEO
-        title={siteConfig.seo.homePageTitle}
-        description={siteConfig.seo.defaultDescription}
+        title={settings.seo.homePageTitle}
+        description={settings.seo.defaultDescription}
       />
       <StructuredData type="restaurant" />
 

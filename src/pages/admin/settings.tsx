@@ -1,298 +1,124 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Head from "next/head";
-//import firebase functions
 import { useRouter } from "next/router";
-import {
-  Save,
-  Globe,
-  Phone,
-  Clock,
-  MapPin,
-  Mail,
-  Facebook,
-  Instagram,
-} from "lucide-react";
+import { Loader2, Save, RefreshCw, AlertTriangle } from "lucide-react";
+
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { siteConfig } from "@/config/siteConfig";
+import { useToastContext } from "@/contexts/ToastContext";
+import { useSettingsContext } from "@/contexts/SettingsContext";
+import { SiteSettings } from "@/hooks/useSettings";
+import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card";
-import { useToastContext } from "@/contexts/ToastContext";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { doc, updateDoc, setDoc, getDoc } from "firebase/firestore";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
 
-import { db } from "@/lib/firebase";
-const generalSettingsSchema = z.object({
-  name: z.string().min(1, { message: "Tên nhà hàng không được để trống" }),
-  description: z.string().min(1, { message: "Mô tả không được để trống" }),
-  url: z.string().url({ message: "URL không hợp lệ" }),
-  contact: z.object({
-    phone: z.string().min(10, { message: "Số điện thoại không hợp lệ" }),
-    email: z.string().email({ message: "Email không hợp lệ" }),
-    address: z.string().min(1, { message: "Địa chỉ không được để trống" }),
-    openingHours: z
-      .string()
-      .min(1, { message: "Giờ mở cửa không được để trống" }),
-    city: z.string().min(1, { message: "Thành phố không được để trống" }),
-    region: z.string().min(1, { message: "Tỉnh/thành không được để trống" }),
-    postalCode: z.string(),
-    countryCode: z.string().min(2, { message: "Mã quốc gia không hợp lệ" }),
-  }),
-});
-
-const socialSettingsSchema = z.object({
-  social: z.object({
-    facebook: z
-      .string()
-      .url({ message: "URL Facebook không hợp lệ" })
-      .or(z.string().length(0)),
-    facebookHandle: z.string(),
-    instagram: z
-      .string()
-      .url({ message: "URL Instagram không hợp lệ" })
-      .or(z.string().length(0)),
-    twitter: z
-      .string()
-      .url({ message: "URL Twitter không hợp lệ" })
-      .or(z.string().length(0)),
-    zalo: z
-      .string()
-      .url({ message: "URL Zalo không hợp lệ" })
-      .or(z.string().length(0)),
-    tiktok: z
-      .string()
-      .url({ message: "URL TikTok không hợp lệ" })
-      .or(z.string().length(0)),
-    tiktokHandle: z.string(),
-    messenger: z
-      .string()
-      .url({ message: "URL Messenger không hợp lệ" })
-      .or(z.string().length(0)),
-  }),
-  ordering: z.object({
-    shopeeFood: z
-      .string()
-      .url({ message: "URL ShopeeFood không hợp lệ" })
-      .or(z.string().length(0)),
-    grabFood: z
-      .string()
-      .url({ message: "URL GrabFood không hợp lệ" })
-      .or(z.string().length(0)),
-  }),
-});
-
-const mapsSettingsSchema = z.object({
-  maps: z.object({
-    embedUrl: z.string().url({ message: "URL Google Maps không hợp lệ" }),
-    directionsUrl: z.string().url({ message: "URL chỉ đường không hợp lệ" }),
-    latitude: z.string(),
-    longitude: z.string(),
-  }),
-});
-
-type GeneralSettingsValues = z.infer<typeof generalSettingsSchema>;
-type SocialSettingsValues = z.infer<typeof socialSettingsSchema>;
-type MapsSettingsValues = z.infer<typeof mapsSettingsSchema>;
-
-interface MapSetting {
-  embedUrl: string;
-  directionsUrl: string;
-  latitude: string;
-  longitude: string;
-}
 export default function AdminSettingsPage() {
-  const updateGeneralSettings = async (data: GeneralSettingsValues) => {
-    try {
-      const settingsRef = doc(db!, "settings", "general");
-      await setDoc(settingsRef, data, { merge: true });
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const updateSocialSettings = async (data: SocialSettingsValues) => {
-    try {
-      const settingsRef = doc(db!, "settings", "social");
-      await setDoc(settingsRef, data, { merge: true });
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const updateMapsSettings = async (data: MapsSettingsValues) => {
-    try {
-      const settingsRef = doc(db!, "settings", "maps");
-      await setDoc(settingsRef, data, { merge: true });
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const { user, loading } = useAuthContext();
   const router = useRouter();
+  const { user, loading: authLoading } = useAuthContext();
   const { showSuccess, showError } = useToastContext();
+  const {
+    settings,
+    loading: settingsLoading,
+    error: settingsError,
+    updateSettings,
+    resetToDefaults,
+  } = useSettingsContext();
+
+  const [formData, setFormData] = useState<SiteSettings>(defaultSiteConfig);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
 
-  const generalForm = useForm<GeneralSettingsValues>({
-    resolver: zodResolver(generalSettingsSchema),
-    defaultValues: {
-      name: siteConfig.name,
-      description: siteConfig.description,
-      url: siteConfig.url,
-      contact: siteConfig.contact || {
-        phone: "",
-        email: "",
-        address: "",
-        openingHours: "",
-        city: "",
-        region: "",
-        postalCode: "",
-        countryCode: "",
-      },
-    },
-  });
-
-  const socialForm = useForm<SocialSettingsValues>({
-    resolver: zodResolver(socialSettingsSchema),
-    defaultValues: {
-      social: {
-        facebook: siteConfig.social?.facebook || "",
-        facebookHandle: siteConfig.social?.facebookHandle || "",
-        instagram: siteConfig.social?.instagram || "",
-        twitter: siteConfig.social?.twitter || "",
-        zalo: siteConfig.social?.zalo || "",
-        tiktok: siteConfig.social?.tiktok || "",
-        tiktokHandle: siteConfig.social?.tiktokHandle || "",
-        messenger: siteConfig.social?.messenger || "",
-      },
-      ordering: siteConfig.ordering || {
-        shopeeFood: "",
-        grabFood: ""
-      },
-    },
-  });
-
-  const mapsForm = useForm<MapsSettingsValues>({
-    resolver: zodResolver(mapsSettingsSchema),
-    defaultValues: {
-      maps: siteConfig.maps || {
-        embedUrl: "",
-        directionsUrl: "",
-        latitude: "",
-        longitude: "",
-      },
-    },
-  });
-
   useEffect(() => {
     setIsClient(true);
-    if (!loading && !user) {
-      router.push("/auth/login?redirect=" + encodeURIComponent(router.asPath));
+    if (!authLoading && !user) {
+      router.push("/auth/login?redirect=/admin/settings");
     }
-    fetchSettings();
-  }, [user, loading, router]); // Add fetchSettings to dependencies if it relies on user/loading
+  }, [user, authLoading, router]);
 
-  const fetchSettings = async () => {
-    try {
-      const generalSettingsRef = doc(db!, "settings", "general");
-      const socialSettingsRef = doc(db!, "settings", "social");
-      const mapsSettingsRef = doc(db!, "settings", "maps");
+  // Initialize form with settings when they load
+  useEffect(() => {
+    if (!settingsLoading && settings) {
+      setFormData(settings);
+    }
+  }, [settings, settingsLoading]);
 
-      const [generalSnap, socialSnap, mapsSnap] = await Promise.all([
-        getDoc(generalSettingsRef),
-        getDoc(socialSettingsRef),
-        getDoc(mapsSettingsRef),
-      ]);
-
-      const generalData = generalSnap.exists()
-        ? generalSnap.data()
-        : siteConfig;
-      const socialData = socialSnap.exists() ? socialSnap.data() : siteConfig;
-      const mapsData = mapsSnap.exists() ? mapsSnap.data() : siteConfig;
-
-      generalForm.reset({
-        ...generalData,
-        contact: generalData?.contact || {
-          phone: "",
-          email: "",
-          address: "",
-          openingHours: "",
-          city: "",
-          region: "",
-          postalCode: "",
-          countryCode: "",
+  const handleChange = (
+    section: keyof SiteSettings,
+    field: string,
+    value: string,
+  ) => {
+    if (section === "name" || section === "description" || section === "url") {
+      setFormData((prev) => ({
+        ...prev,
+        [section]: value,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [field]: value,
         },
-      });
-      socialForm.reset({
-        social: socialData?.social || {
-          facebook: "",
-          facebookHandle: "",
-          instagram: "",
-          twitter: "",
-          zalo: "",
-          tiktok: "",
-          tiktokHandle: "",
-          messenger: "",
-        },
-        ordering: socialData?.ordering || { shopeeFood: "", grabFood: "" },
-      });
-      mapsForm.reset({
-        ...mapsData,
-      });
-    } catch (error) {
-      console.error("Error fetching settings:", error);
-      showError("Có lỗi xảy ra khi tải cài đặt!");
+      }));
     }
   };
 
-  const onSubmitGeneral = async (data: GeneralSettingsValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      await updateGeneralSettings(data);
-      showSuccess("Đã lưu cài đặt chung thành công!");
+      const success = await updateSettings(formData);
+      if (success) {
+        showSuccess("Cài đặt đã được cập nhật thành công!");
+      } else {
+        showError("Không thể cập nhật cài đặt. Vui lòng thử lại.");
+      }
     } catch (error) {
-      showError("Có lỗi xảy ra khi lưu cài đặt!");
+      console.error("Error updating settings:", error);
+      showError("Đã xảy ra lỗi khi cập nhật cài đặt");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const onSubmitSocial = async (data: SocialSettingsValues) => {
-    try {
-      await updateSocialSettings(data);
-      showSuccess("Đã lưu cài đặt mạng xã hội thành công!");
-    } catch (error) {
-      showError("Có lỗi xảy ra khi lưu cài đặt!");
-    }
-  };
-  const onSubmitMaps = async (data: MapsSettingsValues) => {
-    try {
-      await updateMapsSettings(data);
-      showSuccess("Đã lưu cài đặt bản đồ thành công!");
-    } catch (error) {
-      showError("Có lỗi xảy ra khi lưu cài đặt!");
+  const handleReset = async () => {
+    if (
+      window.confirm(
+        "Bạn có chắc chắn muốn khôi phục về cài đặt mặc định? Thao tác này không thể hoàn tác.",
+      )
+    ) {
+      try {
+        const success = await resetToDefaults();
+        if (success) {
+          setFormData(defaultSiteConfig);
+          showSuccess("Đã khôi phục về cài đặt mặc định!");
+        } else {
+          showError("Không thể khôi phục cài đặt mặc định. Vui lòng thử lại.");
+        }
+      } catch (error) {
+        console.error("Error resetting settings:", error);
+        showError("Đã xảy ra lỗi khi khôi phục cài đặt mặc định");
+      }
     }
   };
 
-  if (loading || !isClient) {
+  if (authLoading || !isClient) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -307,582 +133,672 @@ export default function AdminSettingsPage() {
   return (
     <>
       <Head>
-        <title>Cài đặt - {siteConfig.name} Admin</title>
-        <meta name="description" content="Cài đặt trang web" />
+        <title>Cài đặt hệ thống - Admin</title>
+        <meta name="description" content="Quản lý cài đặt hệ thống" />
       </Head>
 
-      <AdminLayout title="Cài đặt">
-        <Card>
-          <CardHeader>
-            <CardTitle>Cài đặt trang web</CardTitle>
-            <CardDescription>
-              Quản lý thông tin và cài đặt cho trang web
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="general">Thông tin chung</TabsTrigger>
-                <TabsTrigger value="social">Mạng xã hội</TabsTrigger>
-                <TabsTrigger value="maps">Bản đồ</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="general" className="py-4">
-                <Form {...generalForm}>
-                  <form
-                    onSubmit={generalForm.handleSubmit(onSubmitGeneral)}
-                    className="space-y-6"
+      <AdminLayout title="Cài đặt hệ thống">
+        {settingsLoading ? (
+          <div className="flex justify-center items-center p-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <span className="ml-2">Đang tải cài đặt...</span>
+          </div>
+        ) : settingsError ? (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            <AlertTitle>Lỗi</AlertTitle>
+            <AlertDescription>{settingsError}</AlertDescription>
+          </Alert>
+        ) : (
+          <form onSubmit={handleSubmit}>
+            <div className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-medium">Cài đặt trang web</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Quản lý cài đặt chung cho toàn bộ trang web
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
                   >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={generalForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Tên nhà hàng</FormLabel>
-                            <FormControl>
-                              <Input placeholder="BẾP NHÀ TRÂM" {...field} />
-                            </FormControl>
-                            <FormDescription>
-                              Tên chính thức của nhà hàng
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={generalForm.control}
-                        name="url"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Website URL</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Globe className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input
-                                  className="pl-10"
-                                  placeholder="https://bepnhatram.com"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={generalForm.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Mô tả</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder="Mô tả về nhà hàng"
-                              className="resize-none"
-                              rows={3}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Mô tả ngắn gọn về nhà hàng, được sử dụng cho SEO
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <h3 className="text-lg font-medium border-b pb-2 mt-8">
-                      Thông tin liên hệ
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={generalForm.control}
-                        name="contact.phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Số điện thoại</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input
-                                  className="pl-10"
-                                  placeholder="0886286032"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={generalForm.control}
-                        name="contact.email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input
-                                  className="pl-10"
-                                  placeholder="info@bepnhatram.com"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <FormField
-                      control={generalForm.control}
-                      name="contact.address"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Địa chỉ</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                              <Input
-                                className="pl-10"
-                                placeholder="15/15 Đống Đa, Phú Nhuận, Huế"
-                                {...field}
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={generalForm.control}
-                        name="contact.openingHours"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Giờ mở cửa</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Clock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input
-                                  className="pl-10"
-                                  placeholder="10:00 - 22:00 (Thứ 2 - Chủ nhật)"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={generalForm.control}
-                        name="contact.city"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Thành phố</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Huế" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <FormField
-                        control={generalForm.control}
-                        name="contact.region"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Tỉnh/Thành phố</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Thừa Thiên Huế" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={generalForm.control}
-                        name="contact.postalCode"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Mã bưu điện</FormLabel>
-                            <FormControl>
-                              <Input placeholder="530000" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={generalForm.control}
-                        name="contact.countryCode"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Mã quốc gia</FormLabel>
-                            <FormControl>
-                              <Input placeholder="VN" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="flex justify-end">
-                      <Button type="submit">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Khôi phục mặc định
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Đang lưu...
+                      </>
+                    ) : (
+                      <>
                         <Save className="mr-2 h-4 w-4" />
-                        Lưu thông tin
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </TabsContent>
+                        Lưu thay đổi
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
 
-              <TabsContent value="social" className="py-4">
-                <Form {...socialForm}>
-                  <form
-                    onSubmit={socialForm.handleSubmit(onSubmitSocial)}
-                    className="space-y-6"
-                  >
-                    <h3 className="text-lg font-medium border-b pb-2">
-                      Mạng xã hội
-                    </h3>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid grid-cols-4 lg:grid-cols-7 mb-6">
+                  <TabsTrigger value="general">Cài đặt chung</TabsTrigger>
+                  <TabsTrigger value="contact">Liên hệ</TabsTrigger>
+                  <TabsTrigger value="social">Mạng xã hội</TabsTrigger>
+                  <TabsTrigger value="ordering">Đặt hàng</TabsTrigger>
+                  <TabsTrigger value="maps">Bản đồ</TabsTrigger>
+                  <TabsTrigger value="seo">SEO</TabsTrigger>
+                  <TabsTrigger value="other">Khác</TabsTrigger>
+                </TabsList>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={socialForm.control}
-                        name="social.facebook"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Facebook URL</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Facebook className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input
-                                  className="pl-10"
-                                  placeholder="https://fb.com/bepnhatram.1"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                <TabsContent value="general">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Thông tin cơ bản</CardTitle>
+                      <CardDescription>
+                        Cài đặt thông tin chung cho website
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="name">Tên website</Label>
+                          <Input
+                            id="name"
+                            value={formData.name}
+                            onChange={(e) =>
+                              handleChange("name", "", e.target.value)
+                            }
+                          />
+                        </div>
 
-                      <FormField
-                        control={socialForm.control}
-                        name="social.facebookHandle"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Facebook Handle</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="fb.com/bepnhatram.1"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Tên hiển thị của trang Facebook
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="description">Mô tả</Label>
+                          <Textarea
+                            id="description"
+                            value={formData.description}
+                            onChange={(e) =>
+                              handleChange("description", "", e.target.value)
+                            }
+                            rows={3}
+                          />
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={socialForm.control}
-                        name="social.instagram"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Instagram URL</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <Instagram className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                <Input
-                                  className="pl-10"
-                                  placeholder="https://instagram.com/bepnhatram"
-                                  {...field}
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={socialForm.control}
-                        name="social.twitter"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Twitter URL</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="https://twitter.com/bepnhatram"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={socialForm.control}
-                        name="social.tiktok"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>TikTok URL</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="https://www.tiktok.com/@tramthichnauan"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={socialForm.control}
-                        name="social.tiktokHandle"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>TikTok Handle</FormLabel>
-                            <FormControl>
-                              <Input placeholder="@tramthichnauan" {...field} />
-                            </FormControl>
-                            <FormDescription>
-                              Tên hiển thị trên TikTok
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={socialForm.control}
-                        name="social.zalo"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Zalo URL</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="https://zalo.me/0886286032"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={socialForm.control}
-                        name="social.messenger"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Messenger URL</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="https://m.me/bepnhatram.1"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <h3 className="text-lg font-medium border-b pb-2 mt-8">
-                      Đặt hàng
-                    </h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={socialForm.control}
-                        name="ordering.shopeeFood"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Shopee Food URL</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="https://shopeefood.vn/hue/bep-nha-tram-ga-u-muoi-chan-ga"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={socialForm.control}
-                        name="ordering.grabFood"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Grab Food URL</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="https://food.grab.com/vn/vi/restaurant/bep-nha-tram"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="flex justify-end">
-                      <Button type="submit">
-                        <Save className="mr-2 h-4 w-4" />
-                        Lưu thông tin
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </TabsContent>
-
-              <TabsContent value="maps" className="py-4">
-                <Form {...mapsForm}>
-                  <form
-                    onSubmit={mapsForm.handleSubmit(onSubmitMaps)}
-                    className="space-y-6"
-                  >
-                    <h3 className="text-lg font-medium border-b pb-2">
-                      Cài đặt bản đồ
-                    </h3>
-
-                    <FormField
-                      control={mapsForm.control}
-                      name="maps.embedUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>URL nhúng Google Maps</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              className="font-mono text-xs"
-                              rows={3}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            URL để nhúng bản đồ Google Maps vào trang web
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={mapsForm.control}
-                      name="maps.directionsUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>URL chỉ đường</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="https://maps.app.goo.gl/oSWx2zEwL6VCU4Hf7"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Liên kết để dẫn đến chỉ đường trên Google Maps
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField
-                        control={mapsForm.control}
-                        name="maps.latitude"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Vĩ độ (Latitude)</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="16.462158199999998"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={mapsForm.control}
-                        name="maps.longitude"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Kinh độ (Longitude)</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="107.59194319999999"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-
-                    <div className="mt-6 border rounded-lg overflow-hidden">
-                      <div className="aspect-video">
-                        <iframe
-                          src={mapsForm.watch("maps.embedUrl")}
-                          width="100%"
-                          height="100%"
-                          style={{ border: 0 }}
-                          allowFullScreen
-                          loading="lazy"
-                          referrerPolicy="no-referrer-when-downgrade"
-                        ></iframe>
+                        <div className="grid gap-2">
+                          <Label htmlFor="url">URL trang web</Label>
+                          <Input
+                            id="url"
+                            value={formData.url}
+                            onChange={(e) =>
+                              handleChange("url", "", e.target.value)
+                            }
+                          />
+                        </div>
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-                    <div className="flex justify-end">
-                      <Button type="submit">
+                <TabsContent value="contact">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Thông tin liên hệ</CardTitle>
+                      <CardDescription>
+                        Cài đặt thông tin liên hệ của cửa hàng
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="phone">Số điện thoại</Label>
+                          <Input
+                            id="phone"
+                            value={formData.contact.phone}
+                            onChange={(e) =>
+                              handleChange("contact", "phone", e.target.value)
+                            }
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="email">Email</Label>
+                          <Input
+                            id="email"
+                            type="email"
+                            value={formData.contact.email}
+                            onChange={(e) =>
+                              handleChange("contact", "email", e.target.value)
+                            }
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="address">Địa chỉ</Label>
+                          <Input
+                            id="address"
+                            value={formData.contact.address}
+                            onChange={(e) =>
+                              handleChange("contact", "address", e.target.value)
+                            }
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="openingHours">Giờ mở cửa</Label>
+                          <Input
+                            id="openingHours"
+                            value={formData.contact.openingHours}
+                            onChange={(e) =>
+                              handleChange(
+                                "contact",
+                                "openingHours",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="city">Thành phố</Label>
+                            <Input
+                              id="city"
+                              value={formData.contact.city}
+                              onChange={(e) =>
+                                handleChange("contact", "city", e.target.value)
+                              }
+                            />
+                          </div>
+
+                          <div className="grid gap-2">
+                            <Label htmlFor="region">Khu vực</Label>
+                            <Input
+                              id="region"
+                              value={formData.contact.region}
+                              onChange={(e) =>
+                                handleChange(
+                                  "contact",
+                                  "region",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="postalCode">Mã bưu chính</Label>
+                            <Input
+                              id="postalCode"
+                              value={formData.contact.postalCode}
+                              onChange={(e) =>
+                                handleChange(
+                                  "contact",
+                                  "postalCode",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div className="grid gap-2">
+                            <Label htmlFor="countryCode">Mã quốc gia</Label>
+                            <Input
+                              id="countryCode"
+                              value={formData.contact.countryCode}
+                              onChange={(e) =>
+                                handleChange(
+                                  "contact",
+                                  "countryCode",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="social">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Mạng xã hội</CardTitle>
+                      <CardDescription>
+                        Cài đặt liên kết mạng xã hội
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="facebook">Facebook</Label>
+                          <Input
+                            id="facebook"
+                            value={formData.social.facebook}
+                            onChange={(e) =>
+                              handleChange("social", "facebook", e.target.value)
+                            }
+                            placeholder="https://facebook.com/your-page"
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="facebookHandle">Tên Facebook</Label>
+                          <Input
+                            id="facebookHandle"
+                            value={formData.social.facebookHandle}
+                            onChange={(e) =>
+                              handleChange(
+                                "social",
+                                "facebookHandle",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="fb.com/your-page"
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="instagram">Instagram</Label>
+                          <Input
+                            id="instagram"
+                            value={formData.social.instagram}
+                            onChange={(e) =>
+                              handleChange(
+                                "social",
+                                "instagram",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="https://instagram.com/your-handle"
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="tiktok">TikTok</Label>
+                          <Input
+                            id="tiktok"
+                            value={formData.social.tiktok}
+                            onChange={(e) =>
+                              handleChange("social", "tiktok", e.target.value)
+                            }
+                            placeholder="https://tiktok.com/@your-handle"
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="tiktokHandle">Tên TikTok</Label>
+                          <Input
+                            id="tiktokHandle"
+                            value={formData.social.tiktokHandle}
+                            onChange={(e) =>
+                              handleChange(
+                                "social",
+                                "tiktokHandle",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="@your-handle"
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="zalo">Zalo</Label>
+                          <Input
+                            id="zalo"
+                            value={formData.social.zalo}
+                            onChange={(e) =>
+                              handleChange("social", "zalo", e.target.value)
+                            }
+                            placeholder="https://zalo.me/your-number"
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="messenger">Messenger</Label>
+                          <Input
+                            id="messenger"
+                            value={formData.social.messenger}
+                            onChange={(e) =>
+                              handleChange(
+                                "social",
+                                "messenger",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="https://m.me/your-page"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="ordering">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Đặt hàng</CardTitle>
+                      <CardDescription>
+                        Cài đặt liên kết đặt hàng trên các nền tảng
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="shopeeFood">ShopeeFood</Label>
+                          <Input
+                            id="shopeeFood"
+                            value={formData.ordering.shopeeFood}
+                            onChange={(e) =>
+                              handleChange(
+                                "ordering",
+                                "shopeeFood",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="https://shopeefood.vn/..."
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="grabFood">GrabFood</Label>
+                          <Input
+                            id="grabFood"
+                            value={formData.ordering.grabFood}
+                            onChange={(e) =>
+                              handleChange(
+                                "ordering",
+                                "grabFood",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="https://food.grab.com/..."
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="maps">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Bản đồ</CardTitle>
+                      <CardDescription>
+                        Cài đặt thông tin bản đồ và vị trí
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="embedUrl">URL nhúng bản đồ</Label>
+                          <Textarea
+                            id="embedUrl"
+                            value={formData.maps.embedUrl}
+                            onChange={(e) =>
+                              handleChange("maps", "embedUrl", e.target.value)
+                            }
+                            rows={3}
+                            placeholder="https://www.google.com/maps/embed?..."
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="directionsUrl">URL chỉ đường</Label>
+                          <Input
+                            id="directionsUrl"
+                            value={formData.maps.directionsUrl}
+                            onChange={(e) =>
+                              handleChange(
+                                "maps",
+                                "directionsUrl",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="https://maps.app.goo.gl/..."
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="latitude">Vĩ độ</Label>
+                            <Input
+                              id="latitude"
+                              value={formData.maps.latitude}
+                              onChange={(e) =>
+                                handleChange("maps", "latitude", e.target.value)
+                              }
+                              placeholder="16.462..."
+                            />
+                          </div>
+
+                          <div className="grid gap-2">
+                            <Label htmlFor="longitude">Kinh độ</Label>
+                            <Input
+                              id="longitude"
+                              value={formData.maps.longitude}
+                              onChange={(e) =>
+                                handleChange(
+                                  "maps",
+                                  "longitude",
+                                  e.target.value,
+                                )
+                              }
+                              placeholder="107.591..."
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="seo">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>SEO</CardTitle>
+                      <CardDescription>
+                        Cài đặt thông tin SEO cho trang web
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="titleTemplate">Mẫu tiêu đề</Label>
+                          <Input
+                            id="titleTemplate"
+                            value={formData.seo.titleTemplate}
+                            onChange={(e) =>
+                              handleChange(
+                                "seo",
+                                "titleTemplate",
+                                e.target.value,
+                              )
+                            }
+                            placeholder="%s - Tên trang web"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Sử dụng %s để đặt vị trí tiêu đề trang
+                          </p>
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="defaultTitle">Tiêu đề mặc định</Label>
+                          <Input
+                            id="defaultTitle"
+                            value={formData.seo.defaultTitle}
+                            onChange={(e) =>
+                              handleChange(
+                                "seo",
+                                "defaultTitle",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="defaultDescription">
+                            Mô tả mặc định
+                          </Label>
+                          <Textarea
+                            id="defaultDescription"
+                            value={formData.seo.defaultDescription}
+                            onChange={(e) =>
+                              handleChange(
+                                "seo",
+                                "defaultDescription",
+                                e.target.value,
+                              )
+                            }
+                            rows={3}
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="ogImageUrl">
+                            URL hình ảnh chia sẻ
+                          </Label>
+                          <Input
+                            id="ogImageUrl"
+                            value={formData.seo.ogImageUrl}
+                            onChange={(e) =>
+                              handleChange("seo", "ogImageUrl", e.target.value)
+                            }
+                            placeholder="/logo.png"
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="keywords">Từ khóa</Label>
+                          <Textarea
+                            id="keywords"
+                            value={formData.seo.keywords}
+                            onChange={(e) =>
+                              handleChange("seo", "keywords", e.target.value)
+                            }
+                            rows={2}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Các từ khóa cách nhau bằng dấu phẩy
+                          </p>
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="homePageTitle">
+                            Tiêu đề trang chủ
+                          </Label>
+                          <Input
+                            id="homePageTitle"
+                            value={formData.seo.homePageTitle}
+                            onChange={(e) =>
+                              handleChange(
+                                "seo",
+                                "homePageTitle",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="other">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Cài đặt khác</CardTitle>
+                      <CardDescription>Các cài đặt bổ sung</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid gap-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="currency">Tiền tệ</Label>
+                          <Input
+                            id="currency"
+                            value={formData.settings.currency}
+                            onChange={(e) =>
+                              handleChange(
+                                "settings",
+                                "currency",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="currencySymbol">
+                            Ký hiệu tiền tệ
+                          </Label>
+                          <Input
+                            id="currencySymbol"
+                            value={formData.settings.currencySymbol}
+                            onChange={(e) =>
+                              handleChange(
+                                "settings",
+                                "currencySymbol",
+                                e.target.value,
+                              )
+                            }
+                          />
+                        </div>
+
+                        <div className="grid gap-2">
+                          <Label htmlFor="locale">Ngôn ngữ</Label>
+                          <Input
+                            id="locale"
+                            value={formData.settings.locale}
+                            onChange={(e) =>
+                              handleChange("settings", "locale", e.target.value)
+                            }
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            <div className="mt-6">
+              <Card>
+                <CardFooter className="flex justify-between pt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Khôi phục mặc định
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Đang lưu...
+                      </>
+                    ) : (
+                      <>
                         <Save className="mr-2 h-4 w-4" />
-                        Lưu thông tin
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+                        Lưu thay đổi
+                      </>
+                    )}
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+          </form>
+        )}
       </AdminLayout>
     </>
   );
