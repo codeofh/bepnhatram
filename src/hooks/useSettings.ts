@@ -1,6 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { db, safeFirestoreOperation } from "@/lib/firebase";
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  serverTimestamp,
+  DocumentReference,
+  Timestamp,
+} from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { isFirebaseInitialized } from "@/lib/firebase";
 import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
 
@@ -54,7 +62,7 @@ export interface SiteSettings {
     locale: string;
   };
   // Additional field for tracking updates
-  updatedAt?: any;
+  updatedAt?: Timestamp | Date;
 }
 
 interface UseSettingsReturn {
@@ -85,58 +93,31 @@ export function useSettings(): UseSettingsReturn {
         return;
       }
 
-      const settings = await safeFirestoreOperation<SiteSettings | null>(
-        async () => {
-          const docRef = doc(db!, SETTINGS_COLLECTION, SETTINGS_DOC_ID);
-          const docSnap = await getDoc(docRef);
+      if (!db) {
+        console.warn("Firestore not initialized, using default settings");
+        setSettings(defaultSiteConfig);
+        return;
+      }
 
-          if (docSnap.exists()) {
-            return docSnap.data() as SiteSettings;
-          } else {
-            // If settings don't exist in Firestore, initialize with defaults
-            await setDoc(docRef, {
-              ...defaultSiteConfig,
-              updatedAt: new Date(),
-            });
-            return defaultSiteConfig;
-          }
-        },
-        null,
-      );
+      const docRef = doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID);
+      const docSnap = await getDoc(docRef);
 
-      if (settings) {
+      if (docSnap.exists()) {
+        const firestoreSettings = docSnap.data() as SiteSettings;
         // Merge with defaults to ensure all fields exist
-        const mergedSettings = {
-          ...defaultSiteConfig,
-          ...settings,
-          contact: {
-            ...defaultSiteConfig.contact,
-            ...(settings.contact || {}),
-          },
-          social: {
-            ...defaultSiteConfig.social,
-            ...(settings.social || {}),
-          },
-          ordering: {
-            ...defaultSiteConfig.ordering,
-            ...(settings.ordering || {}),
-          },
-          maps: {
-            ...defaultSiteConfig.maps,
-            ...(settings.maps || {}),
-          },
-          seo: {
-            ...defaultSiteConfig.seo,
-            ...(settings.seo || {}),
-          },
-          settings: {
-            ...defaultSiteConfig.settings,
-            ...(settings.settings || {}),
-          },
-        };
-
+        const mergedSettings = mergeWithDefaults(firestoreSettings);
         setSettings(mergedSettings);
       } else {
+        // If settings don't exist in Firestore, initialize with defaults
+        try {
+          await setDoc(docRef, {
+            ...defaultSiteConfig,
+            updatedAt: serverTimestamp(),
+          });
+        } catch (initError) {
+          console.error("Error initializing settings document:", initError);
+          // Continue even if initialization fails
+        }
         setSettings(defaultSiteConfig);
       }
     } catch (err: any) {
@@ -149,12 +130,95 @@ export function useSettings(): UseSettingsReturn {
     }
   }, []);
 
+  // Helper function to merge settings with defaults
+  const mergeWithDefaults = (
+    userSettings: Partial<SiteSettings>,
+  ): SiteSettings => {
+    // Create a deep copy of the default settings
+    const result = JSON.parse(
+      JSON.stringify(defaultSiteConfig),
+    ) as SiteSettings;
+
+    // Merge top-level properties
+    Object.keys(userSettings).forEach((key) => {
+      const settingKey = key as keyof SiteSettings;
+      const value = userSettings[settingKey];
+
+      if (value !== undefined && value !== null) {
+        if (
+          typeof value === "object" &&
+          !Array.isArray(value) &&
+          value !== null
+        ) {
+          // For nested objects, merge with default values
+          result[settingKey] = {
+            ...result[settingKey],
+            ...value,
+          };
+        } else {
+          // For primitive values, replace entirely
+          (result as any)[settingKey] = value;
+        }
+      }
+    });
+
+    return result;
+  };
+
+  // Clean settings object for Firestore (remove undefined values, handle nested objects)
+  const cleanSettingsForFirestore = (
+    data: Partial<SiteSettings>,
+  ): Record<string, any> => {
+    const cleaned: Record<string, any> = {};
+
+    Object.entries(data).forEach(([key, value]) => {
+      // Skip undefined values and special properties
+      if (value === undefined || key === "__proto__" || key === "constructor") {
+        return;
+      }
+
+      if (value === null) {
+        cleaned[key] = null;
+        return;
+      }
+
+      if (typeof value === "object" && !Array.isArray(value)) {
+        // Handle nested objects
+        const nestedCleaned: Record<string, any> = {};
+        let hasValidProperties = false;
+
+        Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+          if (
+            nestedValue !== undefined &&
+            nestedKey !== "__proto__" &&
+            nestedKey !== "constructor"
+          ) {
+            nestedCleaned[nestedKey] = nestedValue;
+            hasValidProperties = true;
+          }
+        });
+
+        // Only add the nested object if it has valid properties
+        if (hasValidProperties) {
+          cleaned[key] = nestedCleaned;
+        }
+      } else {
+        // Handle primitive values and arrays
+        cleaned[key] = value;
+      }
+    });
+
+    return cleaned;
+  };
+
   // Update settings in Firestore
   const updateSettings = async (
     newSettings: Partial<SiteSettings>,
   ): Promise<boolean> => {
+    setError(null);
+
     try {
-      // First verify that isFirebaseInitialized exists and is a function
+      // Validate Firebase initialization
       if (typeof isFirebaseInitialized !== "function") {
         const errorMsg = "Firebase initialization check function is missing";
         console.error(`[useSettings] ${errorMsg}`);
@@ -169,113 +233,56 @@ export function useSettings(): UseSettingsReturn {
         return false;
       }
 
-      // Pre-process settings to avoid Firestore errors with undefined values
-      const cleanSettings: Record<string, any> = {};
-
-      // Process top-level properties
-      for (const [key, value] of Object.entries(newSettings)) {
-        if (value !== undefined) {
-          if (typeof value === "object" && value !== null) {
-            // For nested objects, only include properties that aren't undefined
-            const cleanNestedObj: Record<string, any> = {};
-
-            for (const [nestedKey, nestedValue] of Object.entries(value)) {
-              if (nestedValue !== undefined) {
-                cleanNestedObj[nestedKey] = nestedValue;
-              }
-            }
-
-            // Only add the nested object if it has properties
-            if (Object.keys(cleanNestedObj).length > 0) {
-              cleanSettings[key] = cleanNestedObj;
-            }
-          } else {
-            // For primitive values, add directly
-            cleanSettings[key] = value;
-          }
-        }
-      }
-
-      console.log("[useSettings] Cleaned settings for update:", cleanSettings);
-
-      // Verify the DB is available
       if (!db) {
-        const errMsg = "Firestore instance is not available";
-        console.error(`[useSettings] ${errMsg}`);
-        setError(errMsg);
-        return false;
-      }
-
-      const docRef = doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID);
-      console.log(
-        "[useSettings] Document reference created for:",
-        SETTINGS_COLLECTION,
-        SETTINGS_DOC_ID,
-      );
-
-      try {
-        const docSnap = await getDoc(docRef);
-        console.log("[useSettings] Document exists:", docSnap.exists());
-
-        if (docSnap.exists()) {
-          // Update existing settings
-          console.log("[useSettings] Updating existing document");
-
-          // Add updatedAt timestamp
-          const dataToUpdate = {
-            ...cleanSettings,
-            updatedAt: new Date(),
-          };
-
-          console.log(
-            "[useSettings] Data being sent to Firestore:",
-            dataToUpdate,
-          );
-
-          await updateDoc(docRef, dataToUpdate);
-          console.log("[useSettings] Document successfully updated");
-        } else {
-          // Create new settings document
-          console.log("[useSettings] Creating new document");
-
-          // Merge with defaults for new document
-          const dataToCreate = {
-            ...defaultSiteConfig,
-            ...cleanSettings,
-            updatedAt: new Date(),
-          };
-
-          console.log(
-            "[useSettings] Data being sent to Firestore:",
-            dataToCreate,
-          );
-
-          await setDoc(docRef, dataToCreate);
-          console.log("[useSettings] Document successfully created");
-        }
-
-        // Update local state
-        setSettings((prev) => ({
-          ...prev,
-          ...newSettings,
-          updatedAt: new Date(),
-        }));
-
-        console.log("[useSettings] Local state updated successfully");
-        return true;
-      } catch (firebaseErr: any) {
-        const errorMsg = `Lỗi Firestore: ${firebaseErr.code || ""} - ${firebaseErr.message || "Lỗi không xác định"}`;
+        const errorMsg = "Firestore instance is not available";
         console.error(`[useSettings] ${errorMsg}`);
-        console.error("[useSettings] Full error:", firebaseErr);
         setError(errorMsg);
         return false;
       }
+
+      // Prepare clean data for Firestore
+      const cleanedSettings = cleanSettingsForFirestore(newSettings);
+      console.log(
+        "[useSettings] Cleaned settings for update:",
+        cleanedSettings,
+      );
+
+      // Add timestamp
+      cleanedSettings.updatedAt = serverTimestamp();
+
+      // Get document reference
+      const docRef = doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID);
+
+      // Use single operation with merge option for efficiency
+      await setDoc(docRef, cleanedSettings, { merge: true });
+
+      // Update local state with the new settings
+      setSettings((prev) =>
+        mergeWithDefaults({ ...prev, ...newSettings, updatedAt: new Date() }),
+      );
+
+      console.log("[useSettings] Settings updated successfully");
+      return true;
     } catch (err: any) {
-      const errorMsg = `Không thể cập nhật cài đặt: ${err.message || "Lỗi không xác định"}`;
-      console.error("[useSettings] Error updating site settings:", err);
+      // Handle specific Firestore errors
+      let errorMsg = "Không thể cập nhật cài đặt";
+
+      if (err.code === "permission-denied") {
+        errorMsg =
+          "Không đủ quyền để cập nhật cài đặt. Vui lòng kiểm tra quyền truy cập.";
+      } else if (err.code === "unavailable") {
+        errorMsg =
+          "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.";
+      } else if (err.code === "invalid-argument") {
+        errorMsg =
+          "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin nhập vào.";
+      } else if (err.message) {
+        errorMsg = `${errorMsg}: ${err.message}`;
+      }
+
+      console.error("[useSettings] Error updating settings:", err);
       console.error("[useSettings] Error code:", err.code);
       console.error("[useSettings] Error message:", err.message);
-      console.error("[useSettings] Error stack:", err.stack);
 
       setError(errorMsg);
       return false;
@@ -284,6 +291,8 @@ export function useSettings(): UseSettingsReturn {
 
   // Reset settings to defaults
   const resetToDefaults = async (): Promise<boolean> => {
+    setError(null);
+
     try {
       if (!isFirebaseInitialized()) {
         const errorMsg = "Firebase không được khởi tạo";
@@ -299,38 +308,36 @@ export function useSettings(): UseSettingsReturn {
         return false;
       }
 
-      console.log("[useSettings] Attempting to reset settings to defaults");
-
       const docRef = doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID);
 
-      // Prepare default settings with timestamp
+      // Add server timestamp to default settings
       const defaultWithTimestamp = {
         ...defaultSiteConfig,
-        updatedAt: new Date(),
+        updatedAt: serverTimestamp(),
       };
 
-      console.log("[useSettings] Resetting with data:", defaultWithTimestamp);
+      // Replace the entire document with default settings
+      await setDoc(docRef, defaultWithTimestamp);
 
-      try {
-        await setDoc(docRef, defaultWithTimestamp);
-        console.log("[useSettings] Settings successfully reset to defaults");
+      // Update local state
+      setSettings({ ...defaultSiteConfig, updatedAt: new Date() });
 
-        // Update local state
-        setSettings(defaultSiteConfig);
-        return true;
-      } catch (firebaseErr: any) {
-        const errorMsg = `Lỗi Firestore khi khôi phục mặc định: ${firebaseErr.code || ""} - ${firebaseErr.message || "Lỗi không xác định"}`;
-        console.error(`[useSettings] ${errorMsg}`);
-        console.error("[useSettings] Full error:", firebaseErr);
-        setError(errorMsg);
-        return false;
-      }
+      console.log("[useSettings] Settings reset to defaults successfully");
+      return true;
     } catch (err: any) {
-      const errorMsg = `Không thể khôi phục cài đặt mặc định: ${err.message || "Lỗi không xác định"}`;
-      console.error("[useSettings] Error resetting site settings:", err);
-      console.error("[useSettings] Error message:", err.message);
-      console.error("[useSettings] Error stack:", err.stack);
+      let errorMsg = "Không thể khôi phục cài đặt mặc định";
 
+      if (err.code === "permission-denied") {
+        errorMsg =
+          "Không đủ quyền để khôi phục cài đặt. Vui lòng kiểm tra quyền truy cập.";
+      } else if (err.code === "unavailable") {
+        errorMsg =
+          "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.";
+      } else if (err.message) {
+        errorMsg = `${errorMsg}: ${err.message}`;
+      }
+
+      console.error("[useSettings] Error resetting settings:", err);
       setError(errorMsg);
       return false;
     }
