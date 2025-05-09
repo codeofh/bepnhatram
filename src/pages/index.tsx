@@ -7,10 +7,11 @@ import { MenuItem, menuItems as staticMenuItems } from "@/data/menuItems";
 import { Layout } from "@/components/Layout/Layout";
 import { SEO } from "@/components/SEO/SEO";
 import { StructuredData } from "@/components/SEO/StructuredData";
-import { siteConfig } from "@/config/siteConfig";
+import { SiteSettings, getSiteSettings } from "@/lib/firebaseSettings";
+import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
 import { useMenuManagement } from "@/hooks/useMenuManagement";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Loader2, RefreshCw, WifiOff, AlertTriangle } from "lucide-react";
+import { Loader2, RefreshCw, AlertTriangle } from "lucide-react";
 import { useToastContext } from "@/contexts/ToastContext";
 import { Button } from "@/components/ui/button";
 import { isFirebaseInitialized } from "@/lib/firebase";
@@ -24,9 +25,29 @@ export default function Home() {
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   const hasAttemptedFetch = useRef(false);
+  const [settings, setSettings] = useState<SiteSettings>(defaultSiteConfig);
+  const [settingsLoading, setSettingsLoading] = useState(true);
 
   const { getAllMenuItems } = useMenuManagement();
   const { showError, showInfo } = useToastContext();
+
+  // Load settings from Firebase
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const { settings: firebaseSettings } = await getSiteSettings();
+        setSettings(firebaseSettings);
+      } catch (err) {
+        console.error("Error loading settings from Firebase:", err);
+        // Fall back to default settings
+        setSettings(defaultSiteConfig);
+      } finally {
+        setSettingsLoading(false);
+      }
+    }
+
+    loadSettings();
+  }, []);
 
   // Use useCallback to prevent function recreation on each render
   const fetchMenuItems = useCallback(
@@ -57,7 +78,7 @@ export default function Home() {
         // Set a more user-friendly error message based on the type of error
         if (err.code === "unavailable" || err.message?.includes("network")) {
           setError(
-            "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet của bạn."
+            "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet của bạn.",
           );
         } else if (err.code === "permission-denied") {
           setError("Bạn không có quyền truy cập dữ liệu này.");
@@ -65,7 +86,7 @@ export default function Home() {
           setError(
             `Không thể tải dữ liệu thực đơn: ${
               err.message || "Lỗi không xác định"
-            }`
+            }`,
           );
         }
 
@@ -81,7 +102,7 @@ export default function Home() {
         setIsRetrying(false);
       }
     },
-    [getAllMenuItems, showError, showInfo]
+    [getAllMenuItems, showError, showInfo],
   );
 
   // Retry function with exponential backoff
@@ -100,16 +121,18 @@ export default function Home() {
   return (
     <>
       <SEO
-        title={siteConfig.seo.homePageTitle}
-        description={siteConfig.seo.defaultDescription}
+        title={settings.seo.homePageTitle}
+        description={settings.seo.defaultDescription}
+        siteSettings={settings}
       />
-      <StructuredData type="restaurant" />
+      <StructuredData type="restaurant" siteSettings={settings} />
 
       <Layout
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
+        siteSettings={settings}
       >
         <HeroSlider />
 
@@ -195,7 +218,7 @@ export default function Home() {
           )}
         </main>
 
-        <LocationMap />
+        <LocationMap siteSettings={settings} />
       </Layout>
     </>
   );

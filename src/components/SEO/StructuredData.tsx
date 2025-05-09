@@ -1,37 +1,40 @@
 import React from "react";
 import Head from "next/head";
-import { siteConfig } from "@/config/siteConfig";
+import { SiteSettings } from "@/lib/firebaseSettings";
+import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
 
 interface StructuredDataProps {
   type?: "restaurant" | "product" | "article";
   data?: any;
+  siteSettings?: SiteSettings;
 }
 
 export function StructuredData({
   type = "restaurant",
   data,
+  siteSettings = defaultSiteConfig,
 }: StructuredDataProps) {
   // Default restaurant data
   const restaurantData = {
     "@context": "https://schema.org",
     "@type": "Restaurant",
-    name: siteConfig.name,
-    image: `${siteConfig.url}${siteConfig.seo.ogImageUrl}`,
-    "@id": siteConfig.url,
-    url: siteConfig.url,
-    telephone: siteConfig.contact.phone,
+    name: siteSettings.name,
+    image: `${siteSettings.url}${siteSettings.seo.ogImageUrl}`,
+    "@id": siteSettings.url,
+    url: siteSettings.url,
+    telephone: siteSettings.contact.phone,
     address: {
       "@type": "PostalAddress",
-      streetAddress: siteConfig.contact.address,
-      addressLocality: siteConfig.contact.city,
-      addressRegion: siteConfig.contact.region,
-      postalCode: siteConfig.contact.postalCode,
-      addressCountry: siteConfig.contact.countryCode,
+      streetAddress: siteSettings.contact.address,
+      addressLocality: siteSettings.contact.city,
+      addressRegion: siteSettings.contact.region,
+      postalCode: siteSettings.contact.postalCode,
+      addressCountry: siteSettings.contact.countryCode,
     },
     geo: {
       "@type": "GeoCoordinates",
-      latitude: parseFloat(siteConfig.maps.latitude),
-      longitude: parseFloat(siteConfig.maps.longitude),
+      latitude: parseFloat(siteSettings.maps.latitude),
+      longitude: parseFloat(siteSettings.maps.longitude),
     },
     openingHoursSpecification: {
       "@type": "OpeningHoursSpecification",
@@ -49,7 +52,7 @@ export function StructuredData({
     },
     servesCuisine: ["Vietnamese", "Asian"],
     priceRange: "$$",
-    menu: "https://bepnhatram.com",
+    menu: siteSettings.url,
     acceptsReservations: "True",
   };
 
@@ -58,13 +61,13 @@ export function StructuredData({
     "@context": "https://schema.org",
     "@type": "Product",
     name: data?.name || "Gà Ủ Muối",
-    image: data?.image || `${siteConfig.url}${siteConfig.seo.ogImageUrl}`,
+    image: data?.image || `${siteSettings.url}${siteSettings.seo.ogImageUrl}`,
     description:
-      data?.description || `Món gà ủ muối đặc sắc của ${siteConfig.name}`,
+      data?.description || `Món gà ủ muối đặc sắc của ${siteSettings.name}`,
     offers: {
       "@type": "Offer",
       price: data?.price || "150000",
-      priceCurrency: siteConfig.settings.currency,
+      priceCurrency: siteSettings.settings.currency,
       availability: "https://schema.org/InStock",
     },
   };
@@ -73,13 +76,14 @@ export function StructuredData({
   const articleData = {
     "@context": "https://schema.org",
     "@type": "Article",
-    headline: data?.title || `${siteConfig.name} - ${siteConfig.description}`,
-    image: data?.image || `${siteConfig.url}${siteConfig.seo.ogImageUrl}`,
+    headline:
+      data?.title || `${siteSettings.name} - ${siteSettings.description}`,
+    image: data?.image || `${siteSettings.url}${siteSettings.seo.ogImageUrl}`,
     datePublished: data?.datePublished || new Date().toISOString(),
     dateModified: data?.dateModified || new Date().toISOString(),
     author: {
       "@type": "Person",
-      name: data?.author || siteConfig.name,
+      name: data?.author || siteSettings.name,
     },
   };
 

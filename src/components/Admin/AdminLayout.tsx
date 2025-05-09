@@ -27,6 +27,8 @@ import {
   SheetContent,
   SheetTrigger,
   SheetClose,
+  SheetHeader,
+  SheetTitle,
 } from "@/components/ui/sheet";
 import {
   DropdownMenu,
@@ -121,6 +123,9 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-64 [&>button]:hidden">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>Admin Navigation</SheetTitle>
+                </SheetHeader>
                 <div className="p-4 border-b border-gray-200 flex items-center justify-between">
                   <Link href="/" className="flex items-center">
                     <Image
@@ -266,6 +271,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                     ? "bg-blue-50 text-blue-600 font-medium"
                     : "text-gray-700"
                 }`}
+                aria-current={isActive(item.path) ? "page" : undefined}
               >
                 <span className="mr-3">{item.icon}</span>
                 <span>{item.name}</span>

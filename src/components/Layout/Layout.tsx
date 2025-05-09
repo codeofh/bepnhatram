@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { Sidebar } from "./Sidebar";
+import { SiteSettings } from "@/lib/firebaseSettings";
+import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,6 +12,7 @@ interface LayoutProps {
   setSearchQuery?: (query: string) => void;
   activeCategory?: string;
   setActiveCategory?: (category: string) => void;
+  siteSettings?: SiteSettings;
 }
 
 export function Layout({
@@ -18,6 +21,7 @@ export function Layout({
   setSearchQuery,
   activeCategory = "all",
   setActiveCategory,
+  siteSettings = defaultSiteConfig,
 }: LayoutProps) {
   const router = useRouter();
   const isHomePage = router.pathname === "/";
@@ -46,6 +50,7 @@ export function Layout({
         setSearchQuery={setSearchQuery}
         isSearchModalOpen={isSearchModalOpen}
         setIsSearchModalOpen={setIsSearchModalOpen}
+        siteSettings={siteSettings}
       />
 
       {/* Mobile sidebar */}
@@ -73,7 +78,7 @@ export function Layout({
 
       {children}
 
-      <Footer />
+      <Footer siteSettings={siteSettings} />
     </div>
   );
 }
