@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { db } from "@/lib/firebase";
 import { useToastContext } from "@/contexts/ToastContext";
 import { MenuItem, SizeOption } from "@/data/menuItems";
+import { sampleMenuItems } from "@/data/sampleMenu";
 import {
   collection,
   doc,
@@ -26,6 +27,72 @@ export function useMenuManagement() {
   const { showSuccess, showError } = useToastContext();
 
   const MENU_COLLECTION = "menu";
+
+  /**
+   * Import sample menu items
+   */
+  const importSampleMenuItems = useCallback(async (): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (!db) {
+        throw new Error("Firestore is not initialized");
+      }
+
+      // Check if collection is empty
+      const snapshot = await getDocs(collection(db, MENU_COLLECTION));
+
+      if (snapshot.size > 0) {
+        showSuccess("Dữ liệu menu đã tồn tại, không cần nhập lại!");
+        return true;
+      }
+
+      // Create a batch
+      let currentBatch = writeBatch(db);
+      let operationCount = 0;
+      const MAX_OPERATIONS = 450; // Using a lower number than 500 for safety
+
+      // Add all sample items
+      for (const item of sampleMenuItems) {
+        // Create a document with the same ID as in the static data
+        const newDocRef = doc(db, MENU_COLLECTION, item.id);
+
+        // Add timestamps
+        const itemToSave = {
+          ...item,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        };
+
+        currentBatch.set(newDocRef, itemToSave);
+
+        operationCount++;
+
+        // If we reach the maximum operations per batch, commit this batch and start a new one
+        if (operationCount >= MAX_OPERATIONS) {
+          await currentBatch.commit();
+          currentBatch = writeBatch(db);
+          operationCount = 0;
+        }
+      }
+
+      // Commit any remaining operations
+      if (operationCount > 0) {
+        await currentBatch.commit();
+      }
+
+      showSuccess("Đã nhập dữ liệu menu mẫu thành công!");
+      return true;
+    } catch (err: any) {
+      console.error("Error importing sample menu items:", err);
+      setError(`Could not import sample menu items: ${err.message}`);
+      showError("Có lỗi xảy ra khi nhập dữ liệu menu mẫu!");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [showSuccess, showError]);
 
   /**
    * Get all menu items with pagination
@@ -477,6 +544,7 @@ export function useMenuManagement() {
     searchMenuItems,
     filterMenuItems,
     initializeMenuCollection,
+    importSampleMenuItems,
     loading,
     error,
   };

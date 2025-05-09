@@ -1,183 +1,152 @@
 import React, { useState } from "react";
 import Image from "next/image";
-import { Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { useToastContext } from "@/contexts/ToastContext";
-import { useCartContext } from "@/contexts/CartContext";
+import { Star, Plus, ShoppingCart, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MenuItem as MenuItemType } from "@/data/menuItems";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import type { SizeOption } from "@/data/menuItems";
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface MenuItemProps {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  category: string;
-  rating: number;
-  sizes?: SizeOption[];
+  item: MenuItemType;
 }
 
-export function MenuItem({
-  id,
-  name,
-  description,
-  price,
-  image,
-  category,
-  rating,
-  sizes,
-}: MenuItemProps) {
-  const { showCartNotification } = useToastContext();
-  const [selectedSize, setSelectedSize] = useState<string>(
-    sizes ? sizes[0].name : "",
-  );
-  const [currentPrice, setCurrentPrice] = useState<number>(
-    sizes ? sizes[0].price : price,
-  );
+export function MenuItem({ item }: MenuItemProps) {
+  const { name, description, price, image, rating, sizes, category } = item;
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Format price with dot separator for thousands
-  const formattedPrice = `${currentPrice.toLocaleString("vi-VN")}₫`;
-
-  // Category star color mapping
-  const categoryStarColors = {
-    appetizer: "text-emerald-500 fill-emerald-500", // Xanh lá - món khai vị
-    main: "text-orange-500 fill-orange-500", // Cam - món chính
-    dessert: "text-pink-500 fill-pink-500", // Hồng - món tráng miệng
-    drinks: "text-blue-500 fill-blue-500", // Xanh dương - đồ uống
-    chicken: "text-amber-500 fill-amber-500", // Vàng nâu - gà ủ muối
-    "chicken-feet": "text-red-500 fill-red-500", // Đỏ - chân gà
-    special: "text-purple-500 fill-purple-500", // Tím - món đặc biệt
+  // Format price with Vietnamese currency
+  const formatPrice = (amount: number) => {
+    return amount.toLocaleString("vi-VN") + "₫";
   };
 
-  // Category badge color mapping
-  const categoryColorMap = {
-    appetizer: "bg-emerald-500", // Xanh lá - món khai vị
-    main: "bg-orange-500", // Cam - món chính
-    dessert: "bg-pink-500", // Hồng - món tráng miệng
-    drinks: "bg-blue-500", // Xanh dương - đồ uống
-    chicken: "bg-amber-500", // Vàng nâu - gà ủ muối
-    "chicken-feet": "bg-red-500", // Đỏ - chân gà
-    special: "bg-purple-500", // Tím - món đặc biệt
+  // Category name mapping for badge display
+  const getCategoryName = (categoryId: string) => {
+    const categories: Record<string, string> = {
+      special: "Đặc biệt",
+      main: "Món chính",
+      chicken: "Gà ủ muối",
+      "chicken-feet": "Chân gà",
+      drinks: "Đồ uống",
+    };
+
+    return categories[categoryId] || "Khác";
   };
 
-  // Generate stars based on rating with category color
-  const renderStars = () => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <svg
-          key={i}
-          className={`w-5 h-5 ${
-            i <= rating ? "text-blue-500 fill-blue-500" : "text-gray-300"
-          }`}
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-        </svg>,
-      );
-    }
-    return stars;
-  };
+  // Color mapping for category badges
+  const getCategoryColor = (categoryId: string): string => {
+    const colors: Record<string, string> = {
+      special: "bg-purple-100 text-purple-800",
+      main: "bg-orange-100 text-orange-800",
+      chicken: "bg-amber-100 text-amber-800",
+      "chicken-feet": "bg-red-100 text-red-800",
+      drinks: "bg-blue-100 text-blue-800",
+    };
 
-  // Category name mapping
-  const categoryNameMap = {
-    appetizer: "Món khai vị",
-    main: "Món chính",
-    dessert: "Món tráng miệng",
-    drinks: "Đồ uống",
-    chicken: "Gà ủ muối",
-    "chicken-feet": "Chân gà",
-    special: "Đặc biệt",
-  };
-
-  const handleSizeChange = (value: string) => {
-    setSelectedSize(value);
-    const sizeOption = sizes?.find((size) => size.name === value);
-    if (sizeOption) {
-      setCurrentPrice(sizeOption.price);
-    }
-  };
-
-  const { addItem } = useCartContext();
-
-  // Function to add item to cart
-  const handleAddToCart = () => {
-    addItem(
-      { id, name, description, price, image, category, rating, sizes },
-      1,
-      sizes ? selectedSize : undefined,
-    );
+    return colors[categoryId] || "bg-gray-100 text-gray-800";
   };
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
-      <div className="relative h-36 sm:h-40 md:h-48 w-full">
-        <Image src={image} alt={name} fill className="object-cover" />
-        <div className="absolute top-2 right-2">
-          <Badge
-            className={`${categoryColorMap[category as keyof typeof categoryColorMap]} text-white text-xs`}
-          >
-            {categoryNameMap[category as keyof typeof categoryNameMap]}
-          </Badge>
-        </div>
+    <div
+      className="relative bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200 transition-all hover:shadow-md"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Category badge */}
+      <div className="absolute top-2 left-2 z-10">
+        <Badge className={`${getCategoryColor(category)}`}>
+          {getCategoryName(category)}
+        </Badge>
       </div>
 
-      <div className="p-2 sm:p-3 md:p-4 flex flex-col relative">
-        <div className="flex-grow relative">
-          <h3 className="font-bold text-sm sm:text-base md:text-lg  line-clamp-2 min-h-[2.5em]">
-            {name}
-          </h3>
-          <div className="flex mb-1 sm:mb-2">{renderStars()}</div>
-          <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">
-            {description}
-          </p>
-        </div>
+      {/* Quick actions on hover */}
+      <div
+        className={`absolute top-2 right-2 z-10 flex gap-1 transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"}`}
+      >
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="h-8 w-8 bg-white/80 backdrop-blur-sm"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Xem chi tiết</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
-        <div className="space-y-2 mt-auto">
-          {sizes && (
-            <div className="w-full">
-              <Select value={selectedSize} onValueChange={handleSizeChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Chọn kích cỡ" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sizes.map((size) => (
-                    <SelectItem key={size.name} value={size.name}>
-                      {size.name} - {size.price.toLocaleString("vi-VN")}₫
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon"
+                variant="secondary"
+                className="h-8 w-8 bg-white/80 backdrop-blur-sm"
+              >
+                <ShoppingCart className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Thêm vào giỏ hàng</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
 
-          <div className="flex items-center justify-between w-full bg-gray-50/50 rounded-lg px-3 py-2">
-            <div className="text-orange-500 font-bold text-sm sm:text-base md:text-lg">
-              <span className="font-bold text-sm sm:text-base md:text-lg">
-                {formattedPrice}
-              </span>
-            </div>
-            <button
-              className="bg-white rounded-full p-1.5 border border-gray-300 hover:bg-gray-50 flex-shrink-0"
-              onClick={handleAddToCart}
-              aria-label="Thêm vào giỏ hàng"
-            >
-              <Plus size={18} />
-            </button>
+      <div className="relative h-48 w-full">
+        <Image
+          src={image}
+          alt={name}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="object-cover transition-transform duration-300 ease-in-out hover:scale-105"
+          priority={false}
+        />
+      </div>
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-lg font-bold truncate">{name}</h3>
+          <div className="flex items-center">
+            <Star className="w-4 h-4 fill-yellow-400 stroke-yellow-400" />
+            <span className="text-sm ml-1 text-gray-700">{rating}/5</span>
           </div>
+        </div>
+        <p className="text-gray-600 text-sm line-clamp-2 min-h-[40px]">
+          {description}
+        </p>
+
+        {sizes && sizes.length > 0 ? (
+          <div className="mt-3 space-y-2">
+            {sizes.map((size, index) => (
+              <div
+                key={size.name}
+                className="flex justify-between items-center text-sm border-t border-dashed border-gray-200 pt-2"
+              >
+                <span className="text-gray-700">{size.name}</span>
+                <span className="font-semibold">{formatPrice(size.price)}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4 flex justify-between items-center">
+            <span className="font-bold text-lg">{formatPrice(price)}</span>
+          </div>
+        )}
+
+        <div className="mt-4">
+          <Button className="w-full group">
+            <ShoppingCart className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+            Thêm vào giỏ hàng
+          </Button>
         </div>
       </div>
     </div>
