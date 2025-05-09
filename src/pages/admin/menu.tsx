@@ -15,6 +15,15 @@ import {
   Loader2,
   DownloadCloud,
 } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { MenuItemForm } from "@/components/Admin/MenuItemForm";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -64,6 +73,12 @@ export default function AdminMenuPage() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showInitializeConfirm, setShowInitializeConfirm] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 20;
+
   const {
     getAllMenuItems,
     addMenuItem,
@@ -82,16 +97,25 @@ export default function AdminMenuPage() {
   const [sortField, setSortField] = useState<keyof MenuItem>("displayOrder");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
-  // Fetch menu items from Firebase
+  // Fetch menu items from Firebase with pagination
   const fetchItems = useCallback(async () => {
     try {
-      const menuItems = await getAllMenuItems();
-      setItems(menuItems);
+      // Use the sort field and direction from state
+      const result = await getAllMenuItems(
+        currentPage,
+        itemsPerPage,
+        sortField,
+        sortDirection,
+      );
+
+      setItems(result.items);
+      setTotalPages(result.totalPages);
+      setTotalItems(result.totalItems);
     } catch (error) {
       console.error("Error fetching menu items:", error);
       showError("Không thể tải danh sách món ăn từ cơ sở dữ liệu");
     }
-  }, [getAllMenuItems, showError]);
+  }, [getAllMenuItems, showError, currentPage, sortField, sortDirection]);
 
   useEffect(() => {
     setIsClient(true);
@@ -102,6 +126,13 @@ export default function AdminMenuPage() {
     }
   }, [user, authLoading, router, fetchItems, refreshTrigger]);
 
+  // Re-fetch when pagination, sort or filters change
+  useEffect(() => {
+    if (user) {
+      fetchItems();
+    }
+  }, [currentPage, sortField, sortDirection, fetchItems, user]);
+
   const handleSortChange = (field: keyof MenuItem) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -109,30 +140,26 @@ export default function AdminMenuPage() {
       setSortField(field);
       setSortDirection("asc");
     }
+    // Reset to first page when sort changes
+    setCurrentPage(1);
   };
 
-  const filteredItems = items
-    .filter((item) => {
-      const matchesSearch = item.name
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-      const matchesCategory =
-        categoryFilter === "all" || item.category === categoryFilter;
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      const aValue = a[sortField];
-      const bValue = b[sortField];
+  // Apply local filtering to the paginated items
+  const filteredItems = items.filter((item) => {
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesCategory =
+      categoryFilter === "all" || item.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
 
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return sortDirection === "asc"
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      } else if (typeof aValue === "number" && typeof bValue === "number") {
-        return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
-      }
-      return 0;
-    });
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    // Validate page
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
 
   const handleCreateItem = () => {
     setCurrentItem(null);
@@ -263,7 +290,7 @@ export default function AdminMenuPage() {
                   <SelectItem value="all">Tất cả danh mục</SelectItem>
                   <SelectItem value="special">Đặc biệt</SelectItem>
                   <SelectItem value="main">Món chính</SelectItem>
-                  <SelectItem value="chicken">Gà ủ muối</SelectItem>
+                  <SelectItem value="chicken">Gà ủ mu��i</SelectItem>
                   <SelectItem value="chicken-feet">Chân gà</SelectItem>
                   <SelectItem value="drinks">Đồ uống</SelectItem>
                 </SelectContent>
@@ -308,6 +335,19 @@ export default function AdminMenuPage() {
         )}
 
         <div className="bg-white rounded-md border overflow-hidden">
+          <div className="px-4 py-2 bg-gray-50 border-b">
+            <p className="text-sm text-gray-500">
+              {totalItems > 0 ? (
+                <>
+                  Hiển thị {(currentPage - 1) * itemsPerPage + 1} -{" "}
+                  {Math.min(currentPage * itemsPerPage, totalItems)} trên tổng
+                  số {totalItems} món ăn
+                </>
+              ) : (
+                <>Không có món ăn nào</>
+              )}
+            </p>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
@@ -443,6 +483,100 @@ export default function AdminMenuPage() {
               )}
             </TableBody>
           </Table>
+
+          {totalPages > 1 && (
+            <div className="p-4 border-t">
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      className={
+                        currentPage <= 1 ? "pointer-events-none opacity-50" : ""
+                      }
+                    />
+                  </PaginationItem>
+
+                  {/* First page */}
+                  {currentPage > 3 && (
+                    <PaginationItem>
+                      <PaginationLink onClick={() => handlePageChange(1)}>
+                        1
+                      </PaginationLink>
+                    </PaginationItem>
+                  )}
+
+                  {/* Ellipsis for many pages */}
+                  {currentPage > 4 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+
+                  {/* Page before current */}
+                  {currentPage > 1 && (
+                    <PaginationItem>
+                      <PaginationLink
+                        onClick={() => handlePageChange(currentPage - 1)}
+                      >
+                        {currentPage - 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )}
+
+                  {/* Current page */}
+                  <PaginationItem>
+                    <PaginationLink
+                      isActive
+                      onClick={() => handlePageChange(currentPage)}
+                    >
+                      {currentPage}
+                    </PaginationLink>
+                  </PaginationItem>
+
+                  {/* Page after current */}
+                  {currentPage < totalPages && (
+                    <PaginationItem>
+                      <PaginationLink
+                        onClick={() => handlePageChange(currentPage + 1)}
+                      >
+                        {currentPage + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )}
+
+                  {/* Ellipsis for many pages */}
+                  {currentPage < totalPages - 3 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+
+                  {/* Last page */}
+                  {currentPage < totalPages - 2 && (
+                    <PaginationItem>
+                      <PaginationLink
+                        onClick={() => handlePageChange(totalPages)}
+                      >
+                        {totalPages}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )}
+
+                  <PaginationItem>
+                    <PaginationNext
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      className={
+                        currentPage >= totalPages
+                          ? "pointer-events-none opacity-50"
+                          : ""
+                      }
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </div>
 
         {/* Add/Edit Menu Item Dialog */}
@@ -510,7 +644,7 @@ export default function AdminMenuPage() {
             <DialogHeader>
               <DialogTitle>Khởi tạo dữ liệu mẫu</DialogTitle>
               <DialogDescription>
-                Thao tác này sẽ nhập các món ăn mẫu vào cơ sở dữ li���u. Bạn có
+                Thao tác này sẽ nhập các món ăn mẫu vào cơ sở dữ liệu. Bạn có
                 chắc chắn muốn tiếp tục không?
               </DialogDescription>
             </DialogHeader>

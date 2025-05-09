@@ -28,49 +28,87 @@ export function useMenuManagement() {
   const MENU_COLLECTION = "menu";
 
   /**
-   * Get all menu items
+   * Get all menu items with pagination
    */
-  const getAllMenuItems = useCallback(async (): Promise<MenuItem[]> => {
-    setLoading(true);
-    setError(null);
+  const getAllMenuItems = useCallback(
+    async (
+      page: number = 1,
+      itemsPerPage: number = 20,
+      sortField: keyof MenuItem = "displayOrder",
+      sortDirection: "asc" | "desc" = "asc",
+    ): Promise<{
+      items: MenuItem[];
+      totalItems: number;
+      totalPages: number;
+    }> => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      if (!db) {
-        throw new Error("Firestore is not initialized");
-      }
+      try {
+        if (!db) {
+          throw new Error("Firestore is not initialized");
+        }
 
-      const menuQuery = query(
-        collection(db, MENU_COLLECTION),
-        orderBy("displayOrder", "asc"),
-      );
+        // First get the total count (this is a separate query as Firestore doesn't support
+        // getting count and paginated data in one query)
+        const countSnapshot = await getDocs(collection(db, MENU_COLLECTION));
+        const totalItems = countSnapshot.size;
 
-      const snapshot = await getDocs(menuQuery);
+        // Calculate total pages
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-      if (snapshot.empty) {
-        return [];
-      }
+        // Ensure current page is valid
+        const validPage = Math.max(1, Math.min(page, totalPages || 1));
 
-      const menuItems = snapshot.docs.map((doc) => {
-        const data = doc.data();
+        // Get items for the current page
+        // Note: Firestore doesn't have native pagination with offset,
+        // so we get all items and then slice them (not efficient for large datasets)
+        const menuQuery = query(
+          collection(db, MENU_COLLECTION),
+          orderBy(sortField.toString(), sortDirection),
+        );
+
+        const snapshot = await getDocs(menuQuery);
+
+        if (snapshot.empty) {
+          return { items: [], totalItems: 0, totalPages: 0 };
+        }
+
+        // Convert all items to our format
+        const allItems = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            ...data,
+            id: doc.id,
+            price: data.price || 0,
+            rating: data.rating || 4,
+            displayOrder: data.displayOrder || 0,
+          } as MenuItem;
+        });
+
+        // Calculate slice indices for the current page
+        const startIndex = (validPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+
+        // Slice the items for the current page
+        const pagedItems = allItems.slice(startIndex, endIndex);
+
         return {
-          ...data,
-          id: doc.id,
-          price: data.price || 0,
-          rating: data.rating || 4,
-          displayOrder: data.displayOrder || 0,
-        } as MenuItem;
-      });
-
-      return menuItems;
-    } catch (err: any) {
-      console.error("Error fetching menu items:", err);
-      setError(`Could not fetch menu items: ${err.message}`);
-      showError("Không thể lấy danh sách món ăn, vui lòng thử lại sau!");
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, [showError]);
+          items: pagedItems,
+          totalItems,
+          totalPages,
+        };
+      } catch (err: any) {
+        console.error("Error fetching menu items:", err);
+        setError(`Could not fetch menu items: ${err.message}`);
+        showError("Không thể lấy danh sách món ăn, vui lòng thử lại sau!");
+        return [];
+      } finally {
+        setLoading(false);
+      }
+    },
+    [showError],
+  );
 
   /**
    * Get menu items by category
@@ -188,7 +226,7 @@ export function useMenuManagement() {
         // Save to Firestore
         await setDoc(newDocRef, newItem);
 
-        showSuccess("Đã thêm món ăn mới th��nh công!");
+        showSuccess("Đã thêm món ăn mới thành công!");
         return newDocRef.id;
       } catch (err: any) {
         console.error("Error adding menu item:", err);
