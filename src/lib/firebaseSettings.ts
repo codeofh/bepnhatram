@@ -120,8 +120,6 @@ export async function updateSiteSettings(
   success: boolean;
   error?: string;
 }> {
-  console.log("[firebaseSettings] Starting direct settings update");
-
   try {
     // Check Firebase initialization
     if (typeof isFirebaseInitialized !== "function") {
@@ -152,7 +150,6 @@ export async function updateSiteSettings(
 
     // Clean data for Firestore
     const cleanSettings = cleanSettingsForFirestore(newSettings);
-    console.log("[firebaseSettings] Cleaned settings:", cleanSettings);
 
     // Add timestamp
     cleanSettings.updatedAt = serverTimestamp();
@@ -163,11 +160,8 @@ export async function updateSiteSettings(
     // Use merge to preserve existing data
     await setDoc(docRef, cleanSettings, { merge: true });
 
-    console.log("[firebaseSettings] Settings successfully updated");
     return { success: true };
   } catch (err: any) {
-    console.error("[firebaseSettings] Error updating settings:", err);
-
     // Handle specific Firebase errors
     let errorMessage = "Không thể cập nhật cài đặt";
 
@@ -234,9 +228,6 @@ export async function getSiteSettings(): Promise<{
 }> {
   try {
     if (!isFirebaseInitialized() || !db) {
-      console.warn(
-        "[firebaseSettings] Firebase not initialized, using default settings",
-      );
       return { settings: defaultSiteConfig };
     }
 
@@ -250,29 +241,19 @@ export async function getSiteSettings(): Promise<{
         settingsData as Partial<SiteSettings>,
       );
 
-      console.log(
-        "[firebaseSettings] Settings loaded successfully with nested objects",
-      );
       return { settings: completeSettings };
     } else {
       // Create settings document with defaults if it doesn't exist
       try {
-        console.log("[firebaseSettings] Creating default settings document");
         await setDoc(docRef, {
           ...defaultSiteConfig,
           updatedAt: serverTimestamp(),
         });
-      } catch (err) {
-        console.error(
-          "[firebaseSettings] Error creating default settings:",
-          err,
-        );
-      }
+      } catch (err) {}
 
       return { settings: defaultSiteConfig };
     }
   } catch (err: any) {
-    console.error("[firebaseSettings] Error getting settings:", err);
     return {
       settings: defaultSiteConfig,
       error: `Không thể tải cài đặt: ${err.message || "Lỗi không xác định"}`,
@@ -304,8 +285,6 @@ export async function resetSiteSettings(): Promise<{
 
     return { success: true };
   } catch (err: any) {
-    console.error("[firebaseSettings] Error resetting settings:", err);
-
     return {
       success: false,
       error: `Không thể khôi phục cài đặt mặc định: ${err.message || "Lỗi không xác định"}`,

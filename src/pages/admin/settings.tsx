@@ -14,7 +14,6 @@ import {
 } from "@/lib/firebaseSettings";
 import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
 import { isFirebaseInitialized } from "@/lib/firebase";
-import { SettingsDebugPanel } from "@/components/Admin/SettingsDebugPanel";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -45,96 +44,6 @@ export default function AdminSettingsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
-
-  // Refs for debugging elements
-  const debugRef = useRef<{
-    element: HTMLDivElement | null;
-    timeout: number | null;
-  }>({
-    element: null,
-    timeout: null,
-  });
-
-  // Function to safely create debug element
-  const createDebugElement = () => {
-    // First clean up any existing debug element
-    cleanupDebugElement();
-
-    // Create new element
-    const errorAlert = document.createElement("div");
-    errorAlert.id = "settings-debug-alert";
-    errorAlert.style.padding = "10px";
-    errorAlert.style.margin = "10px 0";
-    errorAlert.style.backgroundColor = "#fff1f0";
-    errorAlert.style.border = "1px solid #ffccc7";
-    errorAlert.style.borderRadius = "4px";
-    errorAlert.style.maxHeight = "200px";
-    errorAlert.style.overflow = "auto";
-    errorAlert.style.position = "fixed";
-    errorAlert.style.bottom = "10px";
-    errorAlert.style.right = "10px";
-    errorAlert.style.zIndex = "9999";
-    errorAlert.style.display = "none";
-
-    // Add to document
-    document.body.appendChild(errorAlert);
-
-    // Save reference
-    debugRef.current.element = errorAlert;
-
-    // Set timeout for auto-removal
-    if (debugRef.current.timeout) {
-      window.clearTimeout(debugRef.current.timeout);
-    }
-
-    debugRef.current.timeout = window.setTimeout(() => {
-      cleanupDebugElement();
-    }, 30000);
-
-    return errorAlert;
-  };
-
-  // Function to safely cleanup debug element
-  const cleanupDebugElement = () => {
-    try {
-      // Clear the timeout if it exists
-      if (debugRef.current.timeout) {
-        window.clearTimeout(debugRef.current.timeout);
-        debugRef.current.timeout = null;
-      }
-
-      // Remove element if it exists
-      const debugElement = document.getElementById("settings-debug-alert");
-      if (debugElement && debugElement.parentNode) {
-        debugElement.parentNode.removeChild(debugElement);
-      }
-
-      debugRef.current.element = null;
-    } catch (err) {
-      console.error("Error cleaning up debug element:", err);
-    }
-  };
-
-  // Function to log debug messages
-  const debugLog = (message: string) => {
-    console.log(message);
-
-    try {
-      // Get or create debug element
-      let errorAlert = debugRef.current.element;
-      if (!errorAlert || !document.getElementById("settings-debug-alert")) {
-        errorAlert = createDebugElement();
-      }
-
-      // Add message
-      if (errorAlert) {
-        errorAlert.style.display = "block";
-        errorAlert.innerHTML += `<div>${message}</div>`;
-      }
-    } catch (err) {
-      console.error("Error logging debug message:", err);
-    }
-  };
 
   // Ensure nested objects exist in form data
   const ensureNestedObjects = (data: Partial<SiteSettings>): SiteSettings => {
@@ -208,13 +117,6 @@ export default function AdminSettingsPage() {
     }
   }, [user, authLoading, router]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      cleanupDebugElement();
-    };
-  }, []);
-
   const handleChange = (
     section: keyof SiteSettings,
     field: string,
@@ -245,41 +147,15 @@ export default function AdminSettingsPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Add timestamp to log for tracking update flow
-    const startTime = new Date().toISOString();
-    console.log(
-      `[AdminSettings][${startTime}] SUBMIT START - Settings update requested`,
-    );
-    console.log("[AdminSettings] Submitting form data:", formData);
-
     try {
-      // Log before calling the update function
-      console.log("[AdminSettings] About to call updateSiteSettings directly");
-
       // Test Firebase connection
-      debugLog("Testing Firebase connection...");
-      try {
-        if (typeof isFirebaseInitialized !== "function") {
-          debugLog("isFirebaseInitialized is not a function");
-          showError("Firebase initialization function is missing!");
-          return;
-        }
+      if (typeof isFirebaseInitialized !== "function") {
+        showError("Firebase initialization function is missing!");
+        return;
+      }
 
-        if (!isFirebaseInitialized()) {
-          debugLog("Firebase is not initialized!");
-          showError("Firebase không được khởi tạo, không thể lưu cài đặt!");
-          return;
-        } else {
-          debugLog("Firebase connection OK");
-        }
-      } catch (firebaseError: any) {
-        console.error("[AdminSettings] Firebase check error:", firebaseError);
-        debugLog(
-          `Firebase error: ${firebaseError?.message || "Unknown error"}`,
-        );
-        showError(
-          `Lỗi kiểm tra Firebase: ${firebaseError?.message || "Lỗi không xác định"}`,
-        );
+      if (!isFirebaseInitialized()) {
+        showError("Firebase không được khởi tạo, không thể lưu cài đặt!");
         return;
       }
 
@@ -290,12 +166,6 @@ export default function AdminSettingsPage() {
         setSettingsError(error);
       }
 
-      // Log result with the same timestamp for tracking
-      console.log(
-        `[AdminSettings][${startTime}] SUBMIT COMPLETE - Update result:`,
-        success,
-      );
-
       if (success) {
         // Update local settings state if successful
         // Ensure all nested objects exist in the formData
@@ -304,8 +174,6 @@ export default function AdminSettingsPage() {
         setFormData(safeFormData);
         showSuccess("Cài đặt đã được cập nhật thành công!");
       } else {
-        console.error("[AdminSettings] Update failed. Error:", settingsError);
-
         // Show a more specific error if available
         if (settingsError) {
           showError(settingsError);
@@ -314,18 +182,11 @@ export default function AdminSettingsPage() {
         }
       }
     } catch (error: any) {
-      console.error("[AdminSettings] Exception during settings update:", error);
-      console.error("[AdminSettings] Error message:", error.message);
-      console.error("[AdminSettings] Error stack:", error.stack);
-
       showError(
         `Đã xảy ra lỗi khi cập nhật cài đặt: ${error.message || "Lỗi không xác định"}`,
       );
     } finally {
       setIsSubmitting(false);
-      console.log(
-        `[AdminSettings][${startTime}] SUBMIT FINALLY - Process complete`,
-      );
     }
   };
 
@@ -336,10 +197,7 @@ export default function AdminSettingsPage() {
       )
     ) {
       try {
-        console.log("[AdminSettings] Attempting to reset settings to defaults");
         const { success, error } = await resetSiteSettings();
-
-        console.log("[AdminSettings] Reset result:", success);
 
         if (success) {
           // Make sure we have all nested objects
@@ -348,8 +206,6 @@ export default function AdminSettingsPage() {
           setSettings(safeDefaultSettings);
           showSuccess("Đã khôi phục về cài đặt mặc định!");
         } else {
-          console.error("[AdminSettings] Reset failed. Error:", error);
-
           // Show a more specific error if available
           if (error) {
             setSettingsError(error);
@@ -361,13 +217,6 @@ export default function AdminSettingsPage() {
           }
         }
       } catch (error: any) {
-        console.error(
-          "[AdminSettings] Exception during settings reset:",
-          error,
-        );
-        console.error("[AdminSettings] Error message:", error.message);
-        console.error("[AdminSettings] Error stack:", error.stack);
-
         showError(
           `Đã xảy ra lỗi khi khôi phục cài đặt mặc định: ${error.message || "Lỗi không xác định"}`,
         );
@@ -1056,9 +905,6 @@ export default function AdminSettingsPage() {
             </div>
           </form>
         )}
-
-        {/* Debug panel */}
-        <SettingsDebugPanel />
       </AdminLayout>
     </>
   );

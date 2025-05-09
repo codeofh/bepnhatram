@@ -88,13 +88,11 @@ export function useSettings(): UseSettingsReturn {
 
     try {
       if (!isFirebaseInitialized()) {
-        console.warn("Firebase not initialized, using default settings");
         setSettings(defaultSiteConfig);
         return;
       }
 
       if (!db) {
-        console.warn("Firestore not initialized, using default settings");
         setSettings(defaultSiteConfig);
         return;
       }
@@ -115,13 +113,11 @@ export function useSettings(): UseSettingsReturn {
             updatedAt: serverTimestamp(),
           });
         } catch (initError) {
-          console.error("Error initializing settings document:", initError);
           // Continue even if initialization fails
         }
         setSettings(defaultSiteConfig);
       }
     } catch (err: any) {
-      console.error("Error fetching site settings:", err);
       setError(`Không thể tải cài đặt từ máy chủ: ${err.message}`);
       // On error, fall back to default settings
       setSettings(defaultSiteConfig);
@@ -249,8 +245,6 @@ export function useSettings(): UseSettingsReturn {
       );
 
       if (!db) {
-        const errorMsg = "Firestore instance is not available";
-        console.error(`[useSettings] ${errorMsg}`);
         setError(errorMsg);
         return false;
       }
@@ -393,7 +387,6 @@ export function useSettings(): UseSettingsReturn {
         errorMsg = `${errorMsg}: ${err.message}`;
       }
 
-      console.error("[useSettings] Error resetting settings:", err);
       setError(errorMsg);
       return false;
     }
