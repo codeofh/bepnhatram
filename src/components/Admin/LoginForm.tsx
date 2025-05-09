@@ -100,7 +100,7 @@ export function LoginForm() {
     try {
       const result = await resetPassword(data.email);
       if (result) {
-        setSuccessMessage(`Đã gửi email đặt lại mật khẩu đến ${data.email}. Vui lòng kiểm tra hộp thư của bạn.`);
+        setSuccessMessage(`Đã gửi email đặt lại mật khẩu đ���n ${data.email}. Vui lòng kiểm tra hộp thư của bạn.`);
         forgotPasswordForm.reset();
       } else {
         setError("Không thể gửi email đặt lại mật khẩu");
