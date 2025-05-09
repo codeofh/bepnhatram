@@ -194,11 +194,15 @@ export default function AdminMenuPage() {
   const handleInitializeData = async () => {
     setShowInitializeConfirm(false);
     try {
-      const success = await initializeMenuCollection(staticMenuItems);
+      // Make sure we pass a copy of the static menu items to avoid mutation issues
+      const menuItemsCopy = JSON.parse(JSON.stringify(staticMenuItems));
+      const success = await initializeMenuCollection(menuItemsCopy);
       if (success) {
+        // Refresh the data after initialization
         setRefreshTrigger((prev) => prev + 1);
       }
     } catch (error) {
+      console.error("Error initializing data:", error);
       showError("Có lỗi xảy ra khi khởi tạo dữ liệu!");
     }
   };
@@ -506,7 +510,7 @@ export default function AdminMenuPage() {
             <DialogHeader>
               <DialogTitle>Khởi tạo dữ liệu mẫu</DialogTitle>
               <DialogDescription>
-                Thao tác này sẽ nhập các món ăn mẫu vào cơ sở dữ liệu. Bạn có
+                Thao tác này sẽ nhập các món ăn mẫu vào cơ sở dữ li���u. Bạn có
                 chắc chắn muốn tiếp tục không?
               </DialogDescription>
             </DialogHeader>

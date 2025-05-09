@@ -375,22 +375,30 @@ export function useMenuManagement() {
         const snapshot = await getDocs(collection(db, MENU_COLLECTION));
 
         if (!snapshot.empty) {
-          // Data already exists, skip initialization
+          showSuccess("Dữ liệu menu đã tồn tại, không cần khởi tạo lại!");
           return true;
         }
 
-        // Add all sample items
+        // Create a batch
         const batch = db.batch();
 
+        // Add all sample items
         for (const item of sampleData) {
-          const newDocRef = doc(collection(db, MENU_COLLECTION));
+          // Create a document with the same ID as in the static data
+          const newDocRef = doc(db, MENU_COLLECTION, item.id);
+
+          // Prepare the data to save, excluding the ID which is already in the reference
+          const { id, ...itemWithoutId } = item;
+
+          // Add timestamps
           batch.set(newDocRef, {
-            ...item,
+            ...itemWithoutId,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
           });
         }
 
+        // Commit the batch
         await batch.commit();
 
         showSuccess("Đã khởi tạo dữ liệu menu mẫu thành công!");
