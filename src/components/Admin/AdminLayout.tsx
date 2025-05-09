@@ -89,6 +89,11 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
       icon: <Tags size={20} />,
     },
     {
+      name: "Slider",
+      path: "/admin/sliders",
+      icon: <Image size={20} />,
+    },
+    {
       name: "Người dùng",
       path: "/admin/users",
       icon: <Users size={20} />,
@@ -205,7 +210,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                   <DropdownMenuItem asChild>
                     <Link href="/account" className="w-full flex items-center">
                       <User className="h-4 w-4 mr-2" />
-                      Tài khoản của tôi
+                      Tài khoản c���a tôi
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
