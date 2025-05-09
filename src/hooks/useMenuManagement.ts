@@ -380,7 +380,9 @@ export function useMenuManagement() {
         }
 
         // Create a batch
-        const batch = db.batch();
+        let currentBatch = db.batch();
+        let operationCount = 0;
+        const MAX_OPERATIONS = 450; // Using a lower number than 500 for safety
 
         // Add all sample items
         for (const item of sampleData) {
@@ -391,15 +393,26 @@ export function useMenuManagement() {
           const { id, ...itemWithoutId } = item;
 
           // Add timestamps
-          batch.set(newDocRef, {
+          currentBatch.set(newDocRef, {
             ...itemWithoutId,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
           });
+
+          operationCount++;
+
+          // If we reach the maximum operations per batch, commit this batch and start a new one
+          if (operationCount >= MAX_OPERATIONS) {
+            await currentBatch.commit();
+            currentBatch = db.batch();
+            operationCount = 0;
+          }
         }
 
-        // Commit the batch
-        await batch.commit();
+        // Commit any remaining operations
+        if (operationCount > 0) {
+          await currentBatch.commit();
+        }
 
         showSuccess("Đã khởi tạo dữ liệu menu mẫu thành công!");
         return true;
