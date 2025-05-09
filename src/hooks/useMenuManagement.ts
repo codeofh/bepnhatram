@@ -169,7 +169,11 @@ export function useMenuManagement() {
         console.error("Error fetching menu items:", err);
         setError(`Could not fetch menu items: ${err.message}`);
         showError("Không thể lấy danh sách món ăn, vui lòng thử lại sau!");
-        return [];
+        return {
+          items: [],
+          totalItems: 0,
+          totalPages: 0,
+        };
       } finally {
         setLoading(false);
       }
@@ -396,11 +400,11 @@ export function useMenuManagement() {
         const allItems = await getAllMenuItems();
 
         if (!searchTerm || searchTerm.trim() === "") {
-          return allItems;
+          return allItems.items;
         }
 
         const normalizedSearchTerm = searchTerm.toLowerCase().trim();
-        return allItems.filter(
+        return allItems.items.filter(
           (item) =>
             item.name.toLowerCase().includes(normalizedSearchTerm) ||
             item.description.toLowerCase().includes(normalizedSearchTerm),
@@ -432,7 +436,7 @@ export function useMenuManagement() {
           items = await getMenuItemsByCategory(filters.category);
         } else {
           // Otherwise get all items
-          items = await getAllMenuItems();
+          items = (await getAllMenuItems()).items;
         }
 
         // Apply search filter if provided

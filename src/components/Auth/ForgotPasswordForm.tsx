@@ -78,7 +78,7 @@ export function ForgotPasswordForm({ onBack }: ForgotPasswordFormProps) {
 
       {success && (
         <Alert
-          variant="success"
+          variant="default"
           className="bg-green-50 border-green-200 text-green-800"
         >
           <AlertDescription>{success}</AlertDescription>

@@ -25,6 +25,7 @@ const sliderSchema = z.object({
   cta: z.string().min(1, { message: "Nội dung nút không được trống" }),
   ctaLink: z.string().optional(),
   isActive: z.boolean().default(true),
+  displayOrder: z.number().default(0),
 });
 
 type SliderFormValues = z.infer<typeof sliderSchema>;

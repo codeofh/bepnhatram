@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SiteSettings } from "@/lib/firebaseSettings";
 
 interface HeaderProps {
   toggleSidebar?: () => void;
@@ -32,6 +33,7 @@ interface HeaderProps {
   setSearchQuery?: (query: string) => void;
   isSearchModalOpen?: boolean;
   setIsSearchModalOpen?: (isOpen: boolean) => void;
+  siteSettings?: SiteSettings;
 }
 
 export function Header({
@@ -40,6 +42,7 @@ export function Header({
   setSearchQuery,
   isSearchModalOpen = false,
   setIsSearchModalOpen,
+  siteSettings
 }: HeaderProps) {
   const router = useRouter();
   const [authDialogOpen, setAuthDialogOpen] = useState(false);
