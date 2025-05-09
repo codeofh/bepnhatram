@@ -1,10 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import {
-  db,
-  isFirebaseInitialized,
-  safeFirestoreOperation,
-} from "@/lib/firebase";
+import { db, safeFirestoreOperation } from "@/lib/firebase";
+import { isFirebaseInitialized } from "@/lib/firebase";
 import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
 
 // Define the settings structure
@@ -157,6 +154,14 @@ export function useSettings(): UseSettingsReturn {
     newSettings: Partial<SiteSettings>,
   ): Promise<boolean> => {
     try {
+      // First verify that isFirebaseInitialized exists and is a function
+      if (typeof isFirebaseInitialized !== "function") {
+        const errorMsg = "Firebase initialization check function is missing";
+        console.error(`[useSettings] ${errorMsg}`);
+        setError(errorMsg);
+        return false;
+      }
+
       if (!isFirebaseInitialized()) {
         const errorMsg = "Firebase không được khởi tạo";
         console.error(`[useSettings] ${errorMsg}`);

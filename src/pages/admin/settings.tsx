@@ -9,6 +9,7 @@ import { useToastContext } from "@/contexts/ToastContext";
 import { useSettingsContext } from "@/contexts/SettingsContext";
 import { SiteSettings } from "@/hooks/useSettings";
 import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
+import { isFirebaseInitialized } from "@/lib/firebase";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -115,12 +116,29 @@ export default function AdminSettingsPage() {
 
       // Test Firestore connection
       debugLog("Testing Firebase connection...");
-      if (!isFirebaseInitialized()) {
-        debugLog("Firebase is not initialized!");
-        showError("Firebase không được khởi tạo, không thể lưu cài đặt!");
+      try {
+        if (!isFirebaseInitialized) {
+          debugLog("isFirebaseInitialized function is not defined!");
+          showError("Firebase initialization function is missing!");
+          return;
+        }
+
+        if (!isFirebaseInitialized()) {
+          debugLog("Firebase is not initialized!");
+          showError("Firebase không được khởi tạo, không thể lưu cài đặt!");
+          return;
+        } else {
+          debugLog("Firebase connection OK");
+        }
+      } catch (firebaseError) {
+        console.error("[AdminSettings] Firebase check error:", firebaseError);
+        debugLog(
+          `Firebase error: ${firebaseError?.message || "Unknown error"}`,
+        );
+        showError(
+          `Lỗi kiểm tra Firebase: ${firebaseError?.message || "Lỗi không xác định"}`,
+        );
         return;
-      } else {
-        debugLog("Firebase connection OK");
       }
 
       const success = await updateSettings(formData);
