@@ -10,6 +10,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface MenuItemProps {
   item: MenuItemType;
@@ -18,6 +25,14 @@ interface MenuItemProps {
 export function MenuItem({ item }: MenuItemProps) {
   const { name, description, price, image, rating, sizes, category } = item;
   const [isHovered, setIsHovered] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | null>(
+    sizes && sizes.length > 0 ? sizes[0].name : null,
+  );
+
+  // Get current price based on selected size or default price
+  const currentPrice = selectedSize
+    ? sizes?.find((s) => s.name === selectedSize)?.price || price
+    : price;
 
   // Format price with Vietnamese currency
   const formatPrice = (amount: number) => {
@@ -27,7 +42,7 @@ export function MenuItem({ item }: MenuItemProps) {
   // Category name mapping for badge display
   const getCategoryName = (categoryId: string) => {
     const categories: Record<string, string> = {
-      special: "Đặc biệt",
+      special: "Đ��c biệt",
       main: "Món chính",
       chicken: "Gà ủ muối",
       "chicken-feet": "Chân gà",
@@ -48,6 +63,10 @@ export function MenuItem({ item }: MenuItemProps) {
     };
 
     return colors[categoryId] || "bg-gray-100 text-gray-800";
+  };
+
+  const handleSizeChange = (value: string) => {
+    setSelectedSize(value);
   };
 
   return (
@@ -114,39 +133,68 @@ export function MenuItem({ item }: MenuItemProps) {
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-bold truncate">{name}</h3>
+          <h3 className="text-lg font-bold line-clamp-1" title={name}>
+            {name}
+          </h3>
           <div className="flex items-center">
             <Star className="w-4 h-4 fill-yellow-400 stroke-yellow-400" />
             <span className="text-sm ml-1 text-gray-700">{rating}/5</span>
           </div>
         </div>
-        <p className="text-gray-600 text-sm line-clamp-2 min-h-[40px]">
+        <p
+          className="text-gray-600 text-sm line-clamp-2 min-h-[40px]"
+          title={description}
+        >
           {description}
         </p>
 
-        {sizes && sizes.length > 0 ? (
-          <div className="mt-3 space-y-2">
-            {sizes.map((size, index) => (
-              <div
-                key={size.name}
-                className="flex justify-between items-center text-sm border-t border-dashed border-gray-200 pt-2"
-              >
-                <span className="text-gray-700">{size.name}</span>
-                <span className="font-semibold">{formatPrice(size.price)}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="mt-4 flex justify-between items-center">
-            <span className="font-bold text-lg">{formatPrice(price)}</span>
-          </div>
-        )}
-
+        {/* Price and Size Selection - Old Layout */}
         <div className="mt-4">
-          <Button className="w-full group">
-            <ShoppingCart className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
-            Thêm vào giỏ hàng
-          </Button>
+          {sizes && sizes.length > 0 ? (
+            <div className="flex flex-col gap-2">
+              <Select
+                value={selectedSize || undefined}
+                onValueChange={handleSizeChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Chọn kích cỡ" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sizes.map((size) => (
+                    <SelectItem key={size.name} value={size.name}>
+                      {size.name} - {formatPrice(size.price)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <div className="flex justify-between items-center mt-2">
+                <div className="text-xl font-bold text-orange-500">
+                  {formatPrice(currentPrice)}
+                </div>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="rounded-full h-9 w-9"
+                >
+                  <Plus className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-between items-center">
+              <div className="text-xl font-bold text-orange-500">
+                {formatPrice(price)}
+              </div>
+              <Button
+                size="icon"
+                variant="outline"
+                className="rounded-full h-9 w-9"
+              >
+                <Plus className="h-5 w-5" />
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

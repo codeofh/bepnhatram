@@ -1,8 +1,23 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { MenuItem } from "@/components/Menu/MenuItem";
 import { MenuItem as MenuItemType } from "@/data/menuItems";
-import { Search, ChefHat, Filter } from "lucide-react";
+import {
+  Search,
+  ChefHat,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface MenuGridProps {
   items: MenuItemType[];
@@ -15,6 +30,10 @@ export function MenuGrid({
   activeCategory,
   searchQuery,
 }: MenuGridProps) {
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 9; // 3x3 grid on large screens
+
   // Filter items based on category and search query
   const filteredItems = items.filter((item) => {
     const matchesCategory =
@@ -33,6 +52,30 @@ export function MenuGrid({
     }
     return a.id.localeCompare(b.id);
   });
+
+  // Calculate total pages
+  const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
+
+  // Get current items
+  const currentItems = sortedItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory, searchQuery]);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top of the grid
+    window.scrollTo({
+      top: document.getElementById("menu-grid")?.offsetTop || 0,
+      behavior: "smooth",
+    });
+  };
 
   // EmptyState component for when no items match filters
   const EmptyState = () => (
@@ -74,11 +117,108 @@ export function MenuGrid({
   );
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {sortedItems.length > 0 ? (
-        sortedItems.map((item) => <MenuItem key={item.id} item={item} />)
-      ) : (
-        <EmptyState />
+    <div id="menu-grid">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {currentItems.length > 0 ? (
+          currentItems.map((item) => <MenuItem key={item.id} item={item} />)
+        ) : (
+          <EmptyState />
+        )}
+      </div>
+
+      {/* Pagination */}
+      {sortedItems.length > itemsPerPage && (
+        <div className="mt-8">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                  className={
+                    currentPage <= 1 ? "pointer-events-none opacity-50" : ""
+                  }
+                />
+              </PaginationItem>
+
+              {/* First page */}
+              {currentPage > 3 && (
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePageChange(1)}>
+                    1
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+
+              {/* Ellipsis for many pages */}
+              {currentPage > 4 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+
+              {/* Page before current */}
+              {currentPage > 1 && (
+                <PaginationItem>
+                  <PaginationLink
+                    onClick={() => handlePageChange(currentPage - 1)}
+                  >
+                    {currentPage - 1}
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+
+              {/* Current page */}
+              <PaginationItem>
+                <PaginationLink
+                  isActive
+                  onClick={() => handlePageChange(currentPage)}
+                >
+                  {currentPage}
+                </PaginationLink>
+              </PaginationItem>
+
+              {/* Page after current */}
+              {currentPage < totalPages && (
+                <PaginationItem>
+                  <PaginationLink
+                    onClick={() => handlePageChange(currentPage + 1)}
+                  >
+                    {currentPage + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+
+              {/* Ellipsis for many pages */}
+              {currentPage < totalPages - 3 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+
+              {/* Last page */}
+              {currentPage < totalPages - 2 && (
+                <PaginationItem>
+                  <PaginationLink onClick={() => handlePageChange(totalPages)}>
+                    {totalPages}
+                  </PaginationLink>
+                </PaginationItem>
+              )}
+
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    handlePageChange(Math.min(totalPages, currentPage + 1))
+                  }
+                  className={
+                    currentPage >= totalPages
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
       )}
     </div>
   );
