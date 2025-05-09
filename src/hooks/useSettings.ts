@@ -215,23 +215,38 @@ export function useSettings(): UseSettingsReturn {
   const updateSettings = async (
     newSettings: Partial<SiteSettings>,
   ): Promise<boolean> => {
+    const updateId = Math.random().toString(36).substring(2, 8); // Generate unique ID for this update
+    console.log(
+      `[useSettings][${updateId}] UPDATE START - updateSettings called`,
+      {
+        timestamp: new Date().toISOString(),
+      },
+    );
+
     setError(null);
 
     try {
       // Validate Firebase initialization
+      console.log(
+        `[useSettings][${updateId}] Checking Firebase initialization`,
+      );
       if (typeof isFirebaseInitialized !== "function") {
         const errorMsg = "Firebase initialization check function is missing";
-        console.error(`[useSettings] ${errorMsg}`);
+        console.error(`[useSettings][${updateId}] ${errorMsg}`);
         setError(errorMsg);
         return false;
       }
 
       if (!isFirebaseInitialized()) {
         const errorMsg = "Firebase không được khởi tạo";
-        console.error(`[useSettings] ${errorMsg}`);
+        console.error(`[useSettings][${updateId}] ${errorMsg}`);
         setError(errorMsg);
         return false;
       }
+
+      console.log(
+        `[useSettings][${updateId}] Firebase is initialized successfully`,
+      );
 
       if (!db) {
         const errorMsg = "Firestore instance is not available";
@@ -241,9 +256,13 @@ export function useSettings(): UseSettingsReturn {
       }
 
       // Prepare clean data for Firestore
-      const cleanedSettings = cleanSettingsForFirestore(newSettings);
       console.log(
-        "[useSettings] Cleaned settings for update:",
+        `[useSettings][${updateId}] Cleaning settings data for Firestore`,
+      );
+      const cleanedSettings = cleanSettingsForFirestore(newSettings);
+      console.log(`[useSettings][${updateId}] Original settings:`, newSettings);
+      console.log(
+        `[useSettings][${updateId}] Cleaned settings:`,
         cleanedSettings,
       );
 
@@ -251,17 +270,39 @@ export function useSettings(): UseSettingsReturn {
       cleanedSettings.updatedAt = serverTimestamp();
 
       // Get document reference
+      console.log(
+        `[useSettings][${updateId}] Creating document reference for ${SETTINGS_COLLECTION}/${SETTINGS_DOC_ID}`,
+      );
       const docRef = doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID);
 
       // Use single operation with merge option for efficiency
-      await setDoc(docRef, cleanedSettings, { merge: true });
+      console.log(`[useSettings][${updateId}] Calling setDoc with merge:true`);
+      try {
+        await setDoc(docRef, cleanedSettings, { merge: true });
+        console.log(`[useSettings][${updateId}] Firestore update successful!`);
+      } catch (firestoreError) {
+        console.error(
+          `[useSettings][${updateId}] Firestore setDoc failed:`,
+          firestoreError,
+        );
+        throw firestoreError; // Re-throw to be caught by outer catch
+      }
 
       // Update local state with the new settings
-      setSettings((prev) =>
-        mergeWithDefaults({ ...prev, ...newSettings, updatedAt: new Date() }),
-      );
+      console.log(`[useSettings][${updateId}] Updating local state`);
+      setSettings((prev) => {
+        const merged = mergeWithDefaults({
+          ...prev,
+          ...newSettings,
+          updatedAt: new Date(),
+        });
+        console.log(`[useSettings][${updateId}] New local state:`, merged);
+        return merged;
+      });
 
-      console.log("[useSettings] Settings updated successfully");
+      console.log(
+        `[useSettings][${updateId}] UPDATE COMPLETE - Settings updated successfully`,
+      );
       return true;
     } catch (err: any) {
       // Handle specific Firestore errors
@@ -280,9 +321,24 @@ export function useSettings(): UseSettingsReturn {
         errorMsg = `${errorMsg}: ${err.message}`;
       }
 
-      console.error("[useSettings] Error updating settings:", err);
-      console.error("[useSettings] Error code:", err.code);
-      console.error("[useSettings] Error message:", err.message);
+      console.error(
+        `[useSettings][${updateId}] UPDATE ERROR - Error updating settings:`,
+        err,
+      );
+      console.error(`[useSettings][${updateId}] Error code:`, err.code);
+      console.error(`[useSettings][${updateId}] Error message:`, err.message);
+      console.error(`[useSettings][${updateId}] Error stack:`, err.stack);
+
+      // Log Firebase instance status
+      console.log(`[useSettings][${updateId}] Diagnostics:`, {
+        dbInstance: !!db,
+        isFunction: typeof isFirebaseInitialized === "function",
+        isInitialized:
+          typeof isFirebaseInitialized === "function"
+            ? isFirebaseInitialized()
+            : "unknown",
+        location: SETTINGS_COLLECTION + "/" + SETTINGS_DOC_ID,
+      });
 
       setError(errorMsg);
       return false;
