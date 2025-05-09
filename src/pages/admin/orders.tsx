@@ -11,7 +11,17 @@ import {
   Filter,
   ShoppingCart,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { Button } from "@/components/ui/button";
@@ -52,6 +62,12 @@ export default function AdminOrdersPage() {
   // State cho orders
   const [orders, setOrders] = useState<Order[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+
+  // State cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPerPage = 20;
   const [isFiltering, setIsFiltering] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
@@ -65,13 +81,26 @@ export default function AdminOrdersPage() {
     }
   }, [user, authLoading, router, hasFetched]);
 
-  // Fetch orders
+  // Fetch orders with pagination
   const fetchOrders = async () => {
     setFetchError(null);
     try {
-      const data = await getAllOrders();
-      setOrders(data);
-      setFilteredOrders(data);
+      const statusFilter =
+        selectedStatus !== "all" ? (selectedStatus as OrderStatus) : undefined;
+
+      const result = await getAllOrders(
+        statusFilter,
+        startDate,
+        endDate,
+        searchTerm,
+        currentPage,
+        itemsPerPage,
+      );
+
+      setOrders(result.items);
+      setFilteredOrders(result.items);
+      setTotalPages(result.totalPages);
+      setTotalItems(result.totalItems);
       setHasFetched(true);
     } catch (error: any) {
       console.error("Error fetching orders:", error);
@@ -83,67 +112,27 @@ export default function AdminOrdersPage() {
     }
   };
 
-  // Áp dụng bộ lọc
+  // Áp dụng bộ lọc và reset về trang 1
   const applyFilters = async () => {
     setIsFiltering(true);
+    // Reset về trang 1 khi áp dụng bộ lọc mới
+    setCurrentPage(1);
     try {
-      // Nếu đã có sẵn orders, lọc ở client
-      if (orders.length > 0) {
-        let filtered = [...orders];
+      // Luôn fetch lại từ server với filters và phân trang
+      const statusFilter =
+        selectedStatus !== "all" ? (selectedStatus as OrderStatus) : undefined;
+      const result = await getAllOrders(
+        statusFilter,
+        startDate,
+        endDate,
+        searchTerm,
+        1, // Trang 1
+        itemsPerPage,
+      );
 
-        // Lọc theo status
-        if (selectedStatus !== "all") {
-          filtered = filtered.filter(
-            (order) => order.status === selectedStatus,
-          );
-        }
-
-        // Lọc theo thời gian
-        if (startDate) {
-          const startTimestamp = startDate.getTime() / 1000;
-          filtered = filtered.filter(
-            (order) => order.createdAt.seconds >= startTimestamp,
-          );
-        }
-
-        if (endDate) {
-          const endDateCopy = new Date(endDate);
-          endDateCopy.setHours(23, 59, 59, 999);
-          const endTimestamp = endDateCopy.getTime() / 1000;
-          filtered = filtered.filter(
-            (order) => order.createdAt.seconds <= endTimestamp,
-          );
-        }
-
-        // Lọc theo từ khóa tìm kiếm
-        if (searchTerm && searchTerm.trim() !== "") {
-          const term = searchTerm.toLowerCase().trim();
-          filtered = filtered.filter(
-            (order) =>
-              order.id.toLowerCase().includes(term) ||
-              (order.orderCode &&
-                order.orderCode.toLowerCase().includes(term)) ||
-              order.customer.name.toLowerCase().includes(term) ||
-              order.customer.email?.toLowerCase().includes(term) ||
-              order.customer.phone.toLowerCase().includes(term),
-          );
-        }
-
-        setFilteredOrders(filtered);
-      } else {
-        // Fetch lại từ server với filters
-        const statusFilter =
-          selectedStatus !== "all"
-            ? (selectedStatus as OrderStatus)
-            : undefined;
-        const data = await getAllOrders(
-          statusFilter,
-          startDate,
-          endDate,
-          searchTerm,
-        );
-        setFilteredOrders(data);
-      }
+      setFilteredOrders(result.items);
+      setTotalPages(result.totalPages);
+      setTotalItems(result.totalItems);
     } catch (error) {
       console.error("Error applying filters:", error);
     } finally {
@@ -153,8 +142,23 @@ export default function AdminOrdersPage() {
 
   // Reset filters
   const resetFilters = async () => {
-    setFilteredOrders(orders);
+    // Reset về trang 1 khi xóa bộ lọc
+    setCurrentPage(1);
+    fetchOrders();
   };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+  };
+
+  // Re-fetch when page changes
+  useEffect(() => {
+    if (user && hasFetched) {
+      fetchOrders();
+    }
+  }, [currentPage]);
 
   // Format date
   const formatDate = (timestamp: any) => {
@@ -199,7 +203,7 @@ export default function AdminOrdersPage() {
           <CardHeader className="pb-3">
             <CardTitle>Đơn hàng</CardTitle>
             <CardDescription>
-              Quản lý tất cả đơn đặt hàng từ khách hàng
+              Qu��n lý tất cả đơn đặt hàng từ khách hàng
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -252,6 +256,19 @@ export default function AdminOrdersPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
+                <div className="px-4 py-2 bg-gray-50 border-b">
+                  <p className="text-sm text-gray-500">
+                    {totalItems > 0 ? (
+                      <>
+                        Hiển thị {(currentPage - 1) * itemsPerPage + 1} -{" "}
+                        {Math.min(currentPage * itemsPerPage, totalItems)} trên
+                        tổng số {totalItems} đơn hàng
+                      </>
+                    ) : (
+                      <>Không có đơn hàng nào</>
+                    )}
+                  </p>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -309,6 +326,102 @@ export default function AdminOrdersPage() {
                     ))}
                   </TableBody>
                 </Table>
+
+                {totalPages > 1 && (
+                  <div className="p-4 border-t">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            className={
+                              currentPage <= 1
+                                ? "pointer-events-none opacity-50"
+                                : ""
+                            }
+                          />
+                        </PaginationItem>
+
+                        {/* First page */}
+                        {currentPage > 3 && (
+                          <PaginationItem>
+                            <PaginationLink onClick={() => handlePageChange(1)}>
+                              1
+                            </PaginationLink>
+                          </PaginationItem>
+                        )}
+
+                        {/* Ellipsis for many pages */}
+                        {currentPage > 4 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+
+                        {/* Page before current */}
+                        {currentPage > 1 && (
+                          <PaginationItem>
+                            <PaginationLink
+                              onClick={() => handlePageChange(currentPage - 1)}
+                            >
+                              {currentPage - 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )}
+
+                        {/* Current page */}
+                        <PaginationItem>
+                          <PaginationLink
+                            isActive
+                            onClick={() => handlePageChange(currentPage)}
+                          >
+                            {currentPage}
+                          </PaginationLink>
+                        </PaginationItem>
+
+                        {/* Page after current */}
+                        {currentPage < totalPages && (
+                          <PaginationItem>
+                            <PaginationLink
+                              onClick={() => handlePageChange(currentPage + 1)}
+                            >
+                              {currentPage + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )}
+
+                        {/* Ellipsis for many pages */}
+                        {currentPage < totalPages - 3 && (
+                          <PaginationItem>
+                            <PaginationEllipsis />
+                          </PaginationItem>
+                        )}
+
+                        {/* Last page */}
+                        {currentPage < totalPages - 2 && (
+                          <PaginationItem>
+                            <PaginationLink
+                              onClick={() => handlePageChange(totalPages)}
+                            >
+                              {totalPages}
+                            </PaginationLink>
+                          </PaginationItem>
+                        )}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            className={
+                              currentPage >= totalPages
+                                ? "pointer-events-none opacity-50"
+                                : ""
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

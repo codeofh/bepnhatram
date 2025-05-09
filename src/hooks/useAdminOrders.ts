@@ -21,14 +21,15 @@ export function useAdminOrders() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Lấy tất cả đơn hàng với khả năng lọc
+  // Lấy tất cả đơn hàng với khả năng lọc và phân trang
   const getAllOrders = async (
     status?: OrderStatus,
     startDate?: Date,
     endDate?: Date,
     searchTerm?: string,
-    limitCount: number = 50,
-  ): Promise<Order[]> => {
+    page: number = 1,
+    itemsPerPage: number = 20,
+  ): Promise<{ items: Order[]; totalItems: number; totalPages: number }> => {
     setLoading(true);
     setError(null);
 
@@ -37,6 +38,23 @@ export function useAdminOrders() {
         throw new Error("Firestore chưa được khởi tạo");
       }
 
+      // Đầu tiên, lấy tổng số đơn hàng để tính toán phân trang
+      // Có thể phải lọc theo trạng thái
+      let countQuery = collection(db, "orders");
+      if (status) {
+        countQuery = query(countQuery, where("status", "==", status)) as any;
+      }
+
+      const countSnapshot = await getDocs(countQuery);
+      const totalItems = countSnapshot.size;
+
+      // Tính tổng số trang
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+      // Đảm bảo trang hiện tại hợp lệ
+      const validPage = Math.max(1, Math.min(page, totalPages || 1));
+
+      // Query chính với sắp xếp và các bộ lọc
       let ordersQuery = query(
         collection(db, "orders"),
         orderBy("createdAt", "desc"),
@@ -50,34 +68,41 @@ export function useAdminOrders() {
       // Chưa triển khai lọc theo thời gian và tìm kiếm ở cấp độ query
       // vì cần compound indexes. Sẽ lọc sau khi lấy dữ liệu
 
-      // Giới hạn số lượng kết quả
-      ordersQuery = query(ordersQuery, limit(limitCount));
-
+      // Lấy tất cả đơn hàng (để lọc client-side)
+      // Trong ứng dụng thực tế với nhiều dữ liệu, cần cải thiện cách làm này
       const snapshot = await getDocs(ordersQuery);
 
       // Dữ liệu cơ bản
-      let orders = snapshot.docs.map((doc) => doc.data() as Order);
+      let allOrders = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          ...data,
+          id: doc.id,
+        } as Order;
+      });
 
       // Lọc theo ngày nếu có
       if (startDate) {
         const startTimestamp = Timestamp.fromDate(startDate);
-        orders = orders.filter(
+        allOrders = allOrders.filter(
           (order) => order.createdAt.seconds >= startTimestamp.seconds,
         );
       }
 
       if (endDate) {
         const endTimestamp = Timestamp.fromDate(endDate);
-        endDate.setHours(23, 59, 59, 999); // Kết thúc ngày
-        orders = orders.filter(
-          (order) => order.createdAt.seconds <= endTimestamp.seconds,
+        const endDateWithTime = new Date(endDate);
+        endDateWithTime.setHours(23, 59, 59, 999); // Kết thúc ngày
+        const endTimestampWithTime = Timestamp.fromDate(endDateWithTime);
+        allOrders = allOrders.filter(
+          (order) => order.createdAt.seconds <= endTimestampWithTime.seconds,
         );
       }
 
       // Lọc theo từ khóa tìm kiếm
       if (searchTerm && searchTerm.trim() !== "") {
         const term = searchTerm.toLowerCase().trim();
-        orders = orders.filter(
+        allOrders = allOrders.filter(
           (order) =>
             order.id.toLowerCase().includes(term) ||
             (order.orderCode && order.orderCode.toLowerCase().includes(term)) ||
@@ -87,7 +112,20 @@ export function useAdminOrders() {
         );
       }
 
-      return orders;
+      // Tính toán lại tổng số items và pages sau khi lọc
+      const filteredTotalItems = allOrders.length;
+      const filteredTotalPages = Math.ceil(filteredTotalItems / itemsPerPage);
+
+      // Áp dụng phân trang
+      const startIndex = (validPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pagedOrders = allOrders.slice(startIndex, endIndex);
+
+      return {
+        items: pagedOrders,
+        totalItems: filteredTotalItems,
+        totalPages: filteredTotalPages,
+      };
     } catch (err: any) {
       console.error("Lỗi khi lấy danh sách đơn hàng:", err);
 
