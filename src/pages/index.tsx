@@ -7,10 +7,11 @@ import { MenuItem, menuItems as staticMenuItems } from "@/data/menuItems";
 import { Layout } from "@/components/Layout/Layout";
 import { SEO } from "@/components/SEO/SEO";
 import { StructuredData } from "@/components/SEO/StructuredData";
-import { useSettingsContext } from "@/contexts/SettingsContext";
+import { SiteSettings, getSiteSettings } from "@/lib/firebaseSettings";
+import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
 import { useMenuManagement } from "@/hooks/useMenuManagement";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Loader2, RefreshCw, WifiOff, AlertTriangle } from "lucide-react";
+import { Loader2, RefreshCw, AlertTriangle } from "lucide-react";
 import { useToastContext } from "@/contexts/ToastContext";
 import { Button } from "@/components/ui/button";
 import { isFirebaseInitialized } from "@/lib/firebase";
@@ -24,10 +25,29 @@ export default function Home() {
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
   const hasAttemptedFetch = useRef(false);
+  const [settings, setSettings] = useState<SiteSettings>(defaultSiteConfig);
+  const [settingsLoading, setSettingsLoading] = useState(true);
 
   const { getAllMenuItems } = useMenuManagement();
   const { showError, showInfo } = useToastContext();
-  const { settings, loading: settingsLoading } = useSettingsContext();
+
+  // Load settings from Firebase
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const { settings: firebaseSettings } = await getSiteSettings();
+        setSettings(firebaseSettings);
+      } catch (err) {
+        console.error("Error loading settings from Firebase:", err);
+        // Fall back to default settings
+        setSettings(defaultSiteConfig);
+      } finally {
+        setSettingsLoading(false);
+      }
+    }
+
+    loadSettings();
+  }, []);
 
   // Use useCallback to prevent function recreation on each render
   const fetchMenuItems = useCallback(
@@ -103,14 +123,16 @@ export default function Home() {
       <SEO
         title={settings.seo.homePageTitle}
         description={settings.seo.defaultDescription}
+        siteSettings={settings}
       />
-      <StructuredData type="restaurant" />
+      <StructuredData type="restaurant" siteSettings={settings} />
 
       <Layout
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
+        siteSettings={settings}
       >
         <HeroSlider />
 
@@ -196,7 +218,7 @@ export default function Home() {
           )}
         </main>
 
-        <LocationMap />
+        <LocationMap siteSettings={settings} />
       </Layout>
     </>
   );
