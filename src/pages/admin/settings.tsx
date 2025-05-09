@@ -6,8 +6,12 @@ import { Loader2, Save, RefreshCw, AlertTriangle } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToastContext } from "@/contexts/ToastContext";
-import { useSettingsContext } from "@/contexts/SettingsContext";
-import { SiteSettings } from "@/hooks/useSettings";
+import {
+  SiteSettings,
+  updateSiteSettings,
+  getSiteSettings,
+  resetSiteSettings,
+} from "@/lib/firebaseSettings";
 import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
 import { isFirebaseInitialized } from "@/lib/firebase";
 import { SettingsDebugPanel } from "@/components/Admin/SettingsDebugPanel";
@@ -32,13 +36,10 @@ export default function AdminSettingsPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuthContext();
   const { showSuccess, showError } = useToastContext();
-  const {
-    settings,
-    loading: settingsLoading,
-    error: settingsError,
-    updateSettings,
-    resetToDefaults,
-  } = useSettingsContext();
+
+  const [settings, setSettings] = useState<SiteSettings>(defaultSiteConfig);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<SiteSettings>(defaultSiteConfig);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -135,19 +136,37 @@ export default function AdminSettingsPage() {
     }
   };
 
+  // Load settings on mount
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        setSettingsLoading(true);
+        const { settings: loadedSettings, error } = await getSiteSettings();
+
+        if (error) {
+          setSettingsError(error);
+        } else {
+          setSettings(loadedSettings);
+          setFormData(loadedSettings);
+          setSettingsError(null);
+        }
+      } catch (err: any) {
+        console.error("[AdminSettings] Error loading settings:", err);
+        setSettingsError(err.message || "Không thể tải cài đặt");
+      } finally {
+        setSettingsLoading(false);
+      }
+    }
+
+    loadSettings();
+  }, []);
+
   useEffect(() => {
     setIsClient(true);
     if (!authLoading && !user) {
       router.push("/auth/login?redirect=/admin/settings");
     }
   }, [user, authLoading, router]);
-
-  // Initialize form with settings when they load
-  useEffect(() => {
-    if (!settingsLoading && settings) {
-      setFormData(settings);
-    }
-  }, [settings, settingsLoading]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -190,9 +209,7 @@ export default function AdminSettingsPage() {
 
     try {
       // Log before calling the update function
-      console.log(
-        "[AdminSettings] About to call updateSettings function from SettingsContext",
-      );
+      console.log("[AdminSettings] About to call updateSiteSettings directly");
 
       // Test Firebase connection
       debugLog("Testing Firebase connection...");
@@ -221,8 +238,12 @@ export default function AdminSettingsPage() {
         return;
       }
 
-      // Call the updateSettings function from context
-      const success = await updateSettings(formData);
+      // Call the updateSiteSettings function directly
+      const { success, error } = await updateSiteSettings(formData);
+
+      if (error) {
+        setSettingsError(error);
+      }
 
       // Log result with the same timestamp for tracking
       console.log(
@@ -231,12 +252,11 @@ export default function AdminSettingsPage() {
       );
 
       if (success) {
+        // Update local settings state if successful
+        setSettings(formData);
         showSuccess("Cài đặt đã được cập nhật thành công!");
       } else {
-        console.error(
-          "[AdminSettings] Update failed. Current error state:",
-          settingsError,
-        );
+        console.error("[AdminSettings] Update failed. Error:", settingsError);
 
         // Show a more specific error if available
         if (settingsError) {
@@ -269,22 +289,21 @@ export default function AdminSettingsPage() {
     ) {
       try {
         console.log("[AdminSettings] Attempting to reset settings to defaults");
-        const success = await resetToDefaults();
+        const { success, error } = await resetSiteSettings();
 
         console.log("[AdminSettings] Reset result:", success);
 
         if (success) {
           setFormData(defaultSiteConfig);
+          setSettings(defaultSiteConfig);
           showSuccess("Đã khôi phục về cài đặt mặc định!");
         } else {
-          console.error(
-            "[AdminSettings] Reset failed. Current error state:",
-            settingsError,
-          );
+          console.error("[AdminSettings] Reset failed. Error:", error);
 
           // Show a more specific error if available
-          if (settingsError) {
-            showError(settingsError);
+          if (error) {
+            setSettingsError(error);
+            showError(error);
           } else {
             showError(
               "Không thể khôi phục cài đặt mặc định. Vui lòng thử lại.",
