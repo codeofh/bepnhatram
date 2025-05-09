@@ -1,27 +1,56 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layout } from "@/components/Layout/Layout";
 import { SEO } from "@/components/SEO/SEO";
-import { siteConfig } from "@/config/siteConfig";
+import { SiteSettings, getSiteSettings } from "@/lib/firebaseSettings";
+import { siteConfig as defaultSiteConfig } from "@/config/siteConfig";
 import { useToastContext } from "@/contexts/ToastContext";
 
 export default function ContactPage() {
   const { showCartNotification } = useToastContext();
+  const [settings, setSettings] = useState<SiteSettings>(defaultSiteConfig);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+
+  // Load settings from Firebase
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const { settings: firebaseSettings } = await getSiteSettings();
+        setSettings(firebaseSettings);
+      } catch (err) {
+        console.error("Error loading settings from Firebase:", err);
+        // Fall back to default settings
+        setSettings(defaultSiteConfig);
+      } finally {
+        setSettingsLoading(false);
+      }
+    }
+
+    loadSettings();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     showCartNotification("development", "Chức năng đang được phát triển");
   };
 
+  // Create a description with fallbacks for SEO
+  const contactDescription = `Thông tin liên hệ ${settings.name}. Địa chỉ: ${
+    settings.contact?.address || defaultSiteConfig.contact.address
+  }. Điện thoại: ${
+    settings.contact?.phone || defaultSiteConfig.contact.phone
+  }. Email: ${settings.contact?.email || defaultSiteConfig.contact.email}`;
+
   return (
     <>
       <SEO
         title="Liên hệ"
-        description={`Thông tin liên hệ ${siteConfig.name}. Địa chỉ: ${siteConfig.contact.address}. Điện thoại: ${siteConfig.contact.phone}. Email: ${siteConfig.contact.email}`}
+        description={contactDescription}
+        siteSettings={settings}
       />
 
-      <Layout>
+      <Layout siteSettings={settings}>
         <main className="flex-1 container mx-auto px-4 py-8">
           <h1 className="text-3xl font-bold mb-8">Liên hệ</h1>
 
@@ -92,7 +121,8 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium text-gray-900">Địa chỉ</h3>
                     <p className="text-gray-600">
-                      {siteConfig.contact.address}
+                      {settings.contact?.address ||
+                        defaultSiteConfig.contact.address}
                     </p>
                   </div>
                 </div>
@@ -101,7 +131,10 @@ export default function ContactPage() {
                   <Phone size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Điện thoại</h3>
-                    <p className="text-gray-600">{siteConfig.contact.phone}</p>
+                    <p className="text-gray-600">
+                      {settings.contact?.phone ||
+                        defaultSiteConfig.contact.phone}
+                    </p>
                   </div>
                 </div>
 
@@ -109,7 +142,10 @@ export default function ContactPage() {
                   <Mail size={24} className="text-blue-600 mr-4 mt-1" />
                   <div>
                     <h3 className="font-medium text-gray-900">Email</h3>
-                    <p className="text-gray-600">{siteConfig.contact.email}</p>
+                    <p className="text-gray-600">
+                      {settings.contact?.email ||
+                        defaultSiteConfig.contact.email}
+                    </p>
                   </div>
                 </div>
 
@@ -118,7 +154,8 @@ export default function ContactPage() {
                   <div>
                     <h3 className="font-medium text-gray-900">Giờ mở cửa</h3>
                     <p className="text-gray-600">
-                      {siteConfig.contact.openingHours}
+                      {settings.contact?.openingHours ||
+                        defaultSiteConfig.contact.openingHours}
                     </p>
                   </div>
                 </div>
@@ -126,7 +163,9 @@ export default function ContactPage() {
 
               <div className="mt-8 h-64 bg-gray-200 rounded-lg overflow-hidden">
                 <iframe
-                  src={siteConfig.maps.embedUrl}
+                  src={
+                    settings.maps?.embedUrl || defaultSiteConfig.maps.embedUrl
+                  }
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
