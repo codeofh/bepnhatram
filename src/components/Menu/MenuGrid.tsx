@@ -9,6 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "sonner";
 import {
   Pagination,
   PaginationContent,
@@ -107,7 +108,7 @@ export function MenuGrid({
       ) : (
         <div className="space-y-3">
           <ChefHat className="h-12 w-12 mx-auto text-gray-300" />
-          <h3 className="text-lg font-medium">Chưa có món ăn nào</h3>
+          <h3 className="text-lg font-medium">Ch��a có món ăn nào</h3>
           <p className="text-gray-500 max-w-md mx-auto">
             Hiện tại chưa có món ăn nào được thêm vào thực đơn.
           </p>
@@ -118,6 +119,8 @@ export function MenuGrid({
 
   return (
     <div id="menu-grid">
+      {/* Toast notification container for cart actions */}
+      <Toaster />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {currentItems.length > 0 ? (
           currentItems.map((item) => <MenuItem key={item.id} item={item} />)
