@@ -44,6 +44,36 @@ export default function AdminSettingsPage() {
   const [isClient, setIsClient] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
 
+  // Reference to keep track of any active debug elements and timeouts
+  const debugRef = React.useRef<{
+    element: HTMLDivElement | null;
+    timeout: number | null;
+  }>({
+    element: null,
+    timeout: null,
+  });
+
+  // Clean up debug elements when component unmounts
+  useEffect(() => {
+    return () => {
+      // When component unmounts, clear any timeouts and remove any debug elements
+      try {
+        if (debugRef.current.timeout) {
+          window.clearTimeout(debugRef.current.timeout);
+          debugRef.current.timeout = null;
+        }
+
+        const debugElement = document.getElementById("settings-debug-alert");
+        if (debugElement && debugElement.parentNode) {
+          debugElement.parentNode.removeChild(debugElement);
+        }
+        debugRef.current.element = null;
+      } catch (err) {
+        console.error("Error cleaning up debug elements:", err);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     setIsClient(true);
     if (!authLoading && !user) {
@@ -86,32 +116,81 @@ export default function AdminSettingsPage() {
     try {
       console.log("[AdminSettings] Submitting form data:", formData);
 
-      // Add error display for debugging
-      const errorAlert = document.createElement("div");
-      errorAlert.style.padding = "10px";
-      errorAlert.style.margin = "10px 0";
-      errorAlert.style.backgroundColor = "#fff1f0";
-      errorAlert.style.border = "1px solid #ffccc7";
-      errorAlert.style.borderRadius = "4px";
-      errorAlert.style.maxHeight = "200px";
-      errorAlert.style.overflow = "auto";
-      errorAlert.style.position = "fixed";
-      errorAlert.style.bottom = "10px";
-      errorAlert.style.right = "10px";
-      errorAlert.style.zIndex = "9999";
-      errorAlert.style.display = "none";
-      document.body.appendChild(errorAlert);
+      // Create a reference to keep track of our debug element
+      let errorAlert: HTMLDivElement | null = null;
+      let removeTimeout: number | null = null;
+
+      // Function to safely create the debug element
+      const createDebugElement = () => {
+        // First remove any existing debug element to avoid duplicates
+        removeDebugElement();
+
+        // Create new element
+        errorAlert = document.createElement("div");
+        errorAlert.style.padding = "10px";
+        errorAlert.style.margin = "10px 0";
+        errorAlert.style.backgroundColor = "#fff1f0";
+        errorAlert.style.border = "1px solid #ffccc7";
+        errorAlert.style.borderRadius = "4px";
+        errorAlert.style.maxHeight = "200px";
+        errorAlert.style.overflow = "auto";
+        errorAlert.style.position = "fixed";
+        errorAlert.style.bottom = "10px";
+        errorAlert.style.right = "10px";
+        errorAlert.style.zIndex = "9999";
+        errorAlert.style.display = "none";
+
+        // Add an ID to make it easier to identify
+        errorAlert.id = "settings-debug-alert";
+
+        // Add to document
+        document.body.appendChild(errorAlert);
+
+        // Set timeout for auto-removal
+        if (removeTimeout) {
+          window.clearTimeout(removeTimeout);
+        }
+        removeTimeout = window.setTimeout(removeDebugElement, 30000);
+      };
+
+      // Function to safely remove the debug element
+      const removeDebugElement = () => {
+        try {
+          // Clear the timeout if it exists
+          if (removeTimeout) {
+            window.clearTimeout(removeTimeout);
+            removeTimeout = null;
+          }
+
+          // Check if our element exists in the document
+          const existingAlert = document.getElementById("settings-debug-alert");
+          if (existingAlert && existingAlert.parentNode) {
+            existingAlert.parentNode.removeChild(existingAlert);
+          }
+
+          // Reset our reference
+          errorAlert = null;
+        } catch (err) {
+          console.error("Error removing debug element:", err);
+        }
+      };
+
+      // Create the debug element
+      createDebugElement();
 
       // Create a debugging function
       const debugLog = (message: string) => {
         console.log(message);
-        errorAlert.style.display = "block";
-        errorAlert.innerHTML += `<div>${message}</div>`;
 
-        // Auto-remove after 30 seconds
-        setTimeout(() => {
-          document.body.removeChild(errorAlert);
-        }, 30000);
+        // Make sure our element exists
+        if (!errorAlert || !errorAlert.parentNode) {
+          createDebugElement();
+        }
+
+        if (errorAlert) {
+          errorAlert.style.display = "block";
+          errorAlert.innerHTML += `<div>${message}</div>`;
+        }
       };
 
       // Test Firestore connection
@@ -174,6 +253,12 @@ export default function AdminSettingsPage() {
       );
     } finally {
       setIsSubmitting(false);
+
+      // Clean up the debug element when we're done
+      if (removeTimeout) {
+        window.clearTimeout(removeTimeout);
+      }
+      removeDebugElement();
     }
   };
 
