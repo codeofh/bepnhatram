@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { Loader2, Save, RefreshCw, AlertTriangle } from "lucide-react";
@@ -44,8 +44,8 @@ export default function AdminSettingsPage() {
   const [isClient, setIsClient] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
 
-  // Reference to keep track of any active debug elements and timeouts
-  const debugRef = React.useRef<{
+  // Refs for debugging elements
+  const debugRef = useRef<{
     element: HTMLDivElement | null;
     timeout: number | null;
   }>({
@@ -53,26 +53,86 @@ export default function AdminSettingsPage() {
     timeout: null,
   });
 
-  // Clean up debug elements when component unmounts
-  useEffect(() => {
-    return () => {
-      // When component unmounts, clear any timeouts and remove any debug elements
-      try {
-        if (debugRef.current.timeout) {
-          window.clearTimeout(debugRef.current.timeout);
-          debugRef.current.timeout = null;
-        }
+  // Function to safely create debug element
+  const createDebugElement = () => {
+    // First clean up any existing debug element
+    cleanupDebugElement();
 
-        const debugElement = document.getElementById("settings-debug-alert");
-        if (debugElement && debugElement.parentNode) {
-          debugElement.parentNode.removeChild(debugElement);
-        }
-        debugRef.current.element = null;
-      } catch (err) {
-        console.error("Error cleaning up debug elements:", err);
+    // Create new element
+    const errorAlert = document.createElement("div");
+    errorAlert.id = "settings-debug-alert";
+    errorAlert.style.padding = "10px";
+    errorAlert.style.margin = "10px 0";
+    errorAlert.style.backgroundColor = "#fff1f0";
+    errorAlert.style.border = "1px solid #ffccc7";
+    errorAlert.style.borderRadius = "4px";
+    errorAlert.style.maxHeight = "200px";
+    errorAlert.style.overflow = "auto";
+    errorAlert.style.position = "fixed";
+    errorAlert.style.bottom = "10px";
+    errorAlert.style.right = "10px";
+    errorAlert.style.zIndex = "9999";
+    errorAlert.style.display = "none";
+
+    // Add to document
+    document.body.appendChild(errorAlert);
+
+    // Save reference
+    debugRef.current.element = errorAlert;
+
+    // Set timeout for auto-removal
+    if (debugRef.current.timeout) {
+      window.clearTimeout(debugRef.current.timeout);
+    }
+
+    debugRef.current.timeout = window.setTimeout(() => {
+      cleanupDebugElement();
+    }, 30000);
+
+    return errorAlert;
+  };
+
+  // Function to safely cleanup debug element
+  const cleanupDebugElement = () => {
+    try {
+      // Clear the timeout if it exists
+      if (debugRef.current.timeout) {
+        window.clearTimeout(debugRef.current.timeout);
+        debugRef.current.timeout = null;
       }
-    };
-  }, []);
+
+      // Remove element if it exists
+      const debugElement = document.getElementById("settings-debug-alert");
+      if (debugElement && debugElement.parentNode) {
+        debugElement.parentNode.removeChild(debugElement);
+      }
+
+      debugRef.current.element = null;
+    } catch (err) {
+      console.error("Error cleaning up debug element:", err);
+    }
+  };
+
+  // Function to log debug messages
+  const debugLog = (message: string) => {
+    console.log(message);
+
+    try {
+      // Get or create debug element
+      let errorAlert = debugRef.current.element;
+      if (!errorAlert || !document.getElementById("settings-debug-alert")) {
+        errorAlert = createDebugElement();
+      }
+
+      // Add message
+      if (errorAlert) {
+        errorAlert.style.display = "block";
+        errorAlert.innerHTML += `<div>${message}</div>`;
+      }
+    } catch (err) {
+      console.error("Error logging debug message:", err);
+    }
+  };
 
   useEffect(() => {
     setIsClient(true);
@@ -87,6 +147,13 @@ export default function AdminSettingsPage() {
       setFormData(settings);
     }
   }, [settings, settingsLoading]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupDebugElement();
+    };
+  }, []);
 
   const handleChange = (
     section: keyof SiteSettings,
@@ -116,88 +183,11 @@ export default function AdminSettingsPage() {
     try {
       console.log("[AdminSettings] Submitting form data:", formData);
 
-      // Create a reference to keep track of our debug element
-      let errorAlert: HTMLDivElement | null = null;
-      let removeTimeout: number | null = null;
-
-      // Function to safely create the debug element
-      const createDebugElement = () => {
-        // First remove any existing debug element to avoid duplicates
-        removeDebugElement();
-
-        // Create new element
-        errorAlert = document.createElement("div");
-        errorAlert.style.padding = "10px";
-        errorAlert.style.margin = "10px 0";
-        errorAlert.style.backgroundColor = "#fff1f0";
-        errorAlert.style.border = "1px solid #ffccc7";
-        errorAlert.style.borderRadius = "4px";
-        errorAlert.style.maxHeight = "200px";
-        errorAlert.style.overflow = "auto";
-        errorAlert.style.position = "fixed";
-        errorAlert.style.bottom = "10px";
-        errorAlert.style.right = "10px";
-        errorAlert.style.zIndex = "9999";
-        errorAlert.style.display = "none";
-
-        // Add an ID to make it easier to identify
-        errorAlert.id = "settings-debug-alert";
-
-        // Add to document
-        document.body.appendChild(errorAlert);
-
-        // Set timeout for auto-removal
-        if (removeTimeout) {
-          window.clearTimeout(removeTimeout);
-        }
-        removeTimeout = window.setTimeout(removeDebugElement, 30000);
-      };
-
-      // Function to safely remove the debug element
-      const removeDebugElement = () => {
-        try {
-          // Clear the timeout if it exists
-          if (removeTimeout) {
-            window.clearTimeout(removeTimeout);
-            removeTimeout = null;
-          }
-
-          // Check if our element exists in the document
-          const existingAlert = document.getElementById("settings-debug-alert");
-          if (existingAlert && existingAlert.parentNode) {
-            existingAlert.parentNode.removeChild(existingAlert);
-          }
-
-          // Reset our reference
-          errorAlert = null;
-        } catch (err) {
-          console.error("Error removing debug element:", err);
-        }
-      };
-
-      // Create the debug element
-      createDebugElement();
-
-      // Create a debugging function
-      const debugLog = (message: string) => {
-        console.log(message);
-
-        // Make sure our element exists
-        if (!errorAlert || !errorAlert.parentNode) {
-          createDebugElement();
-        }
-
-        if (errorAlert) {
-          errorAlert.style.display = "block";
-          errorAlert.innerHTML += `<div>${message}</div>`;
-        }
-      };
-
-      // Test Firestore connection
+      // Test Firebase connection
       debugLog("Testing Firebase connection...");
       try {
-        if (!isFirebaseInitialized) {
-          debugLog("isFirebaseInitialized function is not defined!");
+        if (typeof isFirebaseInitialized !== "function") {
+          debugLog("isFirebaseInitialized is not a function");
           showError("Firebase initialization function is missing!");
           return;
         }
@@ -209,7 +199,7 @@ export default function AdminSettingsPage() {
         } else {
           debugLog("Firebase connection OK");
         }
-      } catch (firebaseError) {
+      } catch (firebaseError: any) {
         console.error("[AdminSettings] Firebase check error:", firebaseError);
         debugLog(
           `Firebase error: ${firebaseError?.message || "Unknown error"}`,
@@ -249,16 +239,11 @@ export default function AdminSettingsPage() {
       console.error("[AdminSettings] Error stack:", error.stack);
 
       showError(
-        `Đã xảy ra lỗi khi cập nhật cài đặt: ${error.message || "Lỗi không xác định"}`,
+        `Đã xảy ra lỗi khi cập nhật cài đặt: ${error.message || "Lỗi không xác ��ịnh"}`,
       );
     } finally {
       setIsSubmitting(false);
-
-      // Clean up the debug element when we're done
-      if (removeTimeout) {
-        window.clearTimeout(removeTimeout);
-      }
-      removeDebugElement();
+      // Do not clean up the debug element here to keep the message visible
     }
   };
 
