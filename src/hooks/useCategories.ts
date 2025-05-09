@@ -10,6 +10,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useFirestore } from "./useFirestore";
+import { sampleCategories } from "@/data/categories";
 
 export interface Category {
   id: string;
@@ -19,8 +20,6 @@ export interface Category {
   icon?: string;
   createdAt?: number; // Timestamp in milliseconds
 }
-
-import { sampleCategories } from "@/data/categories";
 
 export const useCategories = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -275,42 +274,6 @@ export const useCategories = () => {
   useEffect(() => {
     fetchCategories();
   }, []);
-
-  // Import sample categories
-  const importSampleCategories = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const now = Date.now();
-
-      // Create categories with timestamps
-      const categoriesToImport = sampleCategories.map((cat, index) => ({
-        ...cat,
-        createdAt: now + index, // Add sequential timestamps
-      }));
-
-      // Save categories to Firestore
-      await Promise.all(
-        categoriesToImport.map((category) =>
-          setDocument(COLLECTION_NAME, category.id, category),
-        ),
-      );
-
-      // Update local state
-      setCategories(categoriesToImport);
-
-      return { success: true };
-    } catch (err: any) {
-      console.error("Error importing sample categories:", err);
-      setError("Không thể nhập dữ liệu mẫu. Vui lòng thử lại sau.");
-      return {
-        success: false,
-        error: err.message || "Không thể nhập dữ liệu mẫu",
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return {
     categories,
