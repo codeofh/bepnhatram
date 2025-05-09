@@ -26,7 +26,7 @@ export function MenuItem({ item }: MenuItemProps) {
   const { name, description, price, image, rating, sizes, category } = item;
   const [isHovered, setIsHovered] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(
-    sizes && sizes.length > 0 ? sizes[0].name : null,
+    sizes && sizes.length > 0 ? sizes[0].name : null
   );
 
   // Get current price based on selected size or default price
@@ -89,11 +89,13 @@ export function MenuItem({ item }: MenuItemProps) {
     // In a real app, this would dispatch to a cart context or store
     // For now, we'll just show a toast notification
     toast.success(
-      `Đã thêm ${item.name}${selectedSize ? ` (${selectedSize})` : ""} vào giỏ hàng!`,
+      `Đã thêm ${item.name}${
+        selectedSize ? ` (${selectedSize})` : ""
+      } vào giỏ hàng!`,
       {
         position: "top-right",
         duration: 3000,
-      },
+      }
     );
 
     // Log to console for debugging
@@ -118,7 +120,9 @@ export function MenuItem({ item }: MenuItemProps) {
       {/* Category badge - old layout */}
       <div className="absolute top-0 left-0 z-10">
         <div
-          className={`px-3 py-1 rounded-br-lg text-white font-medium text-sm ${getCategoryBgColor(category)}`}
+          className={`px-3 py-1 rounded-br-lg text-white font-medium text-sm ${getCategoryBgColor(
+            category
+          )}`}
         >
           {getCategoryName(category)}
         </div>
@@ -126,7 +130,9 @@ export function MenuItem({ item }: MenuItemProps) {
 
       {/* Quick actions on hover */}
       <div
-        className={`absolute top-2 right-2 z-10 flex gap-1 transition-opacity duration-200 ${isHovered ? "opacity-100" : "opacity-0"}`}
+        className={`absolute top-2 right-2 z-10 flex gap-1 transition-opacity duration-200 ${
+          isHovered ? "opacity-100" : "opacity-0"
+        }`}
       >
         <TooltipProvider>
           <Tooltip>
@@ -175,7 +181,10 @@ export function MenuItem({ item }: MenuItemProps) {
       </div>
       <div className="p-4">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-bold line-clamp-1" title={name}>
+          <h3
+            className="text-lg font-bold line-clamp-2 min-h-[56px]"
+            title={name}
+          >
             {name}
           </h3>
           <div className="flex items-center">
@@ -184,7 +193,7 @@ export function MenuItem({ item }: MenuItemProps) {
           </div>
         </div>
         <p
-          className="text-gray-600 text-sm line-clamp-2 min-h-[40px]"
+          className="text-gray-600 text-sm line-clamp-2 min-h-[40px] overflow-hidden text-ellipsis"
           title={description}
         >
           {description}
