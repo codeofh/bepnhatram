@@ -49,7 +49,7 @@ export function useSliderManagement() {
 
       const slidersQuery = query(
         collection(db, SLIDER_COLLECTION),
-        orderBy("displayOrder", "asc"),
+        orderBy("createdAt", "desc"), // Order by creation date, newest first
       );
 
       const snapshot = await getDocs(slidersQuery);

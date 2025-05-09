@@ -117,6 +117,9 @@ export function SliderForm({
                         {...field}
                       />
                     </FormControl>
+                    <FormDescription>
+                      Văn bản hiển thị trên nút kêu gọi hành động
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -140,28 +143,56 @@ export function SliderForm({
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="isActive"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">
-                      Trạng thái hiển thị
-                    </FormLabel>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="displayOrder"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Thứ tự hiển thị</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        {...field}
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value === "" ? "" : Number(e.target.value),
+                          )
+                        }
+                      />
+                    </FormControl>
                     <FormDescription>
-                      Bật để hiển thị slider này trên trang chủ
+                      Số nhỏ hơn sẽ hiển thị trước (ví dụ: 0 hiển thị đầu tiên)
                     </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="isActive"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 h-full">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Trạng thái hiển thị
+                      </FormLabel>
+                      <FormDescription>
+                        Bật để hiển thị slider này trên trang chủ
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
 
           <div>
@@ -228,7 +259,7 @@ export function SliderForm({
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {initialData ? "��ang cập nhật..." : "Đang thêm..."}
+                {initialData ? "Đang cập nhật..." : "Đang thêm..."}
               </>
             ) : initialData ? (
               "Cập nhật"

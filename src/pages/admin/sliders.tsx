@@ -17,6 +17,11 @@ import {
   AlertTriangle,
   ImageIcon,
   Link as LinkIcon,
+  Calendar,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Layers,
 } from "lucide-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { SliderForm } from "@/components/Admin/SliderForm";
@@ -317,7 +322,7 @@ export default function AdminSlidersPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[100px]">Thứ tự</TableHead>
+                  <TableHead className="w-[100px]">Thứ tự hiển thị</TableHead>
                   <TableHead className="w-[120px]">Ảnh</TableHead>
                   <TableHead>Tiêu đề</TableHead>
                   <TableHead className="hidden md:table-cell">Mô tả</TableHead>
@@ -325,6 +330,9 @@ export default function AdminSlidersPage() {
                     Nút kêu gọi
                   </TableHead>
                   <TableHead>Trạng thái</TableHead>
+                  <TableHead className="hidden md:table-cell w-[180px]">
+                    Ngày tạo
+                  </TableHead>
                   <TableHead className="text-right">Thao tác</TableHead>
                 </TableRow>
               </TableHeader>
@@ -333,14 +341,17 @@ export default function AdminSlidersPage() {
                   <TableRow key={slider.id}>
                     <TableCell>
                       <div className="flex items-center">
-                        <span className="font-medium mr-2">{index + 1}</span>
+                        <span className="font-medium mr-2">
+                          {slider.displayOrder || index + 1}
+                        </span>
                         <div className="flex flex-col">
                           <Button
                             variant="ghost"
                             size="icon"
                             disabled={index === 0}
                             onClick={() => handleMoveUp(index)}
-                            className="h-6 w-6"
+                            className="h-6 w-6 hover:bg-gray-100"
+                            title="Di chuyển lên"
                           >
                             <ArrowUp className="h-4 w-4" />
                           </Button>
@@ -349,7 +360,8 @@ export default function AdminSlidersPage() {
                             size="icon"
                             disabled={index === sliders.length - 1}
                             onClick={() => handleMoveDown(index)}
-                            className="h-6 w-6"
+                            className="h-6 w-6 hover:bg-gray-100"
+                            title="Di chuyển xuống"
                           >
                             <ArrowDown className="h-4 w-4" />
                           </Button>
@@ -408,45 +420,108 @@ export default function AdminSlidersPage() {
                         )}
                       </Button>
                     </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      <div className="flex items-center text-gray-500 text-sm">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        {slider.createdAt
+                          ? new Date(
+                              slider.createdAt.toDate(),
+                            ).toLocaleDateString("vi-VN")
+                          : "N/A"}
+                        <Clock className="h-3 w-3 ml-2 mr-1" />
+                        {slider.createdAt
+                          ? new Date(
+                              slider.createdAt.toDate(),
+                            ).toLocaleTimeString("vi-VN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : ""}
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <ArrowUpDown className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleEditSlider(slider)}
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Chỉnh sửa
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handleToggleActive(slider)}
-                          >
-                            {slider.isActive ? (
-                              <>
-                                <ToggleLeft className="mr-2 h-4 w-4" />
-                                Ẩn slider
-                              </>
-                            ) : (
-                              <>
-                                <ToggleRight className="mr-2 h-4 w-4" />
-                                Hiển thị slider
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDeleteSlider(slider)}
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Xóa
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                      <div className="flex justify-end space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                          title="Chỉnh sửa"
+                          onClick={() => handleEditSlider(slider)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={`h-8 w-8 ${slider.isActive ? "text-green-600 hover:text-green-800 hover:bg-green-50" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
+                          title={
+                            slider.isActive
+                              ? "Đang hiển thị - Click để ẩn"
+                              : "Đang ẩn - Click để hiển thị"
+                          }
+                          onClick={() => handleToggleActive(slider)}
+                        >
+                          {slider.isActive ? (
+                            <CheckCircle className="h-4 w-4" />
+                          ) : (
+                            <XCircle className="h-4 w-4" />
+                          )}
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-600 hover:text-red-800 hover:bg-red-50"
+                          title="Xóa"
+                          onClick={() => handleDeleteSlider(slider)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                            >
+                              <ArrowUpDown className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleEditSlider(slider)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Chỉnh sửa
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleToggleActive(slider)}
+                            >
+                              {slider.isActive ? (
+                                <>
+                                  <ToggleLeft className="mr-2 h-4 w-4" />
+                                  Ẩn slider
+                                </>
+                              ) : (
+                                <>
+                                  <ToggleRight className="mr-2 h-4 w-4" />
+                                  Hiển thị slider
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDeleteSlider(slider)}
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Xóa
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

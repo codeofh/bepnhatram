@@ -16,6 +16,8 @@ import {
   Globe,
   User,
   ShoppingBag,
+  ImageIcon,
+  Layers,
 } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -91,7 +93,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
     {
       name: "Slider",
       path: "/admin/sliders",
-      icon: <Image size={20} />,
+      icon: <Layers size={20} />,
     },
     {
       name: "Người dùng",
@@ -210,7 +212,7 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
                   <DropdownMenuItem asChild>
                     <Link href="/account" className="w-full flex items-center">
                       <User className="h-4 w-4 mr-2" />
-                      Tài khoản c���a tôi
+                      Tài khoản của tôi
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
