@@ -65,7 +65,7 @@ export default function DebugFirebasePage() {
           const settingsCollection = collection(db, "settings");
           const settingsQuery = await getDocs(settingsCollection);
           results.settingsCollectionReadable = true;
-          results.settingsCount = settingsQuery.size;
+          results.settingsCount = settingsQuery.size.toString();
 
           // Try to read settings document
           try {

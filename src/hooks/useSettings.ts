@@ -147,10 +147,15 @@ export function useSettings(): UseSettingsReturn {
           value !== null
         ) {
           // For nested objects, merge with default values
-          result[settingKey] = {
-            ...result[settingKey],
+          // Use type assertion to handle complex types safely
+          const resultValue = result[settingKey];
+          const mergedValue = {
+            ...(typeof resultValue === 'object' && resultValue !== null ? resultValue : {}),
             ...value,
           };
+          
+          // Use type assertion to assign back to the result
+          (result as any)[settingKey] = mergedValue;
         } else {
           // For primitive values, replace entirely
           (result as any)[settingKey] = value;
@@ -245,6 +250,7 @@ export function useSettings(): UseSettingsReturn {
       );
 
       if (!db) {
+        const errorMsg = "Firestore instance is not available";
         setError(errorMsg);
         return false;
       }

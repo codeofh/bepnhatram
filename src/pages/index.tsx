@@ -145,10 +145,8 @@ export default function Home() {
           ) : error ? (
             <div className="mb-6">
               <Alert
-                variant={
-                  error.includes("kết nối mạng") ? "warning" : "destructive"
-                }
-                className="mb-4"
+                variant="destructive"
+                className={`mb-4 ${error.includes("kết nối mạng") ? "border-yellow-500 text-yellow-700" : ""}`}
               >
                 <AlertTriangle className="h-4 w-4 mr-2" />
                 <AlertTitle>Lỗi tải dữ liệu</AlertTitle>

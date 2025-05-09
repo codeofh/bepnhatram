@@ -289,10 +289,12 @@ export function useSliderManagement() {
           throw new Error("Firestore is not initialized");
         }
 
-        const batch = writeBatch(db);
+        const batch = writeBatch(db!);
 
         sliders.forEach((slider, index) => {
-          const docRef = doc(db, SLIDER_COLLECTION, slider.id);
+          // We've already checked that db is not null above, but TypeScript doesn't know that
+          // So we need to use a non-null assertion operator (!) here
+          const docRef = doc(db!, SLIDER_COLLECTION, slider.id);
           batch.update(docRef, {
             displayOrder: index,
             updatedAt: serverTimestamp(),

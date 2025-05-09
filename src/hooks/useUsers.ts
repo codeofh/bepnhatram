@@ -392,7 +392,7 @@ export function useUsers(): UseUsersReturn {
           email,
           name,
           photoURL: faker.image.avatar(),
-          phone: faker.phone.number("0#########"),
+          phone: faker.phone.number(),
           createdAt:
             now - faker.number.int({ min: 0, max: 30 * 24 * 60 * 60 * 1000 }), // Up to 30 days ago
           lastLogin:
