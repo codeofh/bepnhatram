@@ -84,26 +84,76 @@ export default function AdminSettingsPage() {
 
     try {
       console.log("[AdminSettings] Submitting form data:", formData);
+
+      // Add error display for debugging
+      const errorAlert = document.createElement("div");
+      errorAlert.style.padding = "10px";
+      errorAlert.style.margin = "10px 0";
+      errorAlert.style.backgroundColor = "#fff1f0";
+      errorAlert.style.border = "1px solid #ffccc7";
+      errorAlert.style.borderRadius = "4px";
+      errorAlert.style.maxHeight = "200px";
+      errorAlert.style.overflow = "auto";
+      errorAlert.style.position = "fixed";
+      errorAlert.style.bottom = "10px";
+      errorAlert.style.right = "10px";
+      errorAlert.style.zIndex = "9999";
+      errorAlert.style.display = "none";
+      document.body.appendChild(errorAlert);
+
+      // Create a debugging function
+      const debugLog = (message: string) => {
+        console.log(message);
+        errorAlert.style.display = "block";
+        errorAlert.innerHTML += `<div>${message}</div>`;
+
+        // Auto-remove after 30 seconds
+        setTimeout(() => {
+          document.body.removeChild(errorAlert);
+        }, 30000);
+      };
+
+      // Test Firestore connection
+      debugLog("Testing Firebase connection...");
+      if (!isFirebaseInitialized()) {
+        debugLog("Firebase is not initialized!");
+        showError("Firebase không được khởi tạo, không thể lưu cài đặt!");
+        return;
+      } else {
+        debugLog("Firebase connection OK");
+      }
+
       const success = await updateSettings(formData);
 
       console.log("[AdminSettings] Update result:", success);
+      debugLog(`Update result: ${success ? "Success" : "Failed"}`);
 
       if (success) {
         showSuccess("Cài đặt đã được cập nhật thành công!");
+        debugLog("Settings updated successfully");
       } else {
         console.error(
           "[AdminSettings] Update failed. Current error state:",
           settingsError,
         );
-        showError("Không thể cập nhật cài đặt. Vui lòng thử lại.");
-        showError(settingsError || "Lỗi không xác định");
+        debugLog(`Update failed. Error: ${settingsError || "null"}`);
+
+        // Show a more specific error if available
+        if (settingsError) {
+          showError(settingsError);
+        } else {
+          showError("Không thể cập nhật cài đặt. Vui lòng thử lại.");
+          debugLog("No specific error message available");
+        }
       }
     } catch (error: any) {
       console.error("[AdminSettings] Exception during settings update:", error);
       console.error("[AdminSettings] Error message:", error.message);
       console.error("[AdminSettings] Error stack:", error.stack);
 
-      showError(`Đã xảy ra lỗi khi cập nhật cài đặt: ${error.message}`);
+      showError(
+        `Đã xảy ra lỗi khi cập nhật cài đặt: ${error.message || "Lỗi không xác định"}`,
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -129,8 +179,15 @@ export default function AdminSettingsPage() {
             "[AdminSettings] Reset failed. Current error state:",
             settingsError,
           );
-          showError("Không thể khôi phục cài đặt mặc định. Vui lòng thử lại.");
-          showError(settingsError || "Lỗi không xác định");
+
+          // Show a more specific error if available
+          if (settingsError) {
+            showError(settingsError);
+          } else {
+            showError(
+              "Không thể khôi phục cài đặt mặc định. Vui lòng thử lại.",
+            );
+          }
         }
       } catch (error: any) {
         console.error(
@@ -141,7 +198,7 @@ export default function AdminSettingsPage() {
         console.error("[AdminSettings] Error stack:", error.stack);
 
         showError(
-          `Đã xảy ra lỗi khi khôi phục cài đặt mặc định: ${error.message}`,
+          `Đã xảy ra lỗi khi khôi phục cài đặt mặc định: ${error.message || "Lỗi không xác định"}`,
         );
       }
     }
