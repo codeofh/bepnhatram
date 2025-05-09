@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Lock, Mail, Facebook, Loader2, User as UserIcon } from "lucide-react";
+import { Lock, Mail, Facebook, Loader2, User as UserIcon, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -41,22 +41,32 @@ export function LoginForm() {
   const {
     login,
     register,
+    resetPassword,
     error: authError,
     loading,
     loginWithGoogle,
     loginWithFacebook,
   } = useAuthContext();
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSocialSubmitting, setIsSocialSubmitting] = useState<string | null>(
-    null,
-  );
+  const [isSocialSubmitting, setIsSocialSubmitting] = useState<string | null>(null);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
+    },
+  });
+
+  const forgotPasswordForm = useForm<{ email: string }>({
+    resolver: zodResolver(z.object({
+      email: z.string().email({ message: "Email không hợp lệ" }),
+    })),
+    defaultValues: {
+      email: "",
     },
   });
 
@@ -72,6 +82,7 @@ export function LoginForm() {
 
   async function onLoginSubmit(data: LoginFormValues) {
     setError(null);
+    setSuccessMessage(null);
     setIsSubmitting(true);
     try {
       await login(data.email, data.password);
@@ -81,7 +92,26 @@ export function LoginForm() {
       setIsSubmitting(false);
     }
   }
-  
+
+  async function onForgotPasswordSubmit(data: { email: string }) {
+    setError(null);
+    setSuccessMessage(null);
+    setIsSubmitting(true);
+    try {
+      const result = await resetPassword(data.email);
+      if (result) {
+        setSuccessMessage(`Đã gửi email đặt lại mật khẩu đến ${data.email}. Vui lòng kiểm tra hộp thư của bạn.`);
+        forgotPasswordForm.reset();
+      } else {
+        setError("Không thể gửi email đặt lại mật khẩu");
+      }
+    } catch (err: any) {
+      setError(err.message || "Đã xảy ra lỗi khi đặt lại mật khẩu");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   async function onRegisterSubmit(data: RegisterFormValues) {
     setError(null);
     setIsSubmitting(true);
@@ -133,15 +163,85 @@ export function LoginForm() {
         </Alert>
       )}
 
+      {successMessage && (
+        <Alert className="bg-green-50 border-green-200 text-green-800">
+          <AlertDescription>{successMessage}</AlertDescription>
+        </Alert>
+      )}
+
       <Tabs defaultValue="login" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="login">Đăng nhập</TabsTrigger>
           <TabsTrigger value="register">Đăng ký</TabsTrigger>
         </TabsList>
-        
-        <TabsContent value="login" className="mt-6">
-          <Form {...loginForm}>
-            <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-6">
+
+        {showForgotPassword ? (
+          <div className="mt-6 space-y-6">
+            <h2 className="text-lg font-medium">Quên mật khẩu</h2>
+            <p className="text-sm text-gray-600">
+              Nhập email của bạn để nhận liên kết đặt lại mật khẩu
+            </p>
+
+            <Form {...forgotPasswordForm}>
+              <form onSubmit={forgotPasswordForm.handleSubmit(onForgotPasswordSubmit)} className="space-y-6">
+                <FormField
+                  control={forgotPasswordForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input
+                            placeholder="admin@example.com"
+                            className="pl-10"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="space-y-3">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Đang gửi...
+                      </>
+                    ) : (
+                      "Gửi liên kết đặt lại"
+                    )}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full"
+                    onClick={() => {
+                      setShowForgotPassword(false);
+                      setError(null);
+                      setSuccessMessage(null);
+                    }}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Quay lại đăng nhập
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          </div>
+        ) : (
+          <TabsContent value="login" className="mt-6">
+            <Form {...loginForm}>
+              <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-6">
               <FormField
                 control={loginForm.control}
                 name="email"
@@ -185,20 +285,37 @@ export function LoginForm() {
                 )}
               />
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isSubmitting || loading || isSocialSubmitting !== null}
-              >
-                {isSubmitting || loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Đang đăng nhập...
-                  </>
-                ) : (
-                  "Đăng nhập"
-                )}
-              </Button>
+                <div className="space-y-2">
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isSubmitting || loading || isSocialSubmitting !== null}
+                  >
+                    {isSubmitting || loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Đang đăng nhập...
+                      </>
+                    ) : (
+                      "Đăng nhập"
+                    )}
+                  </Button>
+
+                  <div className="text-center">
+                    <Button
+                      variant="link"
+                      className="text-sm text-blue-600 p-0 h-auto"
+                      onClick={() => {
+                        setShowForgotPassword(true);
+                        setError(null);
+                        setSuccessMessage(null);
+                      }}
+                      type="button"
+                    >
+                      Quên mật khẩu?
+                    </Button>
+                  </div>
+                </div>
             </form>
           </Form>
 
@@ -242,7 +359,7 @@ export function LoginForm() {
             </Button>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="register" className="mt-6">
           <Form {...registerForm}>
             <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-6">
@@ -266,7 +383,7 @@ export function LoginForm() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={registerForm.control}
                 name="email"
@@ -309,7 +426,7 @@ export function LoginForm() {
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={registerForm.control}
                 name="confirmPassword"
@@ -348,7 +465,7 @@ export function LoginForm() {
               </Button>
             </form>
           </Form>
-          
+
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
