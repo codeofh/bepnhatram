@@ -17,6 +17,7 @@ import {
   Timestamp,
   DocumentData,
   QueryConstraint,
+  writeBatch,
 } from "firebase/firestore";
 
 export function useMenuManagement() {
@@ -187,7 +188,7 @@ export function useMenuManagement() {
         // Save to Firestore
         await setDoc(newDocRef, newItem);
 
-        showSuccess("Đã thêm món ăn mới thành công!");
+        showSuccess("Đã thêm món ăn mới th��nh công!");
         return newDocRef.id;
       } catch (err: any) {
         console.error("Error adding menu item:", err);
@@ -380,7 +381,7 @@ export function useMenuManagement() {
         }
 
         // Create a batch
-        let currentBatch = db.batch();
+        let currentBatch = writeBatch(db);
         let operationCount = 0;
         const MAX_OPERATIONS = 450; // Using a lower number than 500 for safety
 
@@ -404,7 +405,7 @@ export function useMenuManagement() {
           // If we reach the maximum operations per batch, commit this batch and start a new one
           if (operationCount >= MAX_OPERATIONS) {
             await currentBatch.commit();
-            currentBatch = db.batch();
+            currentBatch = writeBatch(db);
             operationCount = 0;
           }
         }
