@@ -10,6 +10,7 @@ Trang web cho nhà hàng BẾP NHÀ TRÂM, chuyên các món ăn ngon tại Hu�
 - Hiển thị thông tin liên hệ
 - Giao diện thân thiện với thiết bị di động
 - Tối ưu hóa SEO
+- Thư viện media với tích hợp Cloudinary
 
 ## Công nghệ sử dụng
 
@@ -19,6 +20,8 @@ Trang web cho nhà hàng BẾP NHÀ TRÂM, chuyên các món ăn ngon tại Hu�
 - Radix UI
 - React Hook Form
 - TypeScript
+- Firebase (Authentication, Firestore)
+- Cloudinary (Quản lý media)
 
 ## Cài đặt và chạy dự án
 
@@ -106,6 +109,34 @@ bepnhatram/
 - Tối ưu hóa SEO với meta tags và structured data
 - Thêm sitemap.xml và robots.txt
 - Hỗ trợ PWA với site.webmanifest
+- Tích hợp Cloudinary cho thư viện media
+- Hỗ trợ lưu trữ tệp cả cục bộ và trên Cloudinary
+
+## Thư viện Media
+
+Thư viện media hỗ trợ hai phương thức lưu trữ:
+
+### 1. Lưu trữ cục bộ
+
+Các tệp được tải lên sẽ được lưu trữ trong thư mục `public/uploads/library`. Phương thức này phù hợp cho việc phát triển và kiểm thử.
+
+### 2. Lưu trữ trên Cloudinary
+
+Các tệp cũng được tải lên Cloudinary để lưu trữ trực tuyến. Điều này giúp:
+- Tối ưu hóa hình ảnh tự động
+- Phân phối nội dung qua CDN
+- Quản lý tài nguyên dễ dàng
+
+#### Cấu hình Cloudinary
+
+1. Đăng ký tài khoản tại [Cloudinary](https://cloudinary.com/)
+2. Lấy thông tin Cloud name, API Key và tạo Upload preset
+3. Cập nhật các biến môi trường trong file `.env.development` và `.env.production`:
+```
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
+NEXT_PUBLIC_CLOUDINARY_API_KEY=your-api-key
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=your-upload-preset
+```
 
 ## Liên hệ
 

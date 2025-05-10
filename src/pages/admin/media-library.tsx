@@ -68,9 +68,10 @@ interface MediaItem {
 }
 
 // Cloudinary configuration
-const CLOUDINARY_CLOUD_NAME = "demo"; // Replace with your cloud name
-const CLOUDINARY_API_KEY = "bXR9eVM7TG5_KzVprFFApWilbdY";
-const CLOUDINARY_UPLOAD_PRESET = "ml_default"; // Replace with your upload preset
+// Sử dụng các biến môi trường hoặc cấu hình cố định
+const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "demo";
+const CLOUDINARY_API_KEY = process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || "bXR9eVM7TG5_KzVprFFApWilbdY";
+const CLOUDINARY_UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default";
 
 export default function MediaLibraryPage() {
   const router = useRouter();
@@ -95,32 +96,56 @@ export default function MediaLibraryPage() {
     const fetchMediaItems = async () => {
       try {
         setIsLoading(true);
+        let allItems: MediaItem[] = [];
 
-        // Fetch media items from API
-        const response = await fetch("/api/media");
+        // Fetch local media items from API
+        const localResponse = await fetch("/api/media");
         
-        if (!response.ok) {
-          throw new Error(`Failed to fetch media items: ${response.statusText}`);
+        if (localResponse.ok) {
+          const localData = await localResponse.json();
+          
+          // Transform API response to MediaItem[]
+          const localItems: MediaItem[] = localData.items.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            url: item.url,
+            thumbnail: item.thumbnail,
+            type: item.type as "image" | "video",
+            source: item.source as "local" | "cloudinary",
+            size: item.size,
+            dimensions: item.dimensions,
+            createdAt: new Date(item.createdAt),
+            tags: item.tags || [],
+          }));
+          
+          allItems = [...allItems, ...localItems];
         }
         
-        const data = await response.json();
+        // Fetch Cloudinary media items
+        const cloudinaryResponse = await fetch("/api/media/cloudinary");
         
-        // Transform API response to MediaItem[]
-        const items: MediaItem[] = data.items.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          url: item.url,
-          thumbnail: item.thumbnail,
-          type: item.type as "image" | "video",
-          source: item.source as "local" | "cloudinary",
-          size: item.size,
-          dimensions: item.dimensions,
-          createdAt: new Date(item.createdAt),
-          tags: item.tags || [],
-        }));
+        if (cloudinaryResponse.ok) {
+          const cloudinaryData = await cloudinaryResponse.json();
+          
+          // Transform API response to MediaItem[]
+          const cloudinaryItems: MediaItem[] = cloudinaryData.items.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            url: item.url,
+            thumbnail: item.thumbnail,
+            type: item.type as "image" | "video",
+            source: "cloudinary",
+            size: item.size,
+            dimensions: item.dimensions,
+            createdAt: new Date(item.createdAt),
+            tags: item.tags || [],
+          }));
+          
+          allItems = [...allItems, ...cloudinaryItems];
+        }
         
         // If no items are returned from API, use mock data for demonstration
-        if (items.length === 0) {
+        if (allItems.length === 0) {
           const mockItems: MediaItem[] = [
             {
               id: "local-1",
@@ -162,7 +187,7 @@ export default function MediaLibraryPage() {
           
           setMediaItems(mockItems);
         } else {
-          setMediaItems(items);
+          setMediaItems(allItems);
         }
       } catch (error) {
         console.error("Error fetching media items:", error);
@@ -282,43 +307,68 @@ export default function MediaLibraryPage() {
     try {
       setIsUploading(true);
 
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-      formData.append("api_key", CLOUDINARY_API_KEY);
+      // Bước 1: Tải lên Cloudinary
+      const cloudinaryFormData = new FormData();
+      cloudinaryFormData.append("file", file);
+      cloudinaryFormData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      cloudinaryFormData.append("api_key", CLOUDINARY_API_KEY);
 
-      const response = await fetch(
+      const cloudinaryResponse = await fetch(
         `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`,
         {
           method: "POST",
-          body: formData,
+          body: cloudinaryFormData,
         },
       );
 
-      if (!response.ok) {
-        throw new Error(`Upload failed: ${response.statusText}`);
+      if (!cloudinaryResponse.ok) {
+        throw new Error(`Cloudinary upload failed: ${cloudinaryResponse.statusText}`);
       }
 
-      const data = await response.json();
+      const cloudinaryData = await cloudinaryResponse.json();
 
-      // Create a new media item from the Cloudinary response
+      // Bước 2: Lưu thông tin vào API của chúng ta
+      const apiFormData = new FormData();
+      apiFormData.append("name", file.name);
+      apiFormData.append("url", cloudinaryData.secure_url);
+      apiFormData.append("thumbnail", 
+        cloudinaryData.resource_type === "image"
+          ? cloudinaryData.secure_url
+          : cloudinaryData.thumbnail_url || "/placeholder-video-thumb.jpg"
+      );
+      apiFormData.append("type", cloudinaryData.resource_type === "image" ? "image" : "video");
+      apiFormData.append("source", "cloudinary");
+      apiFormData.append("size", cloudinaryData.bytes.toString());
+      apiFormData.append("width", (cloudinaryData.width || 0).toString());
+      apiFormData.append("height", (cloudinaryData.height || 0).toString());
+      apiFormData.append("cloudinaryPublicId", cloudinaryData.public_id);
+
+      const apiResponse = await fetch("/api/media/cloudinary", {
+        method: "POST",
+        body: apiFormData,
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error(`API storage failed: ${apiResponse.statusText}`);
+      }
+
+      const apiData = await apiResponse.json();
+
+      // Tạo item mới từ dữ liệu API trả về
       const newItem: MediaItem = {
-        id: `cloudinary-${data.public_id}`,
-        name: file.name,
-        url: data.secure_url,
-        thumbnail:
-          data.resource_type === "image"
-            ? data.secure_url
-            : data.thumbnail_url || "/placeholder-video-thumb.jpg",
-        type: data.resource_type === "image" ? "image" : "video",
+        id: apiData.item.id,
+        name: apiData.item.name,
+        url: apiData.item.url,
+        thumbnail: apiData.item.thumbnail,
+        type: apiData.item.type as "image" | "video",
         source: "cloudinary",
-        size: data.bytes,
+        size: apiData.item.size,
         dimensions: {
-          width: data.width || 0,
-          height: data.height || 0,
+          width: apiData.item.dimensions?.width || 0,
+          height: apiData.item.dimensions?.height || 0,
         },
-        createdAt: new Date(),
-        tags: [],
+        createdAt: new Date(apiData.item.createdAt),
+        tags: apiData.item.tags || [],
       };
 
       setMediaItems((prev) => [newItem, ...prev]);
@@ -405,7 +455,7 @@ export default function MediaLibraryPage() {
   // Delete item
   const handleDeleteItem = async (item: MediaItem) => {
     try {
-      // Only delete from server if it's a local file
+      // Xử lý xóa tệp dựa trên nguồn
       if (item.source === "local") {
         // Extract filename from URL
         const filename = item.url.split("/").pop();
@@ -418,6 +468,19 @@ export default function MediaLibraryPage() {
         if (!response.ok) {
           throw new Error(`Delete failed: ${response.statusText}`);
         }
+      } else if (item.source === "cloudinary") {
+        // Xóa thông tin tệp Cloudinary từ cơ sở dữ liệu của chúng ta
+        const response = await fetch(`/api/media/cloudinary?id=${item.id}`, {
+          method: "DELETE",
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Delete failed: ${response.statusText}`);
+        }
+        
+        // Lưu ý: Chúng ta không xóa tệp thực tế từ Cloudinary ở đây
+        // Để xóa tệp từ Cloudinary, bạn cần sử dụng Cloudinary API với khóa API bí mật
+        // Điều này thường được thực hiện ở phía server
       }
 
       setMediaItems((prev) =>
