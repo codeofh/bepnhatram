@@ -121,7 +121,7 @@ export function MenuGrid({
     <div id="menu-grid">
       {/* Toast notification container for cart actions */}
       <Toaster />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {currentItems.length > 0 ? (
           currentItems.map((item) => <MenuItem key={item.id} item={item} />)
         ) : (
