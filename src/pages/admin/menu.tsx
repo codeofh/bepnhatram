@@ -211,7 +211,6 @@ export default function AdminMenuPage() {
       </Head>
 
       <AdminLayout title="Quản lý Menu">
-        {/* Filters and actions */}
         {/* Search and filters - Mobile optimized */}
         <div className="flex flex-col mb-6 gap-4">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -346,83 +345,190 @@ export default function AdminMenuPage() {
             </div>
           </div>
         ) : (
-          /* Menu items table */
-        {/* Desktop Table View */}
-        <div className="bg-white rounded-md border overflow-hidden hidden md:block">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">Ảnh</TableHead>
-                  <TableHead className="min-w-40">
-                    <Button
-                      variant="ghost"
-                      className="p-0 font-bold"
-                      onClick={() => handleSortChange("name")}
-                    >
-                      Tên món
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead className="hidden md:table-cell">Mô tả</TableHead>
-                  <TableHead>
-                    <Button
-                      variant="ghost"
-                      className="p-0 font-bold"
-                      onClick={() => handleSortChange("price")}
-                    >
-                      Giá
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    <Button
-                      variant="ghost"
-                      className="p-0 font-bold"
-                      onClick={() => handleSortChange("category")}
-                    >
-                      Danh mục
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </TableHead>
-                  <TableHead className="w-20 text-right">Thao tác</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredItems.length === 0 ? (
+          <>
+            {/* Desktop Table View */}
+            <div className="bg-white rounded-md border overflow-hidden hidden md:block">
+              <Table>
+                <TableHeader>
                   <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center py-6 text-gray-500"
-                    >
-                      Không tìm thấy món ăn nào
-                    </TableCell>
+                    <TableHead className="w-12">Ảnh</TableHead>
+                    <TableHead className="min-w-40">
+                      <Button
+                        variant="ghost"
+                        className="p-0 font-bold"
+                        onClick={() => handleSortChange("name")}
+                      >
+                        Tên món
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Mô tả
+                    </TableHead>
+                    <TableHead>
+                      <Button
+                        variant="ghost"
+                        className="p-0 font-bold"
+                        onClick={() => handleSortChange("price")}
+                      >
+                        Giá
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      <Button
+                        variant="ghost"
+                        className="p-0 font-bold"
+                        onClick={() => handleSortChange("category")}
+                      >
+                        Danh mục
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </TableHead>
+                    <TableHead className="w-20 text-right">Thao tác</TableHead>
                   </TableRow>
-                ) : (
-                  filteredItems.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <div className="w-10 h-10 rounded-md overflow-hidden">
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
+                </TableHeader>
+                <TableBody>
+                  {filteredItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        className="text-center py-6 text-gray-500"
+                      >
+                        Không tìm thấy món ăn nào
                       </TableCell>
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell className="hidden md:table-cell max-w-52 truncate">
-                        {item.description}
-                      </TableCell>
-                      <TableCell>
-                        {item.price.toLocaleString()}đ
-                        {item.sizes && item.sizes.length > 0 && (
-                          <span className="text-xs text-gray-500 block">
-                            + {item.sizes.length} tùy chọn
+                    </TableRow>
+                  ) : (
+                    filteredItems.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell>
+                          <div className="w-10 h-10 rounded-md overflow-hidden">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {item.name}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell max-w-52 truncate">
+                          {item.description}
+                        </TableCell>
+                        <TableCell>
+                          {item.price.toLocaleString()}đ
+                          {item.sizes && item.sizes.length > 0 && (
+                            <span className="text-xs text-gray-500 block">
+                              + {item.sizes.length} tùy chọn
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize">
+                            {item.category === "special" && (
+                              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                                Đặc biệt
+                              </span>
+                            )}
+                            {item.category === "main" && (
+                              <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                                Món chính
+                              </span>
+                            )}
+                            {item.category === "chicken" && (
+                              <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
+                                Gà ủ muối
+                              </span>
+                            )}
+                            {item.category === "chicken-feet" && (
+                              <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                                Chân gà
+                              </span>
+                            )}
+                            {item.category === "drinks" && (
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                Đồ uống
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => handleEditItem(item)}
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Chỉnh sửa
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Eye className="mr-2 h-4 w-4" />
+                                Xem trước
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => handleDeleteItem(item)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Xóa
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {filteredItems.length === 0 ? (
+                <div className="bg-white rounded-md border p-6 text-center text-gray-500">
+                  Không tìm thấy món ăn nào
+                </div>
+              ) : (
+                filteredItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white rounded-md border overflow-hidden"
+                  >
+                    <div className="flex items-center p-4 border-b">
+                      <div className="w-14 h-14 rounded-md overflow-hidden mr-3 flex-shrink-0">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-base truncate">
+                          {item.name}
+                        </h3>
+                        <div className="flex items-center mt-1">
+                          <span className="font-semibold text-orange-600">
+                            {item.price.toLocaleString()}đ
                           </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize">
+                          {item.sizes && item.sizes.length > 0 && (
+                            <span className="text-xs text-gray-500 ml-1">
+                              + {item.sizes.length} tùy chọn
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="px-4 py-3 bg-gray-50 flex items-center justify-between">
+                      <div>
+                        <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize">
                           {item.category === "special" && (
                             <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
                               Đặc biệt
@@ -449,135 +555,38 @@ export default function AdminMenuPage() {
                             </span>
                           )}
                         </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => handleEditItem(item)}
-                            >
-                              <Edit className="mr-2 h-4 w-4" />
-                              Chỉnh sửa
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              Xem trước
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDeleteItem(item)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Xóa
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
-
-          {/* Mobile Card View */}
-          <div className="md:hidden space-y-4">
-            {filteredItems.length === 0 ? (
-              <div className="bg-white rounded-md border p-6 text-center text-gray-500">
-                Không tìm thấy món ăn nào
-              </div>
-            ) : (
-              filteredItems.map((item) => (
-                <div key={item.id} className="bg-white rounded-md border overflow-hidden">
-                  <div className="flex items-center p-4 border-b">
-                    <div className="w-14 h-14 rounded-md overflow-hidden mr-3 flex-shrink-0">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-base truncate">{item.name}</h3>
-                      <div className="flex items-center mt-1">
-                        <span className="font-semibold text-orange-600">
-                          {item.price.toLocaleString()}đ
-                        </span>
-                        {item.sizes && item.sizes.length > 0 && (
-                          <span className="text-xs text-gray-500 ml-1">
-                            + {item.sizes.length} tùy chọn
-                          </span>
-                        )}
+                      </div>
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditItem(item)}
+                          className="h-8 px-2 text-blue-600"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2 text-gray-600"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteItem(item)}
+                          className="h-8 px-2 text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
-
-                  <div className="px-4 py-3 bg-gray-50 flex items-center justify-between">
-                    <div>
-                      <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize">
-                        {item.category === "special" && (
-                          <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                            Đặc biệt
-                          </span>
-                        )}
-                        {item.category === "main" && (
-                          <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
-                            Món chính
-                          </span>
-                        )}
-                        {item.category === "chicken" && (
-                          <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
-                            Gà ủ muối
-                          </span>
-                        )}
-                        {item.category === "chicken-feet" && (
-                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full">
-                            Chân gà
-                          </span>
-                        )}
-                        {item.category === "drinks" && (
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                            Đồ uống
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex space-x-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEditItem(item)}
-                        className="h-8 px-2 text-blue-600"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 px-2 text-gray-600"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteItem(item)}
-                        className="h-8 px-2 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+                ))
+              )}
+            </div>
+          </>
         )}
 
         {/* Add/Edit Menu Item Dialog */}
