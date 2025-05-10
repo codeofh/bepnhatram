@@ -1,10 +1,24 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Temporarily disable static export to use API routes during development
-  // output: "export",
   reactStrictMode: true,
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Không sử dụng các module Node.js trong môi trường trình duyệt
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        child_process: false,
+        dns: false,
+        http2: false,
+      };
+    }
+    return config;
+  },
   images: {
     unoptimized: true,
+    domains: ['res.cloudinary.com', 'images.unsplash.com'],
     remotePatterns: [
       {
         protocol: "https",
@@ -29,10 +43,6 @@ const nextConfig = {
             exclude: ["error", "warn"],
           }
         : false,
-  },
-  // Enable server components
-  experimental: {
-    serverComponentsExternalPackages: [],
   },
   // Handle environment variables
   env: {
