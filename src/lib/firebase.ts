@@ -126,10 +126,17 @@ try {
       try {
         const emulatorHost =
           process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST || "localhost";
-        if (auth) connectAuthEmulator(auth, `http://${emulatorHost}:9099`);
+        if (auth)
+          connectAuthEmulator(auth, `http://${emulatorHost}:9099`, {
+            disableWarnings: true,
+          });
         if (db) connectFirestoreEmulator(db, emulatorHost, 8080);
         if (storage) connectStorageEmulator(storage, emulatorHost, 9199);
-        console.log("Firebase emulators connected");
+        console.log("Firebase emulators connected at:");
+        console.log(`- Auth: http://${emulatorHost}:9099`);
+        console.log(`- Firestore: http://${emulatorHost}:8080`);
+        console.log(`- Storage: http://${emulatorHost}:9199`);
+        console.log(`- Emulator UI: http://${emulatorHost}:4000/`);
       } catch (emulatorError) {
         console.error("Error connecting to Firebase emulators:", emulatorError);
       }
