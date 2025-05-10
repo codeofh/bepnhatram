@@ -193,24 +193,10 @@ export default function MediaLibraryPage() {
         } else {
           setMediaItems(allItems);
         }
-      } catch (err: any) {
-        console.error("Error fetching media items:", err);
-        setError(err.message || "Không thể tải thư viện phương tiện");
-        toast({
-          title: "Lỗi tải dữ liệu",
-          description:
-            "Không thể tải thư viện phương tiện. Vui lòng thử lại sau.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     if (isClient) {
       fetchMediaItems();
     }
-  }, [isClient, toast]);
+  }, [isClient]);
 
   useEffect(() => {
     setIsClient(true);
