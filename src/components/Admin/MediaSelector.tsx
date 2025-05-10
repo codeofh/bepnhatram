@@ -12,7 +12,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ImageIcon, Search, UploadCloud, Video, X } from "lucide-react";
+import {
+  ExternalLink,
+  ImageIcon,
+  Search,
+  UploadCloud,
+  Video,
+  X,
+} from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MediaItem, useMediaLibrary } from "@/lib/mediaLibrary";
 import { useDropzone } from "react-dropzone";
@@ -259,11 +266,22 @@ export function MediaSelector({
       </div>
 
       {selectedMedia && (
-        <Input
-          value={selectedMedia.url}
-          readOnly
-          className="mt-2 text-sm text-muted-foreground"
-        />
+        <div className="mt-2 relative">
+          <Input
+            value={selectedMedia.url}
+            readOnly
+            className="text-sm text-muted-foreground pr-10"
+          />
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-8 w-8 absolute right-1 top-0"
+            onClick={() => window.open(selectedMedia.url, "_blank")}
+            title="Mở trong tab mới"
+          >
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+        </div>
       )}
     </div>
   );

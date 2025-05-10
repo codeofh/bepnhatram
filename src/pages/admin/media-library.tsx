@@ -22,6 +22,7 @@ import { CloudinaryContext, Image as CloudinaryImage } from "cloudinary-react";
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { MediaLibraryHelp } from "@/components/Admin/MediaLibraryHelp";
 import { MediaLibraryError } from "@/components/Admin/MediaLibraryError";
+import { MediaItemCard } from "@/components/Admin/MediaItemCard";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -443,7 +444,7 @@ export default function MediaLibraryPage() {
         });
       } catch (error) {
         console.error("Error saving to database:", error);
-        // Nếu có lỗi khi lưu vào cơ s��� dữ liệu, vẫn hiển thị hình ảnh đã tải lên Cloudinary
+        // Nếu có lỗi khi lưu vào cơ sở dữ liệu, vẫn hiển thị hình ảnh đã tải lên Cloudinary
         const fallbackItem: MediaItem = {
           id: `cloudinary-temp-${Date.now()}`,
           name:
@@ -862,87 +863,22 @@ export default function MediaLibraryPage() {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {filteredMediaItems.map((item) => (
-                  <Card
+                  <MediaItemCard
                     key={item.id}
-                    className={`overflow-hidden cursor-pointer transition-all hover:shadow-md group ${
-                      selectedItems.includes(item.id)
-                        ? "ring-2 ring-primary ring-offset-2"
-                        : ""
-                    }`}
-                    onClick={() => {
+                    item={item}
+                    selected={selectedItems.includes(item.id)}
+                    onSelect={() => {
                       if (!selectedItems.length) {
                         setSelectedItem(item);
                         setDetailsOpen(true);
-                      } else {
-                        toggleItemSelection(item.id);
                       }
                     }}
-                  >
-                    <div className="relative h-32 bg-gray-100">
-                      {item.type === "image" ? (
-                        <Image
-                          src={item.thumbnail || item.url}
-                          alt={item.name}
-                          fill
-                          className="object-contain"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center">
-                          <Video className="h-12 w-12 text-gray-400" />
-                        </div>
-                      )}
-
-                      {/* Selection checkbox */}
-                      <div
-                        className={`absolute top-2 left-2 h-5 w-5 rounded border border-gray-300 flex items-center justify-center ${
-                          selectedItems.includes(item.id)
-                            ? "bg-primary"
-                            : "bg-white"
-                        } ${selectedItems.length > 0 || selectedItems.includes(item.id) ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleItemSelection(item.id);
-                        }}
-                      >
-                        {selectedItems.includes(item.id) && (
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 12 12"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M10 3L4.5 8.5L2 6"
-                              stroke="white"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        )}
-                      </div>
-
-                      {/* Source badge */}
-                      <Badge
-                        variant="secondary"
-                        className="absolute bottom-2 right-2 text-xs"
-                      >
-                        {item.source === "local" ? "Local" : "Cloudinary"}
-                      </Badge>
-                    </div>
-                    <CardContent className="p-3">
-                      <div
-                        className="text-sm font-medium line-clamp-1"
-                        title={item.name}
-                      >
-                        {item.name}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {formatFileSize(item.size)}
-                      </div>
-                    </CardContent>
-                  </Card>
+                    onToggleSelect={toggleItemSelection}
+                    isSelectable={
+                      selectedItems.length > 0 ||
+                      selectedItems.includes(item.id)
+                    }
+                  />
                 ))}
               </div>
             )}
@@ -1008,15 +944,31 @@ export default function MediaLibraryPage() {
                 <div>
                   <Label className="text-xs text-gray-500">URL</Label>
                   <div className="flex gap-2 items-center">
-                    <Input value={selectedItem.url} readOnly className="pr-9" />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 absolute right-1"
-                      onClick={() => copyToClipboard(selectedItem.url)}
-                    >
-                      <Copy className="h-4 w-4" />
-                    </Button>
+                    <Input
+                      value={selectedItem.url}
+                      readOnly
+                      className="pr-20"
+                    />
+                    <div className="absolute right-1 flex">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8"
+                        onClick={() => copyToClipboard(selectedItem.url)}
+                        title="Sao chép URL"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8"
+                        onClick={() => window.open(selectedItem.url, "_blank")}
+                        title="Mở trong tab mới"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
