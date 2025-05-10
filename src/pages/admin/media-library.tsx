@@ -794,8 +794,9 @@ export default function MediaLibraryPage() {
             )}
 
             {/* Top bar with search and actions */}
-            <div className="flex flex-col sm:flex-row justify-between gap-4">
-              <div className="relative w-full sm:w-auto max-w-sm">
+            <div className="flex flex-col gap-4">
+              {/* Search bar */}
+              <div className="relative w-full max-w-sm">
                 <Input
                   type="text"
                   placeholder="Tìm kiếm tên tệp, thẻ..."
@@ -806,26 +807,27 @@ export default function MediaLibraryPage() {
                 <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               </div>
 
-              <div className="flex flex-wrap gap-2">
+              {/* Action buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-wrap items-center gap-2">
+                {/* Delete button - only shown when items are selected */}
                 {selectedItems.length > 0 && (
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={handleBulkDelete}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 col-span-1 sm:col-span-2 md:mr-auto"
                   >
                     <Trash2 className="h-4 w-4" />
                     <span>Xóa ({selectedItems.length})</span>
                   </Button>
                 )}
 
-                <div className="flex-1"></div>
-
+                {/* Sort dropdown */}
                 <Select
                   value={sortBy}
                   onValueChange={(value) => setSortBy(value as any)}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Sắp xếp theo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -835,7 +837,8 @@ export default function MediaLibraryPage() {
                   </SelectContent>
                 </Select>
 
-                <div className="relative">
+                {/* Cloudinary upload button */}
+                <div className="relative w-full sm:w-auto">
                   <input
                     type="file"
                     id="cloudinary-upload"
@@ -843,10 +846,10 @@ export default function MediaLibraryPage() {
                     onChange={handleCloudinaryUpload}
                     accept="image/*,video/*"
                   />
-                  <Button variant="outline" asChild>
+                  <Button variant="outline" asChild className="w-full sm:w-auto justify-center">
                     <label
                       htmlFor="cloudinary-upload"
-                      className="cursor-pointer flex items-center gap-1"
+                      className="cursor-pointer flex items-center gap-1 w-full justify-center"
                     >
                       <ExternalLink className="h-4 w-4" />
                       <span>Cloudinary</span>
@@ -854,7 +857,12 @@ export default function MediaLibraryPage() {
                   </Button>
                 </div>
 
-                <Button {...getRootProps()} disabled={isUploading}>
+                {/* Local upload button */}
+                <Button 
+                  {...getRootProps()} 
+                  disabled={isUploading}
+                  className="w-full sm:w-auto justify-center"
+                >
                   {isUploading ? (
                     <>
                       <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -877,12 +885,12 @@ export default function MediaLibraryPage() {
               value={activeTab}
               onValueChange={setActiveTab}
             >
-              <TabsList className="mb-4">
-                <TabsTrigger value="all">Tất cả</TabsTrigger>
-                <TabsTrigger value="images">Hình ảnh</TabsTrigger>
-                <TabsTrigger value="videos">Video</TabsTrigger>
-                <TabsTrigger value="local">Tệp cục bộ</TabsTrigger>
-                <TabsTrigger value="cloudinary">Cloudinary</TabsTrigger>
+              <TabsList className="mb-4 flex flex-wrap">
+                <TabsTrigger value="all" className="flex-grow sm:flex-grow-0">Tất cả</TabsTrigger>
+                <TabsTrigger value="images" className="flex-grow sm:flex-grow-0">Hình ảnh</TabsTrigger>
+                <TabsTrigger value="videos" className="flex-grow sm:flex-grow-0">Video</TabsTrigger>
+                <TabsTrigger value="local" className="flex-grow sm:flex-grow-0">Tệp cục bộ</TabsTrigger>
+                <TabsTrigger value="cloudinary" className="flex-grow sm:flex-grow-0">Cloudinary</TabsTrigger>
               </TabsList>
             </Tabs>
 
