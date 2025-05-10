@@ -16,6 +16,8 @@ export interface MediaItem {
   dimensions?: MediaDimensions;
   createdAt: Date;
   tags?: string[];
+  path?: string;
+  cloudinaryPublicId?: string;
 }
 
 export interface MediaUploadResponse {

@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { deleteLocalFile } from "@/lib/mediaLibraryServer";
 import path from "path";
 import fs from "fs";
+import { serverGetMediaItemsBySource, serverUpdateMediaItem } from "@/lib/mediaFirestore";
 
 // Constants
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "library");
@@ -17,30 +18,14 @@ export default async function handler(
     return res.status(400).json({ error: "Invalid media ID" });
   }
 
-  // Only handle local media items in this endpoint
-  if (!id.startsWith("local-")) {
-    return res
-      .status(400)
-      .json({ error: "This endpoint only handles local media" });
-  }
-
-  // Extract the filename from the ID
-  const fileName = id.replace("local-", "");
-  const filePath = path.join(UPLOAD_DIR, fileName);
-
-  // Check if file exists
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ error: "Media not found" });
-  }
-
   // Handle different HTTP methods
   switch (req.method) {
     case "GET":
-      return getMediaItem(req, res, fileName, filePath);
+      return getMediaItem(req, res, id);
     case "DELETE":
-      return deleteMediaItem(req, res, fileName, filePath);
+      return deleteMediaItem(req, res, id);
     case "PATCH":
-      return updateMediaItem(req, res, fileName, filePath);
+      return updateMediaItem(req, res, id);
     default:
       return res.status(405).json({ error: "Method not allowed" });
   }
@@ -50,42 +35,26 @@ export default async function handler(
 async function getMediaItem(
   req: NextApiRequest,
   res: NextApiResponse,
-  fileName: string,
-  filePath: string,
+  id: string,
 ) {
   try {
-    const stats = fs.statSync(filePath);
-    const fileExtension = path.extname(fileName).toLowerCase();
-
-    // Determine file type based on extension
-    const imageExtensions = [
-      ".jpg",
-      ".jpeg",
-      ".png",
-      ".gif",
-      ".webp",
-      ".svg",
-      ".bmp",
-    ];
-    const videoExtensions = [".mp4", ".webm", ".ogg", ".mov", ".avi", ".wmv"];
-
-    let fileType = "other";
-    if (imageExtensions.includes(fileExtension)) {
-      fileType = "image";
-    } else if (videoExtensions.includes(fileExtension)) {
-      fileType = "video";
+    // Lấy tất cả media items từ Firestore
+    const allItems = await serverGetMediaItemsBySource("local");
+    
+    // Tìm item theo ID
+    const mediaItem = allItems.find(item => item.id === id);
+    
+    if (!mediaItem) {
+      return res.status(404).json({ error: "Media not found" });
     }
-
-    const mediaItem = {
-      id: `local-${fileName}`,
-      name: fileName,
-      url: `/uploads/library/${fileName}`,
-      thumbnail: fileType === "image" ? `/uploads/library/${fileName}` : null,
-      type: fileType,
-      source: "local",
-      size: stats.size,
-      createdAt: stats.birthtime,
-    };
+    
+    // Kiểm tra xem file có tồn tại không (nếu là local media)
+    if (mediaItem.source === "local") {
+      const filePath = path.join(process.cwd(), "public", mediaItem.url);
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({ error: "Media file not found" });
+      }
+    }
 
     return res.status(200).json({ item: mediaItem });
   } catch (error: any) {
@@ -100,12 +69,29 @@ async function getMediaItem(
 async function deleteMediaItem(
   req: NextApiRequest,
   res: NextApiResponse,
-  fileName: string,
-  filePath: string,
+  id: string,
 ) {
   try {
-    // Delete the file
-    fs.unlinkSync(filePath);
+    // Lấy tất cả media items từ Firestore
+    const allItems = await serverGetMediaItemsBySource("local");
+    
+    // Tìm item theo ID
+    const mediaItem = allItems.find(item => item.id === id);
+    
+    if (!mediaItem) {
+      return res.status(404).json({ error: "Media not found" });
+    }
+    
+    // Nếu là local media, xóa file
+    if (mediaItem.source === "local") {
+      const filePath = path.join(process.cwd(), "public", mediaItem.url);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+    
+    // Xóa thông tin từ Firestore
+    await serverUpdateMediaItem(id, { deleted: true });
 
     return res
       .status(200)
@@ -122,24 +108,29 @@ async function deleteMediaItem(
 async function updateMediaItem(
   req: NextApiRequest,
   res: NextApiResponse,
-  fileName: string,
-  filePath: string,
+  id: string,
 ) {
   try {
-    const { name, tags } = req.body;
+    const updates = req.body;
+    
+    if (!updates || Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: "No updates provided" });
+    }
+    
+    // Cập nhật thông tin trong Firestore
+    await serverUpdateMediaItem(id, updates);
+    
+    // Lấy thông tin đã cập nhật
+    const allItems = await serverGetMediaItemsBySource("local");
+    const updatedItem = allItems.find(item => item.id === id);
+    
+    if (!updatedItem) {
+      return res.status(404).json({ error: "Media not found after update" });
+    }
 
-    // Currently, we only support updating metadata, not the actual file
-    // In a real app, you might store this metadata in a database
-
-    // For now, just return success as if we updated it
     return res.status(200).json({
       success: true,
-      item: {
-        id: `local-${fileName}`,
-        name: name || fileName,
-        url: `/uploads/library/${fileName}`,
-        tags: tags || [],
-      },
+      item: updatedItem,
     });
   } catch (error: any) {
     console.error("Error updating media item:", error);
