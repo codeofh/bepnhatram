@@ -347,182 +347,200 @@ export default function AdminCategoriesPage() {
                 </div>
               </div>
             ) : (
-              {/* Desktop view */}
-              <div className="hidden md:block bg-white rounded-md border overflow-hidden">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4 font-medium w-12">
-                        #
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium">ID</th>
-                      <th className="text-left py-3 px-4 font-medium">
-                        Tên hiển thị
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium">
-                        Tên code
-                      </th>
-                      <th className="text-left py-3 px-4 font-medium">Icon</th>
-                      <th className="text-left py-3 px-4 font-medium">
-                        Thứ tự
-                      </th>
-                      <th className="text-right py-3 px-4 font-medium">
-                        Thao tác
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categories.map((category, index) => (
-                      <tr key={category.id} className="border-b">
-                        <td className="py-3 px-4">
-                          <span className="flex items-center text-gray-500">
-                            <GripVertical className="h-4 w-4" />
-                          </span>
-                        </td>
-                        <td className="py-3 px-4 font-mono text-sm">
-                          {category.id}
-                        </td>
-                        <td className="py-3 px-4">{category.displayName}</td>
-                        <td className="py-3 px-4 font-mono text-sm">
-                          {category.name || "-"}
-                        </td>
-                        <td className="py-3 px-4 font-mono text-sm">
-                          {category.icon || "-"}
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center">
-                            <span className="mr-2">
-                              {category.displayOrder}
+              <>
+                {/* Desktop view */}
+                <div className="hidden md:block bg-white rounded-md border overflow-hidden">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-3 px-4 font-medium w-12">
+                          #
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium">ID</th>
+                        <th className="text-left py-3 px-4 font-medium">
+                          Tên hiển thị
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium">
+                          Tên code
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium">
+                          Icon
+                        </th>
+                        <th className="text-left py-3 px-4 font-medium">
+                          Thứ tự
+                        </th>
+                        <th className="text-right py-3 px-4 font-medium">
+                          Thao tác
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {categories.map((category, index) => (
+                        <tr key={category.id} className="border-b">
+                          <td className="py-3 px-4">
+                            <span className="flex items-center text-gray-500">
+                              <GripVertical className="h-4 w-4" />
                             </span>
-                            <div className="flex flex-col">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5"
-                                onClick={() => moveCategory(index, "up")}
-                                disabled={index === 0 || categoriesLoading}
-                              >
-                                <MoveUp className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5"
-                                onClick={() => moveCategory(index, "down")}
-                                disabled={
-                                  index === categories.length - 1 ||
-                                  categoriesLoading
-                                }
-                              >
-                                <MoveDown className="h-3 w-3" />
-                              </Button>
+                          </td>
+                          <td className="py-3 px-4 font-mono text-sm">
+                            {category.id}
+                          </td>
+                          <td className="py-3 px-4">{category.displayName}</td>
+                          <td className="py-3 px-4 font-mono text-sm">
+                            {category.name || "-"}
+                          </td>
+                          <td className="py-3 px-4 font-mono text-sm">
+                            {category.icon || "-"}
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center">
+                              <span className="mr-2">
+                                {category.displayOrder}
+                              </span>
+                              <div className="flex flex-col">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5"
+                                  onClick={() => moveCategory(index, "up")}
+                                  disabled={index === 0 || categoriesLoading}
+                                >
+                                  <MoveUp className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5"
+                                  onClick={() => moveCategory(index, "down")}
+                                  disabled={
+                                    index === categories.length - 1 ||
+                                    categoriesLoading
+                                  }
+                                >
+                                  <MoveDown className="h-3 w-3" />
+                                </Button>
+                              </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex justify-end space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(category)}
-                              disabled={categoriesLoading}
-                            >
-                              <Edit className="h-4 w-4" />
-                              <span className="ml-2 hidden sm:inline">Sửa</span>
-                            </Button>
-                            {category.id !== "all" && (
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex justify-end space-x-2">
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-                                onClick={() => handleDelete(category)}
+                                onClick={() => handleEdit(category)}
                                 disabled={categoriesLoading}
                               >
-                                <Trash2 className="h-4 w-4" />
+                                <Edit className="h-4 w-4" />
                                 <span className="ml-2 hidden sm:inline">
-                                  Xóa
+                                  Sửa
                                 </span>
                               </Button>
-                            )}
+                              {category.id !== "all" && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+                                  onClick={() => handleDelete(category)}
+                                  disabled={categoriesLoading}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                  <span className="ml-2 hidden sm:inline">
+                                    Xóa
+                                  </span>
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile view */}
+                <div className="md:hidden space-y-4">
+                  {categories.map((category, index) => (
+                    <div
+                      key={category.id}
+                      className="bg-white border rounded-md overflow-hidden"
+                    >
+                      <div className="border-b px-4 py-2 flex justify-between items-center bg-gray-50">
+                        <div className="font-medium">
+                          {category.displayName}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-gray-600"
+                            onClick={() => moveCategory(index, "up")}
+                            disabled={index === 0 || categoriesLoading}
+                          >
+                            <MoveUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-gray-600"
+                            onClick={() => moveCategory(index, "down")}
+                            disabled={
+                              index === categories.length - 1 ||
+                              categoriesLoading
+                            }
+                          >
+                            <MoveDown className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="px-4 py-3 space-y-2">
+                        <div className="grid grid-cols-2 text-sm">
+                          <div className="text-gray-500">ID:</div>
+                          <div className="font-mono">{category.id}</div>
+
+                          <div className="text-gray-500">Tên code:</div>
+                          <div className="font-mono">
+                            {category.name || "-"}
                           </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
 
-              {/* Mobile view */}
-              <div className="md:hidden space-y-4">
-                {categories.map((category, index) => (
-                  <div key={category.id} className="bg-white border rounded-md overflow-hidden">
-                    <div className="border-b px-4 py-2 flex justify-between items-center bg-gray-50">
-                      <div className="font-medium">{category.displayName}</div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-gray-600"
-                          onClick={() => moveCategory(index, "up")}
-                          disabled={index === 0 || categoriesLoading}
-                        >
-                          <MoveUp className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-gray-600"
-                          onClick={() => moveCategory(index, "down")}
-                          disabled={index === categories.length - 1 || categoriesLoading}
-                        >
-                          <MoveDown className="h-4 w-4" />
-                        </Button>
+                          <div className="text-gray-500">Icon:</div>
+                          <div className="font-mono">
+                            {category.icon || "-"}
+                          </div>
+
+                          <div className="text-gray-500">Thứ tự:</div>
+                          <div>{category.displayOrder}</div>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="px-4 py-3 space-y-2">
-                      <div className="grid grid-cols-2 text-sm">
-                        <div className="text-gray-500">ID:</div>
-                        <div className="font-mono">{category.id}</div>
-
-                        <div className="text-gray-500">Tên code:</div>
-                        <div className="font-mono">{category.name || "-"}</div>
-
-                        <div className="text-gray-500">Icon:</div>
-                        <div className="font-mono">{category.icon || "-"}</div>
-
-                        <div className="text-gray-500">Thứ tự:</div>
-                        <div>{category.displayOrder}</div>
-                      </div>
-                    </div>
-
-                    <div className="border-t px-4 py-3 flex justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(category)}
-                        disabled={categoriesLoading}
-                        className="h-9"
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        Sửa
-                      </Button>
-                      {category.id !== "all" && (
+                      <div className="border-t px-4 py-3 flex justify-end gap-2">
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 h-9"
-                          onClick={() => handleDelete(category)}
+                          onClick={() => handleEdit(category)}
                           disabled={categoriesLoading}
+                          className="h-9"
                         >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Xóa
+                          <Edit className="h-4 w-4 mr-1" />
+                          Sửa
                         </Button>
-                      )}
+                        {category.id !== "all" && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 h-9"
+                            onClick={() => handleDelete(category)}
+                            disabled={categoriesLoading}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Xóa
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -576,7 +594,7 @@ export default function AdminCategoriesPage() {
                           name: e.target.value,
                         })
                       }
-                      placeholder="T��n code cho danh mục"
+                      placeholder="Tên code cho danh mục"
                       disabled={editingCategory.id === "all"} // Can't edit name of "all" category
                     />
                     <p className="text-xs text-gray-500">

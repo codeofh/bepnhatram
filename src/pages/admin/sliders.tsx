@@ -318,334 +318,351 @@ export default function AdminSlidersPage() {
             </CardContent>
           </Card>
         ) : (
-          {/* Desktop Table View */}
-          <div className="hidden md:block bg-white rounded-lg border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[100px]">Thứ tự hiển thị</TableHead>
-                  <TableHead className="w-[120px]">Ảnh</TableHead>
-                  <TableHead>Tiêu đề</TableHead>
-                  <TableHead className="hidden md:table-cell">Mô tả</TableHead>
-                  <TableHead className="hidden lg:table-cell">
-                    Nút kêu gọi
-                  </TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead className="hidden md:table-cell w-[180px]">
-                    Ngày tạo
-                  </TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sliders.map((slider, index) => (
-                  <TableRow key={slider.id}>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <span className="font-medium mr-2">
-                          {slider.displayOrder || index + 1}
-                        </span>
-                        <div className="flex flex-col">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={index === 0}
-                            onClick={() => handleMoveUp(index)}
-                            className="h-6 w-6 hover:bg-gray-100"
-                            title="Di chuyển lên"
-                          >
-                            <ArrowUp className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={index === sliders.length - 1}
-                            onClick={() => handleMoveDown(index)}
-                            className="h-6 w-6 hover:bg-gray-100"
-                            title="Di chuyển xuống"
-                          >
-                            <ArrowDown className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="relative w-20 h-14 rounded-md overflow-hidden">
-                        {slider.image ? (
-                          <Image
-                            src={slider.image}
-                            alt={slider.title}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                            <ImageIcon className="h-6 w-6 text-gray-400" />
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      {slider.title}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell max-w-60 truncate">
-                      {slider.description}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <div className="flex items-center">
-                        <span className="mr-2">{slider.cta}</span>
-                        {slider.ctaLink && (
-                          <LinkIcon className="h-4 w-4 text-blue-500" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleToggleActive(slider)}
-                        className={
-                          slider.isActive ? "text-green-600" : "text-red-600"
-                        }
-                      >
-                        {slider.isActive ? (
-                          <>
-                            <ToggleRight className="mr-2 h-4 w-4" />
-                            Hiển thị
-                          </>
-                        ) : (
-                          <>
-                            <ToggleLeft className="mr-2 h-4 w-4" />
-                            Ẩn
-                          </>
-                        )}
-                      </Button>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <div className="flex items-center text-gray-500 text-sm">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {slider.createdAt
-                          ? new Date(
-                              slider.createdAt.toDate(),
-                            ).toLocaleDateString("vi-VN")
-                          : "N/A"}
-                        <Clock className="h-3 w-3 ml-2 mr-1" />
-                        {slider.createdAt
-                          ? new Date(
-                              slider.createdAt.toDate(),
-                            ).toLocaleTimeString("vi-VN", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })
-                          : ""}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end space-x-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-                          title="Chỉnh sửa"
-                          onClick={() => handleEditSlider(slider)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className={`h-8 w-8 ${slider.isActive ? "text-green-600 hover:text-green-800 hover:bg-green-50" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
-                          title={
-                            slider.isActive
-                              ? "Đang hiển thị - Click để ẩn"
-                              : "Đang ẩn - Click để hiển thị"
-                          }
-                          onClick={() => handleToggleActive(slider)}
-                        >
-                          {slider.isActive ? (
-                            <CheckCircle className="h-4 w-4" />
-                          ) : (
-                            <XCircle className="h-4 w-4" />
-                          )}
-                        </Button>
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-red-600 hover:text-red-800 hover:bg-red-50"
-                          title="Xóa"
-                          onClick={() => handleDeleteSlider(slider)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block bg-white rounded-lg border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Thứ tự hiển thị</TableHead>
+                    <TableHead className="w-[120px]">Ảnh</TableHead>
+                    <TableHead>Tiêu đề</TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Mô tả
+                    </TableHead>
+                    <TableHead className="hidden lg:table-cell">
+                      Nút kêu gọi
+                    </TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead className="hidden md:table-cell w-[180px]">
+                      Ngày tạo
+                    </TableHead>
+                    <TableHead className="text-right">Thao tác</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sliders.map((slider, index) => (
+                    <TableRow key={slider.id}>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <span className="font-medium mr-2">
+                            {slider.displayOrder || index + 1}
+                          </span>
+                          <div className="flex flex-col">
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8"
+                              disabled={index === 0}
+                              onClick={() => handleMoveUp(index)}
+                              className="h-6 w-6 hover:bg-gray-100"
+                              title="Di chuyển lên"
                             >
-                              <ArrowUpDown className="h-4 w-4" />
+                              <ArrowUp className="h-4 w-4" />
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => handleEditSlider(slider)}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={index === sliders.length - 1}
+                              onClick={() => handleMoveDown(index)}
+                              className="h-6 w-6 hover:bg-gray-100"
+                              title="Di chuyển xuống"
                             >
-                              <Edit className="mr-2 h-4 w-4" />
-                              Chỉnh sửa
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleToggleActive(slider)}
-                            >
-                              {slider.isActive ? (
-                                <>
-                                  <ToggleLeft className="mr-2 h-4 w-4" />
-                                  Ẩn slider
-                                </>
-                              ) : (
-                                <>
-                                  <ToggleRight className="mr-2 h-4 w-4" />
-                                  Hiển thị slider
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDeleteSlider(slider)}
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Xóa
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                              <ArrowDown className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="relative w-20 h-14 rounded-md overflow-hidden">
+                          {slider.image ? (
+                            <Image
+                              src={slider.image}
+                              alt={slider.title}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                              <ImageIcon className="h-6 w-6 text-gray-400" />
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {slider.title}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell max-w-60 truncate">
+                        {slider.description}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center">
+                          <span className="mr-2">{slider.cta}</span>
+                          {slider.ctaLink && (
+                            <LinkIcon className="h-4 w-4 text-blue-500" />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleActive(slider)}
+                          className={
+                            slider.isActive ? "text-green-600" : "text-red-600"
+                          }
+                        >
+                          {slider.isActive ? (
+                            <>
+                              <ToggleRight className="mr-2 h-4 w-4" />
+                              Hiển thị
+                            </>
+                          ) : (
+                            <>
+                              <ToggleLeft className="mr-2 h-4 w-4" />
+                              Ẩn
+                            </>
+                          )}
+                        </Button>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex items-center text-gray-500 text-sm">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {slider.createdAt
+                            ? new Date(
+                                slider.createdAt.toDate(),
+                              ).toLocaleDateString("vi-VN")
+                            : "N/A"}
+                          <Clock className="h-3 w-3 ml-2 mr-1" />
+                          {slider.createdAt
+                            ? new Date(
+                                slider.createdAt.toDate(),
+                              ).toLocaleTimeString("vi-VN", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : ""}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end space-x-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                            title="Chỉnh sửa"
+                            onClick={() => handleEditSlider(slider)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
 
-          {/* Mobile Card View */}
-          <div className="md:hidden space-y-4">
-            {sliders.map((slider, index) => (
-              <div key={slider.id} className="bg-white rounded-lg border overflow-hidden">
-                <div className="p-4 border-b flex items-start gap-3">
-                  <div className="relative w-24 h-20 rounded-md overflow-hidden flex-shrink-0">
-                    {slider.image ? (
-                      <Image
-                        src={slider.image}
-                        alt={slider.title}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                        <ImageIcon className="h-6 w-6 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className={`h-8 w-8 ${slider.isActive ? "text-green-600 hover:text-green-800 hover:bg-green-50" : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"}`}
+                            title={
+                              slider.isActive
+                                ? "Đang hiển thị - Click để ẩn"
+                                : "Đang ẩn - Click để hiển thị"
+                            }
+                            onClick={() => handleToggleActive(slider)}
+                          >
+                            {slider.isActive ? (
+                              <CheckCircle className="h-4 w-4" />
+                            ) : (
+                              <XCircle className="h-4 w-4" />
+                            )}
+                          </Button>
 
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-base line-clamp-1">{slider.title}</h3>
-                    <p className="text-sm text-gray-500 line-clamp-2 mt-1">{slider.description}</p>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-red-600 hover:text-red-800 hover:bg-red-50"
+                            title="Xóa"
+                            onClick={() => handleDeleteSlider(slider)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
 
-                    <div className="mt-2 flex items-center">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        slider.isActive
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }`}>
-                        {slider.isActive ? "Hiển thị" : "Ẩn"}
-                      </span>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                              >
+                                <ArrowUpDown className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => handleEditSlider(slider)}
+                              >
+                                <Edit className="mr-2 h-4 w-4" />
+                                Chỉnh sửa
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleToggleActive(slider)}
+                              >
+                                {slider.isActive ? (
+                                  <>
+                                    <ToggleLeft className="mr-2 h-4 w-4" />
+                                    Ẩn slider
+                                  </>
+                                ) : (
+                                  <>
+                                    <ToggleRight className="mr-2 h-4 w-4" />
+                                    Hiển thị slider
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => handleDeleteSlider(slider)}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Xóa
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
 
-                      {slider.cta && (
-                        <div className="ml-2 text-xs flex items-center text-blue-600">
-                          <span className="mr-1">{slider.cta}</span>
-                          {slider.ctaLink && <LinkIcon className="h-3 w-3" />}
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {sliders.map((slider, index) => (
+                <div
+                  key={slider.id}
+                  className="bg-white rounded-lg border overflow-hidden"
+                >
+                  <div className="p-4 border-b flex items-start gap-3">
+                    <div className="relative w-24 h-20 rounded-md overflow-hidden flex-shrink-0">
+                      {slider.image ? (
+                        <Image
+                          src={slider.image}
+                          alt={slider.title}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                          <ImageIcon className="h-6 w-6 text-gray-400" />
                         </div>
                       )}
                     </div>
-                  </div>
-                </div>
 
-                <div className="px-4 py-2 flex items-center justify-between bg-gray-50 border-b">
-                  <div className="flex items-center text-sm text-gray-500">
-                    <span className="font-medium text-gray-700 mr-1">Thứ tự:</span>
-                    <span>{slider.displayOrder || index + 1}</span>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-base line-clamp-1">
+                        {slider.title}
+                      </h3>
+                      <p className="text-sm text-gray-500 line-clamp-2 mt-1">
+                        {slider.description}
+                      </p>
+
+                      <div className="mt-2 flex items-center">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            slider.isActive
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {slider.isActive ? "Hiển thị" : "Ẩn"}
+                        </span>
+
+                        {slider.cta && (
+                          <div className="ml-2 text-xs flex items-center text-blue-600">
+                            <span className="mr-1">{slider.cta}</span>
+                            {slider.ctaLink && <LinkIcon className="h-3 w-3" />}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  <div className="flex items-center">
+                  <div className="px-4 py-2 flex items-center justify-between bg-gray-50 border-b">
+                    <div className="flex items-center text-sm text-gray-500">
+                      <span className="font-medium text-gray-700 mr-1">
+                        Thứ tự:
+                      </span>
+                      <span>{slider.displayOrder || index + 1}</span>
+                    </div>
+
+                    <div className="flex items-center">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={index === 0}
+                        onClick={() => handleMoveUp(index)}
+                        className="h-8 w-8 hover:bg-gray-200"
+                      >
+                        <ArrowUp className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={index === sliders.length - 1}
+                        onClick={() => handleMoveDown(index)}
+                        className="h-8 w-8 hover:bg-gray-200"
+                      >
+                        <ArrowDown className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-3 flex justify-between items-center">
                     <Button
                       variant="ghost"
-                      size="icon"
-                      disabled={index === 0}
-                      onClick={() => handleMoveUp(index)}
-                      className="h-8 w-8 hover:bg-gray-200"
+                      size="sm"
+                      onClick={() => handleToggleActive(slider)}
+                      className={
+                        slider.isActive ? "text-green-600" : "text-red-600"
+                      }
                     >
-                      <ArrowUp className="h-4 w-4" />
+                      {slider.isActive ? (
+                        <>
+                          <ToggleRight className="mr-2 h-4 w-4" />
+                          Hiển thị
+                        </>
+                      ) : (
+                        <>
+                          <ToggleLeft className="mr-2 h-4 w-4" />
+                          Ẩn
+                        </>
+                      )}
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={index === sliders.length - 1}
-                      onClick={() => handleMoveDown(index)}
-                      className="h-8 w-8 hover:bg-gray-200"
-                    >
-                      <ArrowDown className="h-4 w-4" />
-                    </Button>
+
+                    <div className="flex gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 text-blue-600 border-blue-200"
+                        onClick={() => handleEditSlider(slider)}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Sửa
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 text-red-600 border-red-200"
+                        onClick={() => handleDeleteSlider(slider)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Xóa
+                      </Button>
+                    </div>
                   </div>
                 </div>
-
-                <div className="p-3 flex justify-between items-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleToggleActive(slider)}
-                    className={slider.isActive ? "text-green-600" : "text-red-600"}
-                  >
-                    {slider.isActive ? (
-                      <>
-                        <ToggleRight className="mr-2 h-4 w-4" />
-                        Hiển thị
-                      </>
-                    ) : (
-                      <>
-                        <ToggleLeft className="mr-2 h-4 w-4" />
-                        Ẩn
-                      </>
-                    )}
-                  </Button>
-
-                  <div className="flex gap-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-9 text-blue-600 border-blue-200"
-                      onClick={() => handleEditSlider(slider)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Sửa
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-9 text-red-600 border-red-200"
-                      onClick={() => handleDeleteSlider(slider)}
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Xóa
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Add/Edit Slider Dialog */}
