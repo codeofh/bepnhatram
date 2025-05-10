@@ -269,63 +269,142 @@ export default function AdminOrdersPage() {
                     )}
                   </p>
                 </div>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[100px]">Mã đơn</TableHead>
-                      <TableHead>Khách hàng</TableHead>
-                      <TableHead>Thời gian</TableHead>
-                      <TableHead>Trạng thái</TableHead>
-                      <TableHead className="text-right">Tổng tiền</TableHead>
-                      <TableHead className="text-center">Thao tác</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredOrders.map((order) => (
-                      <TableRow
-                        key={order.id}
-                        className="cursor-pointer hover:bg-gray-50"
-                      >
-                        <TableCell className="font-medium">
-                          {order.orderCode || order.id}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">
-                              {order.customer.name}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {order.customer.phone}
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-xs">
-                            <div>{formatDate(order.createdAt)}</div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <OrderStatusBadge status={order.status} />
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {formatCurrency(order.total)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() =>
-                              router.push(`/admin/order/${order.id}`)
-                            }
-                            title="Xem chi tiết"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
+                {/* Desktop Table View */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[100px]">Mã đơn</TableHead>
+                        <TableHead>Khách hàng</TableHead>
+                        <TableHead>Thời gian</TableHead>
+                        <TableHead>Trạng thái</TableHead>
+                        <TableHead className="text-right">Tổng tiền</TableHead>
+                        <TableHead className="text-center">Thao tác</TableHead>
                       </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredOrders.map((order) => (
+                        <TableRow
+                          key={order.id}
+                          className="cursor-pointer hover:bg-gray-50"
+                        >
+                          <TableCell className="font-medium">
+                            {order.orderCode || order.id}
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">
+                                {order.customer.name}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {order.customer.phone}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-xs">
+                              <div>{formatDate(order.createdAt)}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <OrderStatusBadge status={order.status} />
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatCurrency(order.total)}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() =>
+                                router.push(`/admin/order/${order.id}`)
+                              }
+                              title="Xem chi tiết"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Mobile Card View */}
+                <div className="md:hidden">
+                  <div className="space-y-3">
+                    {filteredOrders.map((order) => (
+                      <div
+                        key={order.id}
+                        className="bg-white border-b p-4"
+                        onClick={() => router.push(`/admin/order/${order.id}`)}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="font-medium">
+                            <span className="text-xs text-gray-500 mr-2">
+                              Mã đơn:
+                            </span>
+                            {order.orderCode || order.id}
+                          </div>
+                          <OrderStatusBadge
+                            status={order.status}
+                            showIcon={false}
+                            className="text-xs py-0 px-2 h-5"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-y-2 text-sm mb-2">
+                          <div>
+                            <span className="text-gray-500">Khách hàng:</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">
+                              {order.customer.name}
+                            </span>
+                          </div>
+
+                          <div>
+                            <span className="text-gray-500">SĐT:</span>
+                          </div>
+                          <div>
+                            <span>{order.customer.phone}</span>
+                          </div>
+
+                          <div>
+                            <span className="text-gray-500">Ngày đặt:</span>
+                          </div>
+                          <div>
+                            <span>{formatDate(order.createdAt)}</span>
+                          </div>
+
+                          <div>
+                            <span className="text-gray-500">Tổng tiền:</span>
+                          </div>
+                          <div>
+                            <span className="font-bold text-orange-600">
+                              {formatCurrency(order.total)}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end mt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/admin/order/${order.id}`);
+                            }}
+                          >
+                            <Eye className="h-3.5 w-3.5 mr-1" />
+                            Xem chi tiết
+                          </Button>
+                        </div>
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
+                  </div>
+                </div>
 
                 {totalPages > 1 && (
                   <div className="p-4 border-t">

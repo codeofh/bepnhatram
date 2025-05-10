@@ -61,7 +61,7 @@ export function OrderStatusBadge({
   return (
     <Badge
       variant={config.variant}
-      className={`flex items-center ${config.className} ${className}`}
+      className={`flex items-center whitespace-nowrap ${config.className} ${className}`}
     >
       {showIcon && config.icon}
       <span>{config.label}</span>

@@ -62,7 +62,7 @@ export function OrderFilters({
 
   return (
     <div className="mb-6 space-y-4">
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col gap-3">
         {/* Tìm kiếm */}
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -101,12 +101,16 @@ export function OrderFilters({
         </div>
 
         {/* Lọc theo ngày */}
-        <div className="w-full md:w-auto flex gap-2">
+        <div className="grid grid-cols-2 gap-2">
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full md:w-auto">
-                <Calendar className="mr-2 h-4 w-4" />
-                {startDate ? format(startDate, "dd/MM/yyyy") : "Từ ngày"}
+              <Button variant="outline" className="w-full justify-between">
+                <div className="flex items-center truncate">
+                  <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {startDate ? format(startDate, "dd/MM/yyyy") : "Từ ngày"}
+                  </span>
+                </div>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -121,9 +125,13 @@ export function OrderFilters({
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full md:w-auto">
-                <Calendar className="mr-2 h-4 w-4" />
-                {endDate ? format(endDate, "dd/MM/yyyy") : "Đến ngày"}
+              <Button variant="outline" className="w-full justify-between">
+                <div className="flex items-center truncate">
+                  <Calendar className="mr-2 h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">
+                    {endDate ? format(endDate, "dd/MM/yyyy") : "Đến ngày"}
+                  </span>
+                </div>
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -138,23 +146,23 @@ export function OrderFilters({
         </div>
       </div>
 
-      <div className="flex justify-between">
-        <div>
-          {(searchTerm || selectedStatus !== "all" || startDate || endDate) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleResetFilters}
-              className="h-8 px-2 text-gray-500"
-            >
-              <X className="mr-1 h-4 w-4" />
-              Xóa bộ lọc
-            </Button>
-          )}
-        </div>
-        <Button onClick={applyFilters}>
+      <div className="grid grid-cols-2 gap-2">
+        {searchTerm || selectedStatus !== "all" || startDate || endDate ? (
+          <Button
+            variant="outline"
+            onClick={handleResetFilters}
+            className="w-full"
+          >
+            <X className="mr-1 h-4 w-4" />
+            Xóa bộ lọc
+          </Button>
+        ) : (
+          <div></div> // Empty div to maintain grid layout when no reset button
+        )}
+        <Button onClick={applyFilters} className="w-full">
           <Filter className="mr-2 h-4 w-4" />
-          Lọc đơn hàng
+          <span className="sm:inline hidden">Lọc đơn hàng</span>
+          <span className="sm:hidden inline">Lọc</span>
         </Button>
       </div>
     </div>
