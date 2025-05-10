@@ -47,7 +47,11 @@ export function AdminLayout({
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      if (auth) {
+        await signOut(auth);
+      } else {
+        console.error("Auth is not initialized");
+      }
     } catch (error) {
       console.error("Error signing out: ", error);
     }
