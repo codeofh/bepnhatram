@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "export",
+  // Temporarily disable static export to use API routes during development
+  // output: "export",
   reactStrictMode: true,
   images: {
     unoptimized: true,

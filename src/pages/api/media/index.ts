@@ -32,6 +32,8 @@ export default async function handler(
       return getMediaItems(req, res);
     case "POST":
       return uploadMedia(req, res);
+    case "DELETE":
+      return deleteMedia(req, res);
     default:
       return res.status(405).json({ error: "Method not allowed" });
   }
@@ -145,5 +147,33 @@ async function uploadMedia(req: NextApiRequest, res: NextApiResponse) {
     return res
       .status(500)
       .json({ error: error.message || "Failed to upload media" });
+  }
+}
+
+// Delete media file
+async function deleteMedia(req: NextApiRequest, res: NextApiResponse) {
+  try {
+    const { filename } = req.query;
+    
+    if (!filename || typeof filename !== "string") {
+      return res.status(400).json({ error: "Filename is required" });
+    }
+    
+    const filePath = path.join(UPLOAD_DIR, filename);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: "File not found" });
+    }
+    
+    // Delete file
+    fs.unlinkSync(filePath);
+    
+    return res.status(200).json({ success: true });
+  } catch (error: any) {
+    console.error("Error deleting media:", error);
+    return res
+      .status(500)
+      .json({ error: error.message || "Failed to delete media" });
   }
 }

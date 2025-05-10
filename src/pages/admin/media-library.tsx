@@ -90,57 +90,80 @@ export default function MediaLibraryPage() {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<MediaItem | null>(null);
 
-  // Simulate fetching media items
+  // Fetch media items from API
   useEffect(() => {
     const fetchMediaItems = async () => {
       try {
-        // This would be replaced with actual API calls to fetch media
-        // For now, we'll simulate some items
         setIsLoading(true);
 
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const mockItems: MediaItem[] = [
-          {
-            id: "local-1",
-            name: "banner.jpg",
-            url: "/uploads/library/banner.jpg",
-            thumbnail: "/uploads/library/banner.jpg",
-            type: "image",
-            source: "local",
-            size: 254000,
-            dimensions: { width: 1920, height: 1080 },
-            createdAt: new Date("2023-08-15"),
-            tags: ["banner", "homepage"],
-          },
-          {
-            id: "cloudinary-1",
-            name: "product-photo.jpg",
-            url: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
-            thumbnail:
-              "https://res.cloudinary.com/demo/image/upload/c_thumb,w_200,g_face/v1312461204/sample.jpg",
-            type: "image",
-            source: "cloudinary",
-            size: 124000,
-            dimensions: { width: 1200, height: 800 },
-            createdAt: new Date("2023-09-05"),
-            tags: ["product", "food"],
-          },
-          {
-            id: "local-2",
-            name: "intro-video.mp4",
-            url: "/uploads/library/intro-video.mp4",
-            thumbnail: "/uploads/library/intro-video-thumb.jpg",
-            type: "video",
-            source: "local",
-            size: 3540000,
-            createdAt: new Date("2023-09-10"),
-            tags: ["intro", "video"],
-          },
-        ];
-
-        setMediaItems(mockItems);
+        // Fetch media items from API
+        const response = await fetch("/api/media");
+        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch media items: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        // Transform API response to MediaItem[]
+        const items: MediaItem[] = data.items.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          url: item.url,
+          thumbnail: item.thumbnail,
+          type: item.type as "image" | "video",
+          source: item.source as "local" | "cloudinary",
+          size: item.size,
+          dimensions: item.dimensions,
+          createdAt: new Date(item.createdAt),
+          tags: item.tags || [],
+        }));
+        
+        // If no items are returned from API, use mock data for demonstration
+        if (items.length === 0) {
+          const mockItems: MediaItem[] = [
+            {
+              id: "local-1",
+              name: "banner.jpg",
+              url: "/uploads/library/banner.jpg",
+              thumbnail: "/uploads/library/banner.jpg",
+              type: "image",
+              source: "local",
+              size: 254000,
+              dimensions: { width: 1920, height: 1080 },
+              createdAt: new Date("2023-08-15"),
+              tags: ["banner", "homepage"],
+            },
+            {
+              id: "cloudinary-1",
+              name: "product-photo.jpg",
+              url: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+              thumbnail:
+                "https://res.cloudinary.com/demo/image/upload/c_thumb,w_200,g_face/v1312461204/sample.jpg",
+              type: "image",
+              source: "cloudinary",
+              size: 124000,
+              dimensions: { width: 1200, height: 800 },
+              createdAt: new Date("2023-09-05"),
+              tags: ["product", "food"],
+            },
+            {
+              id: "local-2",
+              name: "intro-video.mp4",
+              url: "/uploads/library/intro-video.mp4",
+              thumbnail: "/uploads/library/intro-video-thumb.jpg",
+              type: "video",
+              source: "local",
+              size: 3540000,
+              createdAt: new Date("2023-09-10"),
+              tags: ["intro", "video"],
+            },
+          ];
+          
+          setMediaItems(mockItems);
+        } else {
+          setMediaItems(items);
+        }
       } catch (error) {
         console.error("Error fetching media items:", error);
         toast({
@@ -185,22 +208,32 @@ export default function MediaLibraryPage() {
 
           reader.onloadend = async () => {
             try {
-              // For local storage (would be an API call in a real app)
-              // Simulate successful upload
-              await new Promise((resolve) => setTimeout(resolve, 1000));
+              // Create a FormData object to send the file to the server
+              const formData = new FormData();
+              formData.append("file", file);
 
+              // Send the file to the server
+              const response = await fetch("/api/media", {
+                method: "POST",
+                body: formData,
+              });
+
+              if (!response.ok) {
+                throw new Error(`Upload failed: ${response.statusText}`);
+              }
+
+              const data = await response.json();
+              
+              // Create a new media item from the API response
               const newItem: MediaItem = {
-                id: `local-${Date.now()}-${file.name}`,
-                name: file.name,
-                url: URL.createObjectURL(file), // Would be a real URL in production
-                thumbnail:
-                  fileType === "image"
-                    ? URL.createObjectURL(file)
-                    : "/placeholder-video-thumb.jpg",
-                type: fileType as "image" | "video",
+                id: data.item.id,
+                name: data.item.name,
+                url: data.item.url,
+                thumbnail: data.item.thumbnail,
+                type: data.item.type as "image" | "video",
                 source: "local",
-                size: file.size,
-                createdAt: new Date(),
+                size: data.item.size,
+                createdAt: new Date(data.item.createdAt),
                 tags: [],
               };
 
@@ -372,9 +405,20 @@ export default function MediaLibraryPage() {
   // Delete item
   const handleDeleteItem = async (item: MediaItem) => {
     try {
-      // Would be an API call in a real app
-      // For now, simulate deletion
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Only delete from server if it's a local file
+      if (item.source === "local") {
+        // Extract filename from URL
+        const filename = item.url.split("/").pop();
+        
+        // Delete file from server
+        const response = await fetch(`/api/media?filename=${filename}`, {
+          method: "DELETE",
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Delete failed: ${response.statusText}`);
+        }
+      }
 
       setMediaItems((prev) =>
         prev.filter((mediaItem) => mediaItem.id !== item.id),
@@ -408,9 +452,25 @@ export default function MediaLibraryPage() {
   // Handle bulk delete
   const handleBulkDelete = async () => {
     try {
-      // Would be an API call in a real app
-      // For now, simulate deletion
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Get all selected items
+      const itemsToDelete = mediaItems.filter(item => selectedItems.includes(item.id));
+      
+      // Delete each item
+      for (const item of itemsToDelete) {
+        if (item.source === "local") {
+          // Extract filename from URL
+          const filename = item.url.split("/").pop();
+          
+          // Delete file from server
+          const response = await fetch(`/api/media?filename=${filename}`, {
+            method: "DELETE",
+          });
+          
+          if (!response.ok) {
+            throw new Error(`Delete failed: ${response.statusText}`);
+          }
+        }
+      }
 
       setMediaItems((prev) =>
         prev.filter((item) => !selectedItems.includes(item.id)),
