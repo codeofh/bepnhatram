@@ -14,13 +14,6 @@ export const config = {
   },
 };
 
-// Disable body parsing, we'll handle it with formidable
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
