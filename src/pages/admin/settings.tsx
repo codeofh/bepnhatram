@@ -258,33 +258,41 @@ export default function AdminSettingsPage() {
         ) : (
           <form onSubmit={handleSubmit}>
             <div className="space-y-6">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                 <div>
                   <h2 className="text-lg font-medium">Cài đặt trang web</h2>
                   <p className="text-sm text-muted-foreground">
                     Quản lý cài đặt chung cho toàn bộ trang web
                   </p>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex gap-2 w-full md:w-auto">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleReset}
                     disabled={isSubmitting}
+                    className="flex-1 md:flex-initial"
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    Khôi phục mặc định
+                    <span className="md:inline hidden">Khôi phục mặc định</span>
+                    <span className="md:hidden inline">Mặc định</span>
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 md:flex-initial"
+                  >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Đang lưu...
+                        <span className="md:inline hidden">Đang lưu...</span>
+                        <span className="md:hidden inline">Lưu...</span>
                       </>
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        Lưu thay đổi
+                        <span className="md:inline hidden">Lưu thay đổi</span>
+                        <span className="md:hidden inline">Lưu</span>
                       </>
                     )}
                   </Button>
@@ -292,15 +300,17 @@ export default function AdminSettingsPage() {
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid grid-cols-4 lg:grid-cols-7 mb-6">
-                  <TabsTrigger value="general">Cài đặt chung</TabsTrigger>
-                  <TabsTrigger value="contact">Liên hệ</TabsTrigger>
-                  <TabsTrigger value="social">Mạng xã hội</TabsTrigger>
-                  <TabsTrigger value="ordering">Đặt hàng</TabsTrigger>
-                  <TabsTrigger value="maps">Bản đồ</TabsTrigger>
-                  <TabsTrigger value="seo">SEO</TabsTrigger>
-                  <TabsTrigger value="other">Khác</TabsTrigger>
-                </TabsList>
+                <div className="overflow-x-auto pb-2">
+                  <TabsList className="inline-flex min-w-max w-full md:w-auto">
+                    <TabsTrigger value="general">Cài đặt chung</TabsTrigger>
+                    <TabsTrigger value="contact">Liên hệ</TabsTrigger>
+                    <TabsTrigger value="social">Mạng xã hội</TabsTrigger>
+                    <TabsTrigger value="ordering">Đặt hàng</TabsTrigger>
+                    <TabsTrigger value="maps">Bản đồ</TabsTrigger>
+                    <TabsTrigger value="seo">SEO</TabsTrigger>
+                    <TabsTrigger value="other">Khác</TabsTrigger>
+                  </TabsList>
+                </div>
 
                 <TabsContent value="general">
                   <Card>
@@ -409,7 +419,7 @@ export default function AdminSettingsPage() {
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="grid gap-2">
                             <Label htmlFor="city">Thành phố</Label>
                             <Input
@@ -437,7 +447,7 @@ export default function AdminSettingsPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="grid gap-2">
                             <Label htmlFor="postalCode">Mã bưu chính</Label>
                             <Input
@@ -672,7 +682,7 @@ export default function AdminSettingsPage() {
                           />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="grid gap-2">
                             <Label htmlFor="latitude">Vĩ độ</Label>
                             <Input
@@ -877,26 +887,34 @@ export default function AdminSettingsPage() {
 
             <div className="mt-6">
               <Card>
-                <CardFooter className="flex justify-between pt-6">
+                <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-3 pt-6">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleReset}
                     disabled={isSubmitting}
+                    className="w-full sm:w-auto"
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    Khôi phục mặc định
+                    <span className="md:inline hidden">Khôi phục mặc định</span>
+                    <span className="md:hidden inline">Mặc định</span>
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto"
+                  >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Đang lưu...
+                        <span className="md:inline hidden">Đang lưu...</span>
+                        <span className="md:hidden inline">Lưu...</span>
                       </>
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        Lưu thay đổi
+                        <span className="md:inline hidden">Lưu thay đổi</span>
+                        <span className="md:hidden inline">Lưu</span>
                       </>
                     )}
                   </Button>
