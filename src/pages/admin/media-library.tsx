@@ -18,6 +18,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { CloudinaryContext, Image as CloudinaryImage } from "cloudinary-react";
+import { collection, addDoc, doc, setDoc, deleteDoc, getDocs, query, orderBy } from "firebase/firestore";
 
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { MediaLibraryHelp } from "@/components/Admin/MediaLibraryHelp";
@@ -57,6 +58,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Badge } from "@/components/ui/badge";
+import { db } from "@/lib/firebase";
 
 // Define types for media items
 interface MediaItem {
@@ -70,6 +72,7 @@ interface MediaItem {
   dimensions?: { width: number; height: number };
   createdAt: Date;
   tags?: string[];
+  cloudinaryPublicId?: string;
 }
 
 // Cloudinary configuration
@@ -100,104 +103,58 @@ export default function MediaLibraryPage() {
   const [itemToDelete, setItemToDelete] = useState<MediaItem | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Define fetchMediaItems outside useEffect to make it accessible
+  // Hàm lấy dữ liệu media từ Firebase
   const fetchMediaItems = async () => {
     try {
       setIsLoading(true);
-      let allItems: MediaItem[] = [];
-
-      // Fetch local media items from API
-      const localResponse = await fetch("/api/media");
-
-      if (localResponse.ok) {
-        const localData = await localResponse.json();
-
-        // Transform API response to MediaItem[]
-        const localItems: MediaItem[] = localData.items.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          url: item.url,
-          thumbnail: item.thumbnail,
-          type: item.type as "image" | "video",
-          source: item.source as "local" | "cloudinary",
-          size: item.size,
-          dimensions: item.dimensions,
-          createdAt: new Date(item.createdAt),
-          tags: item.tags || [],
-        }));
-
-        allItems = [...allItems, ...localItems];
+      
+      // Lấy dữ liệu từ Firebase
+      if (!db) {
+        console.warn('Firebase không được khởi tạo');
+        throw new Error('Firebase không được khởi tạo');
       }
+      
+      // Lấy dữ liệu từ collection 'media'
+      const mediaCollection = collection(db, 'media');
+      
+      // Tạo query để sắp xếp theo thời gian tạo giảm dần (mới nhất trước)
+      const mediaQuery = query(mediaCollection, orderBy('createdAt', 'desc'));
+      
+      // Lấy tất cả documents
+      const querySnapshot = await getDocs(mediaQuery);
+      
+      // Chuyển đổi dữ liệu từ Firestore thành đối tượng MediaItem
+      const items: MediaItem[] = [];
+      
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        
+        // Chuyển đổi timestamp thành Date object nếu cần
+        const createdAt = data.createdAt instanceof Date 
+          ? data.createdAt 
+          : new Date(data.createdAt?.seconds * 1000 || Date.now());
+        
+        items.push({
+          id: doc.id,
+          name: data.name || '',
+          url: data.url || '',
+          thumbnail: data.thumbnail || '',
+          type: data.type as "image" | "video",
+          source: data.source as "local" | "cloudinary",
+          size: data.size,
+          dimensions: data.dimensions,
+          createdAt: createdAt,
+          tags: data.tags || [],
+          cloudinaryPublicId: data.cloudinaryPublicId
+        });
+      });
 
-      // Fetch Cloudinary media items
-      const cloudinaryResponse = await fetch("/api/media/cloudinary");
-
-      if (cloudinaryResponse.ok) {
-        const cloudinaryData = await cloudinaryResponse.json();
-
-        // Transform API response to MediaItem[]
-        const cloudinaryItems: MediaItem[] = cloudinaryData.items.map(
-          (item: any) => ({
-            id: item.id,
-            name: item.name,
-            url: item.url,
-            thumbnail: item.thumbnail,
-            type: item.type as "image" | "video",
-            source: "cloudinary",
-            size: item.size,
-            dimensions: item.dimensions,
-            createdAt: new Date(item.createdAt),
-            tags: item.tags || [],
-          }),
-        );
-
-        allItems = [...allItems, ...cloudinaryItems];
-      }
-
-      // If no items are returned from API, use mock data for demonstration
-      if (allItems.length === 0) {
-        const mockItems: MediaItem[] = [
-          {
-            id: "local-1",
-            name: "banner.jpg",
-            url: "/uploads/library/banner.jpg",
-            thumbnail: "/uploads/library/banner.jpg",
-            type: "image",
-            source: "local",
-            size: 254000,
-            dimensions: { width: 1920, height: 1080 },
-            createdAt: new Date("2023-08-15"),
-            tags: ["banner", "homepage"],
-          },
-          {
-            id: "cloudinary-1",
-            name: "product-photo.jpg",
-            url: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
-            thumbnail:
-              "https://res.cloudinary.com/demo/image/upload/c_thumb,w_200,g_face/v1312461204/sample.jpg",
-            type: "image",
-            source: "cloudinary",
-            size: 124000,
-            dimensions: { width: 1200, height: 800 },
-            createdAt: new Date("2023-09-05"),
-            tags: ["product", "food"],
-          },
-          {
-            id: "local-2",
-            name: "intro-video.mp4",
-            url: "/uploads/library/intro-video.mp4",
-            thumbnail: "/uploads/library/intro-video-thumb.jpg",
-            type: "video",
-            source: "local",
-            size: 3540000,
-            createdAt: new Date("2023-09-10"),
-            tags: ["intro", "video"],
-          },
-        ];
-
-        setMediaItems(mockItems);
-      } else {
-        setMediaItems(allItems);
+      // Luôn hiển thị dữ liệu từ Firebase, dù có hay không
+      setMediaItems(items);
+      
+      // Ghi log nếu không có dữ liệu
+      if (items.length === 0) {
+        console.log("Không có dữ liệu từ Firebase, hiển thị danh sách trống");
       }
     } catch (err: any) {
       console.error("Error fetching media items:", err);
@@ -205,13 +162,15 @@ export default function MediaLibraryPage() {
       toast({
         title: "Lỗi tải dữ liệu",
         description:
-          "Không thể tải thư viện phương tiện. Vui lòng thử lại sau.",
+          "Không thể tải thư viện phương tiện từ Firebase. Vui lòng thử lại sau.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Không cần hàm này nữa vì đã tích hợp vào fetchMediaItems
 
   // Fetch media items on initial load
   useEffect(() => {
@@ -261,26 +220,55 @@ export default function MediaLibraryPage() {
               }
 
               const data = await response.json();
-
-              // Create a new media item from the API response
-              const newItem: MediaItem = {
-                id: data.item.id,
-                name: data.item.name,
-                url: data.item.url,
-                thumbnail: data.item.thumbnail,
-                type: data.item.type as "image" | "video",
-                source: "local",
-                size: data.item.size,
-                createdAt: new Date(data.item.createdAt),
-                tags: [],
-              };
-
-              setMediaItems((prev) => [newItem, ...prev]);
-
-              toast({
-                title: "Tải lên thành công",
-                description: `Đã tải lên ${file.name} thành công`,
-              });
+              
+              // Lưu thông tin vào Firebase
+              if (!db) {
+                throw new Error("Không thể kết nối đến Firebase");
+              }
+              
+              try {
+                // Tạo ID mới cho document Firebase
+                const newId = `local-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+                
+                // Tạo media item từ dữ liệu API response
+                const newItem: MediaItem = {
+                  id: newId,
+                  name: data.item.name,
+                  url: data.item.url,
+                  thumbnail: data.item.thumbnail,
+                  type: data.item.type as "image" | "video",
+                  source: "local",
+                  size: data.item.size,
+                  createdAt: new Date(),
+                  tags: [],
+                  path: data.item.path || data.item.url,
+                };
+                
+                // Lưu vào Firebase
+                console.log('Đang lưu media vào Firebase:', newItem);
+                const docRef = doc(db, 'media', newId);
+                await setDoc(docRef, {
+                  ...newItem,
+                  createdAt: new Date().toISOString(),
+                });
+                
+                console.log('Đã lưu media vào Firebase thành công:', newId);
+                
+                // Cập nhật UI
+                setMediaItems((prev) => [newItem, ...prev]);
+                
+                toast({
+                  title: "Tải lên thành công",
+                  description: `Đã tải lên ${file.name} thành công`,
+                });
+              } catch (firebaseError) {
+                console.error("Lỗi khi lưu vào Firebase:", firebaseError);
+                toast({
+                  title: "Lỗi lưu trữ",
+                  description: "Đã tải lên tệp nhưng không thể lưu thông tin vào cơ sở dữ liệu.",
+                  variant: "destructive",
+                });
+              }
             } catch (error) {
               console.error("Error uploading file:", error);
               toast({
@@ -316,9 +304,64 @@ export default function MediaLibraryPage() {
   });
 
   // Function to refresh media items and clear errors
-  const refreshMediaLibrary = () => {
+  const refreshMediaLibrary = async () => {
     setError(null);
-    fetchMediaItems();
+    try {
+      await fetchMediaItems();
+      
+      toast({
+        title: "Làm mới thành công",
+        description: "Đã cập nhật thư viện phương tiện từ Firebase",
+      });
+    } catch (error) {
+      console.error("Lỗi khi làm mới thư viện:", error);
+      toast({
+        title: "Lỗi làm mới",
+        description: "Không thể cập nhật thư viện phương tiện. Vui lòng thử lại sau.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Hàm lưu thông tin media vào Firebase
+  const saveMediaToFirebase = async (mediaData: MediaItem) => {
+    try {
+      if (!db) {
+        console.warn('Firebase không được khởi tạo');
+        return null;
+      }
+
+      // Tạo ID cho document nếu chưa có
+      const id = mediaData.id || `cloudinary-${Date.now()}`;
+      
+      console.log('Đang lưu vào Firebase với ID:', id, 'Dữ liệu:', mediaData);
+      
+      // Chuẩn bị dữ liệu để lưu - chuyển đổi thành đối tượng thuần túy
+      // Loại bỏ các trường không cần thiết và đảm bảo định dạng đúng
+      const dataToSave = {
+        name: mediaData.name || '',
+        url: mediaData.url || '',
+        thumbnail: mediaData.thumbnail || '',
+        type: mediaData.type || 'image',
+        source: mediaData.source || 'cloudinary',
+        size: mediaData.size || 0,
+        dimensions: mediaData.dimensions || { width: 0, height: 0 },
+        createdAt: mediaData.createdAt || new Date(),
+        updatedAt: new Date(),
+        tags: mediaData.tags || [],
+        cloudinaryPublicId: mediaData.cloudinaryPublicId || ''
+      };
+      
+      // Sử dụng setDoc với ID cụ thể để tránh trùng lặp
+      const docRef = doc(db, 'media', id);
+      await setDoc(docRef, dataToSave);
+      
+      console.log('Đã lưu vào Firebase thành công:', id);
+      return id;
+    } catch (error) {
+      console.error('Lỗi khi lưu vào Firebase:', error);
+      return null;
+    }
   };
 
   // Function to upload to Cloudinary
@@ -349,130 +392,56 @@ export default function MediaLibraryPage() {
       const cloudinaryData = await cloudinaryResponse.json();
       console.log("Cloudinary response:", cloudinaryData);
 
-      // Bước 2: Lưu thông tin vào API của chúng ta
-      const apiFormData = new FormData();
-      apiFormData.append(
-        "name",
-        file.name ||
-          cloudinaryData.original_filename ||
-          cloudinaryData.public_id,
-      );
-      apiFormData.append("url", cloudinaryData.secure_url);
-      apiFormData.append(
-        "thumbnail",
-        cloudinaryData.resource_type === "image"
+      // Tạo đối tượng MediaItem từ dữ liệu Cloudinary
+      const newItem: MediaItem = {
+        id: `cloudinary-${cloudinaryData.public_id}`,
+        name: file.name || cloudinaryData.original_filename || cloudinaryData.public_id,
+        url: cloudinaryData.secure_url,
+        thumbnail: cloudinaryData.resource_type === "image"
           ? cloudinaryData.secure_url
           : cloudinaryData.thumbnail_url || "/placeholder-video-thumb.jpg",
-      );
-      apiFormData.append(
-        "type",
-        cloudinaryData.resource_type === "image" ? "image" : "video",
-      );
-      apiFormData.append("source", "cloudinary");
-      apiFormData.append("size", (cloudinaryData.bytes || 0).toString());
-      apiFormData.append("width", (cloudinaryData.width || 0).toString());
-      apiFormData.append("height", (cloudinaryData.height || 0).toString());
-      apiFormData.append("cloudinaryPublicId", cloudinaryData.public_id);
+        type: cloudinaryData.resource_type === "image" ? "image" : "video",
+        source: "cloudinary",
+        size: cloudinaryData.bytes || 0,
+        dimensions: {
+          width: cloudinaryData.width || 0,
+          height: cloudinaryData.height || 0,
+        },
+        createdAt: new Date(),
+        tags: [],
+        cloudinaryPublicId: cloudinaryData.public_id
+      };
 
+      // Bước 2: Lưu trực tiếp vào Firebase từ client
       try {
-        const apiResponse = await fetch("/api/media/cloudinary", {
-          method: "POST",
-          body: apiFormData,
-        });
-
-        if (!apiResponse.ok) {
-          console.error(`API storage failed: ${apiResponse.statusText}`);
-          // Nếu API lưu trữ thất bại, vẫn hiển thị hình ảnh đã tải lên Cloudinary
-          const fallbackItem: MediaItem = {
-            id: `cloudinary-temp-${Date.now()}`,
-            name:
-              file.name ||
-              cloudinaryData.original_filename ||
-              cloudinaryData.public_id,
-            url: cloudinaryData.secure_url,
-            thumbnail:
-              cloudinaryData.resource_type === "image"
-                ? cloudinaryData.secure_url
-                : cloudinaryData.thumbnail_url ||
-                  "/placeholder-video-thumb.jpg",
-            type: cloudinaryData.resource_type === "image" ? "image" : "video",
-            source: "cloudinary",
-            size: cloudinaryData.bytes || 0,
-            dimensions: {
-              width: cloudinaryData.width || 0,
-              height: cloudinaryData.height || 0,
-            },
-            createdAt: new Date(),
-            tags: [],
-          };
-
-          setMediaItems((prev) => [fallbackItem, ...prev]);
-
+        const savedId = await saveMediaToFirebase(newItem);
+        
+        if (savedId) {
+          // Cập nhật ID nếu Firebase đã tạo ID mới
+          newItem.id = savedId;
+          
+          toast({
+            title: "Tải lên thành công",
+            description: `Đã tải lên ${file.name} lên Cloudinary và lưu vào Firebase thành công`,
+          });
+        } else {
           toast({
             title: "Tải lên Cloudinary thành công",
-            description:
-              "Đã tải lên Cloudinary nhưng không thể lưu vào cơ sở dữ liệu. Bạn vẫn có thể sử dụng tệp này.",
+            description: "Đã tải lên Cloudinary nhưng không thể lưu vào Firebase. Bạn vẫn có thể sử dụng tệp này.",
           });
-
-          return;
         }
-
-        const apiData = await apiResponse.json();
-
-        // Tạo item mới từ dữ liệu API trả về
-        const newItem: MediaItem = {
-          id: apiData.item.id,
-          name: apiData.item.name,
-          url: apiData.item.url,
-          thumbnail: apiData.item.thumbnail,
-          type: apiData.item.type as "image" | "video",
-          source: "cloudinary",
-          size: apiData.item.size,
-          dimensions: {
-            width: apiData.item.dimensions?.width || 0,
-            height: apiData.item.dimensions?.height || 0,
-          },
-          createdAt: new Date(apiData.item.createdAt),
-          tags: apiData.item.tags || [],
-        };
-
+        
+        // Thêm item mới vào danh sách hiển thị
         setMediaItems((prev) => [newItem, ...prev]);
-
-        toast({
-          title: "Tải lên thành công",
-          description: `Đã tải lên ${file.name} lên Cloudinary thành công`,
-        });
       } catch (error) {
-        console.error("Error saving to database:", error);
-        // Nếu có lỗi khi lưu vào cơ sở dữ liệu, vẫn hiển thị hình ảnh đã tải lên Cloudinary
-        const fallbackItem: MediaItem = {
-          id: `cloudinary-temp-${Date.now()}`,
-          name:
-            file.name ||
-            cloudinaryData.original_filename ||
-            cloudinaryData.public_id,
-          url: cloudinaryData.secure_url,
-          thumbnail:
-            cloudinaryData.resource_type === "image"
-              ? cloudinaryData.secure_url
-              : cloudinaryData.thumbnail_url || "/placeholder-video-thumb.jpg",
-          type: cloudinaryData.resource_type === "image" ? "image" : "video",
-          source: "cloudinary",
-          size: cloudinaryData.bytes || 0,
-          dimensions: {
-            width: cloudinaryData.width || 0,
-            height: cloudinaryData.height || 0,
-          },
-          createdAt: new Date(),
-          tags: [],
-        };
-
-        setMediaItems((prev) => [fallbackItem, ...prev]);
-
+        console.error("Lỗi khi lưu vào Firebase:", error);
+        
+        // Vẫn hiển thị hình ảnh đã tải lên Cloudinary ngay cả khi lưu Firebase thất bại
+        setMediaItems((prev) => [newItem, ...prev]);
+        
         toast({
           title: "Tải lên Cloudinary thành công",
-          description:
-            "Đã tải lên Cloudinary nhưng không thể lưu vào cơ sở dữ liệu. Bạn vẫn có thể sử dụng tệp này.",
+          description: "Đã tải lên Cloudinary nhưng không thể lưu vào Firebase. Bạn vẫn có thể sử dụng tệp này.",
         });
       }
     } catch (error) {
@@ -550,49 +519,118 @@ export default function MediaLibraryPage() {
     );
   };
 
-  // Delete item
+  // Delete item - Xóa từ Firebase trước, sau đó xóa file vật lý nếu là file local
   const handleDeleteItem = async (item: MediaItem) => {
     try {
-      // Xử lý xóa tệp dựa trên nguồn
-      if (item.source === "local") {
+      console.log("Đang xóa item:", item);
+      
+      // Xóa từ Firebase trước - áp dụng cho tất cả các loại media
+      const firebaseDeleteSuccess = await deleteFromFirebase(item);
+      
+      // Nếu xóa Firebase thành công và là file local, thì xóa file vật lý
+      if (firebaseDeleteSuccess && item.source === "local") {
         // Extract filename from URL
         const filename = item.url.split("/").pop();
+        
+        if (filename) {
+          try {
+            console.log(`Đang xóa file vật lý: ${filename}`);
+            // Delete file from server
+            const response = await fetch(`/api/media?filename=${filename}`, {
+              method: "DELETE",
+            });
 
-        // Delete file from server
-        const response = await fetch(`/api/media?filename=${filename}`, {
-          method: "DELETE",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Delete failed: ${response.statusText}`);
-        }
-      } else if (item.source === "cloudinary") {
-        // Xóa thông tin tệp Cloudinary từ cơ sở dữ liệu của chúng ta
-        const response = await fetch(`/api/media/cloudinary?id=${item.id}`, {
-          method: "DELETE",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Delete failed: ${response.statusText}`);
+            if (!response.ok) {
+              console.warn(`Không thể xóa file từ server: ${response.statusText}`);
+              toast({
+                title: "Cảnh báo",
+                description: "Đã xóa thông tin từ cơ sở dữ liệu nhưng không thể xóa file vật lý.",
+                variant: "warning",
+              });
+            } else {
+              console.log(`Đã xóa file vật lý thành công: ${filename}`);
+            }
+          } catch (localDeleteError) {
+            console.error("Lỗi khi xóa file local:", localDeleteError);
+            toast({
+              title: "Cảnh báo",
+              description: "Đã xóa thông tin từ cơ sở dữ liệu nhưng không thể xóa file vật lý.",
+              variant: "warning",
+            });
+          }
         }
       }
-
+      
+      // Cập nhật UI sau khi xóa
       setMediaItems((prev) =>
         prev.filter((mediaItem) => mediaItem.id !== item.id),
       );
+    } catch (error) {
+      console.error("Lỗi khi xóa item:", error);
+      toast({
+        title: "Lỗi xóa",
+        description: "Đã xảy ra lỗi khi xóa. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Hàm helper để xóa từ Firebase
+  const deleteFromFirebase = async (mediaItem: MediaItem) => {
+    if (!db) {
+      toast({
+        title: "Lỗi kết nối",
+        description: "Không thể kết nối đến cơ sở dữ liệu Firebase.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    try {
+      // Đảm bảo item.id tồn tại
+      const docId = mediaItem.id || '';
+      if (!docId) {
+        console.error('Không thể xóa từ Firebase: ID không hợp lệ');
+        throw new Error('ID không hợp lệ');
+      }
+      
+      console.log('Đang xóa từ Firebase với ID:', docId);
+      const docRef = doc(db, 'media', docId);
+      await deleteDoc(docRef);
+      console.log('Đã xóa từ Firebase thành công:', docId);
+      
+      // Hiển thị thông báo thành công
+      toast({
+        title: "Xóa thành công",
+        description: `Đã xóa ${mediaItem.name} khỏi thư viện`,
+      });
+      
+      return true;
+    } catch (firebaseError) {
+      console.error('Lỗi khi xóa từ Firebase:', firebaseError);
+      toast({
+        title: "Lỗi xóa",
+        description: "Không thể xóa từ cơ sở dữ liệu. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
 
-      if (selectedItems.includes(item.id)) {
-        setSelectedItems((prev) => prev.filter((id) => id !== item.id));
+  // Handle confirm delete
+  const handleConfirmDelete = async () => {
+    if (!itemToDelete) return;
+    
+    try {
+      await handleDeleteItem(itemToDelete);
+      
+      if (selectedItems.includes(itemToDelete.id)) {
+        setSelectedItems((prev) => prev.filter((id) => id !== itemToDelete.id));
       }
 
-      if (selectedItem?.id === item.id) {
+      if (selectedItem?.id === itemToDelete.id) {
         setSelectedItem(null);
       }
-
-      toast({
-        title: "Đã xóa",
-        description: `Đã xóa ${item.name} thành công`,
-      });
     } catch (error) {
       console.error("Error deleting item:", error);
       toast({
@@ -616,27 +654,50 @@ export default function MediaLibraryPage() {
 
       // Delete each item
       for (const item of itemsToDelete) {
-        if (item.source === "local") {
-          // Extract filename from URL
-          const filename = item.url.split("/").pop();
-
-          // Delete file from server
-          const response = await fetch(`/api/media?filename=${filename}`, {
-            method: "DELETE",
-          });
-
-          if (!response.ok) {
-            throw new Error(`Delete failed: ${response.statusText}`);
+        try {
+          // Xóa từ Firebase trước
+          const firebaseDeleteSuccess = await deleteFromFirebase(item);
+          
+          // Nếu xóa Firebase thành công và là file local, thì xóa file vật lý
+          if (firebaseDeleteSuccess && item.source === "local") {
+            // Extract filename from URL
+            const filename = item.url.split("/").pop();
+            
+            if (filename) {
+              try {
+                console.log(`Đang xóa file vật lý (bulk): ${filename}`);
+                // Delete file from server
+                const response = await fetch(`/api/media?filename=${filename}`, {
+                  method: "DELETE",
+                });
+                
+                if (!response.ok) {
+                  console.warn(`Không thể xóa file từ server: ${response.statusText}`);
+                  toast({
+                    title: "Cảnh báo",
+                    description: `Đã xóa thông tin ${item.name} từ cơ sở dữ liệu nhưng không thể xóa file vật lý.`,
+                    variant: "warning",
+                  });
+                } else {
+                  console.log(`Đã xóa file vật lý thành công (bulk): ${filename}`);
+                }
+              } catch (localDeleteError) {
+                console.error("Lỗi khi xóa file local:", localDeleteError);
+                toast({
+                  title: "Cảnh báo",
+                  description: `Đã xóa thông tin ${item.name} từ cơ sở dữ liệu nhưng không thể xóa file vật lý.`,
+                  variant: "warning",
+                });
+              }
+            }
           }
-        } else if (item.source === "cloudinary") {
-          // Xóa thông tin tệp Cloudinary từ cơ sở dữ liệu của chúng ta
-          const response = await fetch(`/api/media/cloudinary?id=${item.id}`, {
-            method: "DELETE",
+        } catch (error) {
+          console.error(`Lỗi khi xóa item ${item.id}:`, error);
+          toast({
+            title: "Lỗi xóa",
+            description: `Không thể xóa ${item.name}. Vui lòng thử lại.`,
+            variant: "destructive",
           });
-
-          if (!response.ok) {
-            throw new Error(`Delete failed: ${response.statusText}`);
-          }
         }
       }
 

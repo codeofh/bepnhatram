@@ -14,6 +14,11 @@ export interface MediaItem {
   dimensions?: { width: number; height: number };
   createdAt: Date;
   tags?: string[];
+  // Thêm các trường mới
+  path?: string;                                // Đường dẫn đầy đủ đến file
+  uploadSource?: string;                        // Nguồn upload (admin-panel, file-system-sync, etc.)
+  cloudinaryPublicId?: string;                  // ID công khai của Cloudinary (nếu source là cloudinary)
+  deleted?: boolean;                            // Đánh dấu đã xóa hay chưa
 }
 
 // Cloudinary configuration
@@ -51,11 +56,12 @@ export const uploadToCloudinary = async (
     }
 
     const data = await response.json();
+    console.log("Cloudinary response:", data);
 
     // Create a MediaItem from Cloudinary response
     const newItem: MediaItem = {
       id: `cloudinary-${data.public_id}`,
-      name: file.name,
+      name: file.name || data.original_filename || "unnamed",
       url: data.secure_url,
       thumbnail:
         data.resource_type === "image" ? data.secure_url : data.thumbnail_url,
@@ -63,11 +69,14 @@ export const uploadToCloudinary = async (
       source: "cloudinary",
       size: data.bytes,
       dimensions: {
-        width: data.width,
-        height: data.height,
+        width: data.width || 0,
+        height: data.height || 0,
       },
+      cloudinaryPublicId: data.public_id,
       createdAt: new Date(),
       tags: [],
+      path: data.secure_url,
+      uploadSource: "admin-panel",
     };
 
     return newItem;
@@ -89,6 +98,12 @@ export function useMediaLibrary() {
       setIsLoading(true);
       setError(null);
       let allItems: MediaItem[] = [];
+
+      // Đồng bộ hóa local media với Firestore
+      const syncResponse = await fetch("/api/media?sync=true");
+      if (!syncResponse.ok) {
+        console.warn("Failed to sync local media with Firestore");
+      }
 
       // Fetch local media items from API
       const localResponse = await fetch("/api/media");
@@ -120,6 +135,8 @@ export function useMediaLibrary() {
       }
 
       if (allItems.length > 0) {
+        // Sắp xếp theo thời gian tạo, mới nhất lên đầu
+        allItems.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
         setMediaItems(allItems);
       } else {
         // Fallback to mock data if both APIs return empty
@@ -135,6 +152,8 @@ export function useMediaLibrary() {
             dimensions: { width: 1920, height: 1080 },
             createdAt: new Date("2023-08-15"),
             tags: ["banner", "homepage"],
+            path: "/uploads/library/banner.jpg",
+            uploadSource: "mock-data",
           },
           {
             id: "cloudinary-1",
@@ -148,6 +167,8 @@ export function useMediaLibrary() {
             dimensions: { width: 1200, height: 800 },
             createdAt: new Date("2023-09-05"),
             tags: ["product", "food"],
+            uploadSource: "mock-data",
+            cloudinaryPublicId: "v1312461204/sample",
           },
         ];
         setMediaItems(mockItems);
@@ -172,6 +193,7 @@ export function useMediaLibrary() {
         // Create FormData and append file
         const formData = new FormData();
         formData.append("file", file);
+        formData.append("uploadSource", "admin-panel");
 
         // Send to server API
         const response = await fetch("/api/media", {
@@ -211,8 +233,15 @@ export function useMediaLibrary() {
           );
           formData.append(
             "cloudinaryPublicId",
-            newItem.id.replace("cloudinary-", ""),
+            newItem.cloudinaryPublicId || "",
           );
+          formData.append("uploadSource", "admin-panel");
+          
+          console.log("Sending to API:", {
+            name: newItem.name,
+            url: newItem.url,
+            cloudinaryPublicId: newItem.cloudinaryPublicId,
+          });
 
           const apiResponse = await fetch("/api/media/cloudinary", {
             method: "POST",
@@ -259,7 +288,7 @@ export function useMediaLibrary() {
         const filename = item.url.split("/").pop();
 
         // Call API to delete the file
-        const response = await fetch(`/api/media?filename=${filename}`, {
+        const response = await fetch(`/api/media?filename=${filename}&id=${item.id}`, {
           method: "DELETE",
         });
 
@@ -274,9 +303,11 @@ export function useMediaLibrary() {
       }
 
       if (success) {
+        // Cập nhật trạng thái local
         setMediaItems((prev) =>
           prev.filter((mediaItem) => mediaItem.id !== item.id),
         );
+        
         toast.success(`${item.name} đã được xóa`);
         return true;
       } else {
@@ -294,9 +325,24 @@ export function useMediaLibrary() {
   // Update media item
   const updateItem = async (id: string, updates: Partial<MediaItem>) => {
     try {
+      // Cập nhật trạng thái local
       setMediaItems((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item)),
       );
+      
+      // Cập nhật qua API thông thường
+      const response = await fetch(`/api/media/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to update via API");
+      }
+      
       toast.success("Đã cập nhật thành công");
       return true;
     } catch (err: any) {

@@ -4,8 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MediaItem } from "@/lib/mediaLibrary";
-import { ExternalLink, Video } from "lucide-react";
+import { ExternalLink, Video, Copy, Check } from "lucide-react";
 import { formatFileSize } from "@/lib/mediaLibrary";
+import { useToast } from "@/hooks/use-toast";
 
 interface MediaItemCardProps {
   item: MediaItem;
@@ -24,6 +25,9 @@ export function MediaItemCard({
   isSelectable = false,
   showExternalLink = true,
 }: MediaItemCardProps) {
+  const [copied, setCopied] = React.useState(false);
+  const { toast } = useToast();
+
   const handleClick = () => {
     if (isSelectable && onToggleSelect) {
       onToggleSelect(item.id);
@@ -35,6 +39,28 @@ export function MediaItemCard({
   const handleOpenExternal = (e: React.MouseEvent) => {
     e.stopPropagation();
     window.open(item.url, "_blank");
+  };
+  
+  const handleCopyPath = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(item.url)
+      .then(() => {
+        setCopied(true);
+        toast({
+          title: "Đã sao chép",
+          description: "Đường dẫn đã được sao chép vào clipboard",
+          variant: "default",
+        });
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch((err) => {
+        console.error("Không thể sao chép:", err);
+        toast({
+          title: "Lỗi",
+          description: "Không thể sao chép đường dẫn",
+          variant: "destructive",
+        });
+      });
   };
 
   return (
@@ -87,18 +113,32 @@ export function MediaItemCard({
           )}
         </div>
 
-        {/* External link button */}
-        {showExternalLink && (
+        {/* Action buttons */}
+        <div className="absolute top-2 right-2 flex gap-1">
+          {/* Copy path button */}
           <Button
             size="icon"
             variant="secondary"
-            className="h-6 w-6 absolute top-2 right-2 opacity-0 group-hover:opacity-100"
-            onClick={handleOpenExternal}
-            title="Mở trong tab mới"
+            className="h-6 w-6"
+            onClick={handleCopyPath}
+            title="Sao chép đường dẫn"
           >
-            <ExternalLink className="h-3 w-3" />
+            {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
           </Button>
-        )}
+          
+          {/* External link button */}
+          {showExternalLink && (
+            <Button
+              size="icon"
+              variant="secondary"
+              className="h-6 w-6"
+              onClick={handleOpenExternal}
+              title="Mở trong tab mới"
+            >
+              <ExternalLink className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
 
         {/* Source badge */}
         <Badge

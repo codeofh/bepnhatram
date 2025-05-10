@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { getFileType } from "./mediaLibrary";
+import { MediaItem } from "./mediaLibrary";
+import { serverAddMediaItem, serverGetMediaItemsBySource, serverDeleteMediaItem } from "./mediaFirestore";
 
 // Set upload directory
 export const UPLOAD_PATH = path.join(
@@ -29,17 +31,7 @@ export const uploadFileToLocal = async (file: {
   filepath: string;
   originalFilename?: string;
   size: number;
-}): Promise<{
-  id: string;
-  name: string;
-  url: string;
-  thumbnail?: string;
-  type: "image" | "video" | "other";
-  source: "local";
-  size: number;
-  createdAt: Date;
-  tags?: string[];
-} | null> => {
+}): Promise<MediaItem | null> => {
   try {
     ensureUploadDirectory();
 
@@ -61,8 +53,8 @@ export const uploadFileToLocal = async (file: {
     }
 
     // Create a MediaItem object
-    return {
-      id: `local-${fileName}`,
+    const mediaItem: MediaItem = {
+      id: `local-${fileName}`, // Tạm thời tạo ID, sẽ được thay thế bởi Firestore document ID
       name: file.originalFilename || fileName,
       url: `/uploads/library/${fileName}`,
       thumbnail:
@@ -72,7 +64,12 @@ export const uploadFileToLocal = async (file: {
       size: file.size,
       createdAt: new Date(),
       tags: [],
+      uploadSource: "admin-panel", // Thêm thông tin nguồn upload
+      path: `/uploads/library/${fileName}`, // Thêm đường dẫn đầy đủ
     };
+
+    // Trả về item gốc
+    return mediaItem;
   } catch (error) {
     console.error("Error uploading file to local storage:", error);
     return null;
@@ -80,7 +77,7 @@ export const uploadFileToLocal = async (file: {
 };
 
 // Function to delete file from local storage (SERVER SIDE ONLY)
-export const deleteLocalFile = async (filePath: string): Promise<boolean> => {
+export const deleteLocalFile = async (filePath: string, mediaId?: string): Promise<boolean> => {
   try {
     const fullPath = path.join(process.cwd(), "public", filePath);
 
@@ -102,23 +99,22 @@ export const deleteLocalFile = async (filePath: string): Promise<boolean> => {
 // Get media items from local storage (SERVER SIDE ONLY)
 export const getLocalMediaItems = async () => {
   try {
+    // Quét thư mục local
     ensureUploadDirectory();
-
-    // Read all files in the directory
     const files = fs.readdirSync(UPLOAD_PATH);
-
-    return files
+    
+    const items = files
       .map((file) => {
         const filePath = path.join(UPLOAD_PATH, file);
         const stats = fs.statSync(filePath);
         const type = getFileType(file);
-
+        
         if (type === "other") {
           return null; // Skip non-image/video files
         }
-
+        
         const relativePath = `/uploads/library/${file}`;
-
+        
         return {
           id: `local-${file}`,
           name: file,
@@ -129,11 +125,65 @@ export const getLocalMediaItems = async () => {
           size: stats.size,
           createdAt: stats.birthtime,
           tags: [],
+          path: relativePath,
+          uploadSource: "file-system-scan",
         };
       })
-      .filter(Boolean); // Remove nulls
+      .filter(Boolean) as MediaItem[]; // Remove nulls
+    
+    // Kiểm tra xem file có tồn tại không
+    const validItems = items.filter(item => {
+      const fullPath = path.join(process.cwd(), "public", item.url);
+      return fs.existsSync(fullPath);
+    });
+    
+    return validItems;
   } catch (error) {
     console.error("Error getting local media items:", error);
     return [];
+  }
+};
+
+// Scan local directory and sync with Firestore
+export const syncLocalMediaWithFirestore = async () => {
+  try {
+    ensureUploadDirectory();
+
+    // Read all files in the directory
+    const files = fs.readdirSync(UPLOAD_PATH);
+    
+    // Quét thư mục local
+    const items = files
+      .map((file) => {
+        const filePath = path.join(UPLOAD_PATH, file);
+        const stats = fs.statSync(filePath);
+        const type = getFileType(file);
+        
+        if (type === "other") {
+          return null; // Skip non-image/video files
+        }
+        
+        const relativePath = `/uploads/library/${file}`;
+        
+        return {
+          id: `local-${file}`,
+          name: file,
+          url: relativePath,
+          thumbnail: type === "image" ? relativePath : null,
+          type,
+          source: "local",
+          size: stats.size,
+          createdAt: stats.birthtime,
+          tags: [],
+          path: relativePath,
+          uploadSource: "file-system-scan",
+        };
+      })
+      .filter(Boolean) as MediaItem[]; // Remove nulls
+    
+    return true;
+  } catch (error) {
+    console.error("Error syncing local media with Firestore:", error);
+    return false;
   }
 };

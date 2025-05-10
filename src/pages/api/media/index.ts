@@ -4,6 +4,7 @@ import {
   getLocalMediaItems,
   uploadFileToLocal,
   deleteLocalFile,
+  syncLocalMediaWithFirestore,
 } from "@/lib/mediaLibraryServer";
 import { getFileType } from "@/lib/mediaLibrary";
 
@@ -34,6 +35,11 @@ export default async function handler(
 // Get all media items
 async function getMediaItems(req: NextApiRequest, res: NextApiResponse) {
   try {
+    // Nếu có tham số sync=true, thực hiện đồng bộ hóa thư mục local với Firestore
+    if (req.query.sync === "true") {
+      await syncLocalMediaWithFirestore();
+    }
+    
     const mediaItems = await getLocalMediaItems();
 
     return res.status(200).json({ items: mediaItems });
@@ -68,6 +74,9 @@ async function uploadMedia(req: NextApiRequest, res: NextApiResponse) {
           return resolve(null);
         }
 
+        // Lấy thông tin nguồn upload từ fields (nếu có)
+        const uploadSource = fields.uploadSource?.[0] || "admin-panel";
+
         // Upload the file using our server-side function
         const mediaItem = await uploadFileToLocal(file);
 
@@ -93,16 +102,17 @@ async function uploadMedia(req: NextApiRequest, res: NextApiResponse) {
 // Delete media file
 async function deleteMedia(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const { filename } = req.query;
+    const { filename, id } = req.query;
 
     if (!filename || typeof filename !== "string") {
       return res.status(400).json({ error: "Filename is required" });
     }
 
     const filePath = `/uploads/library/${filename}`;
+    const mediaId = typeof id === "string" ? id : undefined;
 
     // Delete the file using our server-side function
-    const success = await deleteLocalFile(filePath);
+    const success = await deleteLocalFile(filePath, mediaId);
 
     if (!success) {
       return res.status(500).json({ error: "Failed to delete file" });
