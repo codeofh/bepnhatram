@@ -115,7 +115,7 @@ export function MenuItemForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           <FormField
             control={form.control}
             name="name"
@@ -173,7 +173,7 @@ export function MenuItemForm({
           )}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           <FormField
             control={form.control}
             name="category"
@@ -257,7 +257,7 @@ export function MenuItemForm({
             <FormItem>
               <FormLabel>URL Hình ảnh</FormLabel>
               <FormControl>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-2">
                   <div className="col-span-2">
                     <Input
                       placeholder="https://example.com/image.jpg"
@@ -269,8 +269,8 @@ export function MenuItemForm({
                     className="flex items-center justify-center"
                     variant="outline"
                   >
-                    <Upload className="mr-2 h-4 w-4" />
-                    Upload
+                    <Upload className="mr-1 h-4 w-4" />
+                    <span className="hidden sm:inline">Upload</span>
                   </Button>
                 </div>
               </FormControl>
@@ -300,13 +300,13 @@ export function MenuItemForm({
               Chưa có tùy chọn kích thước nào
             </p>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {sizes.map((size, index) => (
                 <div
                   key={index}
-                  className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center"
+                  className="grid grid-cols-7 gap-2 items-center"
                 >
-                  <div>
+                  <div className="col-span-3">
                     <FormLabel className={index !== 0 ? "sr-only" : ""}>
                       Tên kích thước
                     </FormLabel>
@@ -318,7 +318,7 @@ export function MenuItemForm({
                       }
                     />
                   </div>
-                  <div>
+                  <div className="col-span-3">
                     <FormLabel className={index !== 0 ? "sr-only" : ""}>
                       Giá (VNĐ)
                     </FormLabel>
@@ -331,16 +331,15 @@ export function MenuItemForm({
                       }
                     />
                   </div>
-                  <div className="flex items-end">
+                  <div className="flex justify-center">
                     <Button
                       type="button"
                       variant="ghost"
-                      size="sm"
+                      size="icon"
                       onClick={() => removeSize(index)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 h-9 w-9"
                     >
                       <Trash2 className="h-4 w-4" />
-                      <span className="ml-2">Xóa</span>
                     </Button>
                   </div>
                 </div>
@@ -349,8 +348,15 @@ export function MenuItemForm({
           )}
         </div>
 
-        <div className="flex justify-end space-x-2">
-          <Button type="submit" disabled={isSubmitting}>
+        <div className="flex justify-between md:justify-end space-x-2 mt-8">
+          <Button type="button" variant="outline" className="md:hidden">
+            Hủy
+          </Button>
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 md:flex-initial"
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

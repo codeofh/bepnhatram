@@ -212,9 +212,10 @@ export default function AdminMenuPage() {
 
       <AdminLayout title="Quản lý Menu">
         {/* Filters and actions */}
-        <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-          <div className="flex flex-col md:flex-row w-full md:w-auto gap-4">
-            <div className="relative w-full md:w-64">
+        {/* Search and filters - Mobile optimized */}
+        <div className="flex flex-col mb-6 gap-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Tìm kiếm món ăn..."
@@ -234,9 +235,9 @@ export default function AdminMenuPage() {
               )}
             </div>
 
-            <div className="w-full md:w-auto">
+            <div className="w-full sm:w-auto sm:min-w-[120px]">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger className="w-full md:w-44">
+                <SelectTrigger className="w-full">
                   <div className="flex items-center">
                     <Filter className="w-4 h-4 mr-2" />
                     <SelectValue placeholder="Tất cả danh mục" />
@@ -254,7 +255,7 @@ export default function AdminMenuPage() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="grid grid-cols-2 gap-3">
             <Button
               variant="outline"
               onClick={async () => {
@@ -272,18 +273,21 @@ export default function AdminMenuPage() {
               {firebaseLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Đang nhập...
+                  <span className="hidden sm:inline">Đang nhập...</span>
+                  <span className="sm:hidden">Nhập...</span>
                 </>
               ) : (
                 <>
-                  <DownloadCloud className="mr-2 h-4 w-4" />
-                  Nhập dữ liệu mẫu
+                  <DownloadCloud className="mr-1 h-4 w-4" />
+                  <span className="hidden sm:inline">Nhập dữ liệu mẫu</span>
+                  <span className="sm:hidden">Nhập mẫu</span>
                 </>
               )}
             </Button>
-            <Button onClick={handleCreateItem} className="w-full md:w-auto">
-              <Plus className="mr-2 h-4 w-4" />
-              Thêm món ăn
+            <Button onClick={handleCreateItem}>
+              <Plus className="mr-1 h-4 w-4" />
+              <span className="hidden sm:inline">Thêm món ăn</span>
+              <span className="sm:hidden">Thêm mới</span>
             </Button>
           </div>
         </div>
@@ -343,7 +347,8 @@ export default function AdminMenuPage() {
           </div>
         ) : (
           /* Menu items table */
-          <div className="bg-white rounded-md border overflow-hidden">
+        {/* Desktop Table View */}
+        <div className="bg-white rounded-md border overflow-hidden hidden md:block">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -480,11 +485,104 @@ export default function AdminMenuPage() {
               </TableBody>
             </Table>
           </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {filteredItems.length === 0 ? (
+              <div className="bg-white rounded-md border p-6 text-center text-gray-500">
+                Không tìm thấy món ăn nào
+              </div>
+            ) : (
+              filteredItems.map((item) => (
+                <div key={item.id} className="bg-white rounded-md border overflow-hidden">
+                  <div className="flex items-center p-4 border-b">
+                    <div className="w-14 h-14 rounded-md overflow-hidden mr-3 flex-shrink-0">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-base truncate">{item.name}</h3>
+                      <div className="flex items-center mt-1">
+                        <span className="font-semibold text-orange-600">
+                          {item.price.toLocaleString()}đ
+                        </span>
+                        {item.sizes && item.sizes.length > 0 && (
+                          <span className="text-xs text-gray-500 ml-1">
+                            + {item.sizes.length} tùy chọn
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-4 py-3 bg-gray-50 flex items-center justify-between">
+                    <div>
+                      <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium capitalize">
+                        {item.category === "special" && (
+                          <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                            Đặc biệt
+                          </span>
+                        )}
+                        {item.category === "main" && (
+                          <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                            Món chính
+                          </span>
+                        )}
+                        {item.category === "chicken" && (
+                          <span className="bg-amber-100 text-amber-800 px-2 py-1 rounded-full">
+                            Gà ủ muối
+                          </span>
+                        )}
+                        {item.category === "chicken-feet" && (
+                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                            Chân gà
+                          </span>
+                        )}
+                        {item.category === "drinks" && (
+                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                            Đồ uống
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleEditItem(item)}
+                        className="h-8 px-2 text-blue-600"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-gray-600"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteItem(item)}
+                        className="h-8 px-2 text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         )}
 
         {/* Add/Edit Menu Item Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] sm:max-w-[85vw] md:max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {currentItem ? "Chỉnh sửa món ăn" : "Thêm món ăn mới"}
