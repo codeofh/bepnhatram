@@ -25,6 +25,7 @@ import { siteConfig } from "@/config/siteConfig";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { User } from "firebase/auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SiteSettings } from "@/lib/firebaseSettings";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Email không hợp lệ" }),
@@ -50,7 +51,11 @@ const registerSchema = z
 type LoginFormValues = z.infer<typeof loginSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-export function LoginForm() {
+interface LoginFormProps {
+  siteSettings?: SiteSettings;
+}
+
+export function LoginForm({ siteSettings = siteConfig }: LoginFormProps) {
   const {
     login,
     register,
@@ -172,7 +177,7 @@ export function LoginForm() {
   return (
     <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
       <div className="text-center">
-        <h1 className="text-2xl font-bold">{siteConfig.name}</h1>
+        <h1 className="text-2xl font-bold">{siteSettings.name}</h1>
         <p className="mt-2 text-gray-600">Trang quản trị</p>
       </div>
 

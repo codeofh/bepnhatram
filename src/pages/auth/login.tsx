@@ -1,15 +1,37 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { LoginForm } from "@/components/Admin/LoginForm";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { siteConfig } from "@/config/siteConfig";
+import { SiteSettings, getSiteSettings } from "@/lib/firebaseSettings";
 
 export default function AuthLoginPage() {
   const { user, loading } = useAuthContext();
   const router = useRouter();
   const { redirect } = router.query;
-  const redirectPath = typeof redirect === "string" ? redirect : "/admin/dashboard";
+  const redirectPath =
+    typeof redirect === "string" ? redirect : "/admin/dashboard";
+  const [settings, setSettings] = useState<SiteSettings>(siteConfig);
+  const [settingsLoading, setSettingsLoading] = useState(true);
+
+  // Load settings from Firebase
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const { settings: firebaseSettings } = await getSiteSettings();
+        setSettings(firebaseSettings);
+      } catch (err) {
+        console.error("Error loading settings from Firebase:", err);
+        // Fall back to default settings
+        setSettings(siteConfig);
+      } finally {
+        setSettingsLoading(false);
+      }
+    }
+
+    loadSettings();
+  }, []);
 
   useEffect(() => {
     if (!loading && user) {
@@ -17,7 +39,7 @@ export default function AuthLoginPage() {
     }
   }, [user, loading, router, redirectPath]);
 
-  if (loading) {
+  if (loading || settingsLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
@@ -28,12 +50,12 @@ export default function AuthLoginPage() {
   return (
     <>
       <Head>
-        <title>Đăng nhập - {siteConfig.name}</title>
+        <title>Đăng nhập - {settings.name}</title>
         <meta name="description" content="Trang đăng nhập" />
       </Head>
 
       <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4">
-        <LoginForm />
+        <LoginForm siteSettings={settings} />
       </div>
     </>
   );
