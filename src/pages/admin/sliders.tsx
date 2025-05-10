@@ -318,7 +318,8 @@ export default function AdminSlidersPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="bg-white rounded-lg border overflow-hidden">
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-lg border overflow-hidden">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -527,6 +528,123 @@ export default function AdminSlidersPage() {
                 ))}
               </TableBody>
             </Table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {sliders.map((slider, index) => (
+              <div key={slider.id} className="bg-white rounded-lg border overflow-hidden">
+                <div className="p-4 border-b flex items-start gap-3">
+                  <div className="relative w-24 h-20 rounded-md overflow-hidden flex-shrink-0">
+                    {slider.image ? (
+                      <Image
+                        src={slider.image}
+                        alt={slider.title}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                        <ImageIcon className="h-6 w-6 text-gray-400" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-base line-clamp-1">{slider.title}</h3>
+                    <p className="text-sm text-gray-500 line-clamp-2 mt-1">{slider.description}</p>
+
+                    <div className="mt-2 flex items-center">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        slider.isActive
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {slider.isActive ? "Hiển thị" : "Ẩn"}
+                      </span>
+
+                      {slider.cta && (
+                        <div className="ml-2 text-xs flex items-center text-blue-600">
+                          <span className="mr-1">{slider.cta}</span>
+                          {slider.ctaLink && <LinkIcon className="h-3 w-3" />}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-4 py-2 flex items-center justify-between bg-gray-50 border-b">
+                  <div className="flex items-center text-sm text-gray-500">
+                    <span className="font-medium text-gray-700 mr-1">Thứ tự:</span>
+                    <span>{slider.displayOrder || index + 1}</span>
+                  </div>
+
+                  <div className="flex items-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={index === 0}
+                      onClick={() => handleMoveUp(index)}
+                      className="h-8 w-8 hover:bg-gray-200"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={index === sliders.length - 1}
+                      onClick={() => handleMoveDown(index)}
+                      className="h-8 w-8 hover:bg-gray-200"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="p-3 flex justify-between items-center">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleToggleActive(slider)}
+                    className={slider.isActive ? "text-green-600" : "text-red-600"}
+                  >
+                    {slider.isActive ? (
+                      <>
+                        <ToggleRight className="mr-2 h-4 w-4" />
+                        Hiển thị
+                      </>
+                    ) : (
+                      <>
+                        <ToggleLeft className="mr-2 h-4 w-4" />
+                        Ẩn
+                      </>
+                    )}
+                  </Button>
+
+                  <div className="flex gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 text-blue-600 border-blue-200"
+                      onClick={() => handleEditSlider(slider)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Sửa
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 text-red-600 border-red-200"
+                      onClick={() => handleDeleteSlider(slider)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Xóa
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

@@ -307,8 +307,8 @@ export default function AdminUsersPage() {
 
       <AdminLayout title="Quản lý người dùng">
         {/* Filters and actions */}
-        <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-          <div className="flex flex-col md:flex-row w-full md:w-auto gap-4">
+        <div className="flex flex-col items-center justify-between mb-6 gap-4">
+          <div className="flex flex-col w-full gap-3">
             <div className="relative w-full md:w-64">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
@@ -329,7 +329,7 @@ export default function AdminUsersPage() {
               )}
             </div>
 
-            <div className="w-full md:w-auto flex flex-row gap-2">
+            <div className="w-full grid grid-cols-2 gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full md:w-44">
                   <div className="flex items-center">
@@ -425,164 +425,308 @@ export default function AdminUsersPage() {
           </div>
         )}
 
-        {/* Users table */}
+        {/* Users table/cards */}
         {!usersLoading && filteredUsers.length > 0 && (
-          <div className="bg-white rounded-md border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">Avatar</TableHead>
-                  <TableHead>Tên</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead className="hidden md:table-cell">
-                    Điện thoại
-                  </TableHead>
-                  <TableHead className="hidden lg:table-cell">
-                    Ngày tạo
-                  </TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Quyền</TableHead>
-                  <TableHead className="text-right">Thao tác</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <Avatar>
-                        <AvatarImage src={user.photoURL} alt={user.name} />
-                        <AvatarFallback className="bg-blue-100 text-blue-800">
-                          {getUserInitials(user.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </TableCell>
-                    <TableCell className="font-medium">{user.name}</TableCell>
-                    <TableCell className="max-w-[180px] truncate">
-                      <div className="flex items-center">
-                        <Mail className="h-4 w-4 mr-1 text-gray-400" />
+          <>
+            {/* Desktop view */}
+            <div className="hidden md:block bg-white rounded-md border overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">Avatar</TableHead>
+                    <TableHead>Tên</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead className="hidden md:table-cell">
+                      Điện thoại
+                    </TableHead>
+                    <TableHead className="hidden lg:table-cell">
+                      Ngày tạo
+                    </TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead>Quyền</TableHead>
+                    <TableHead className="text-right">Thao tác</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <Avatar>
+                          <AvatarImage src={user.photoURL} alt={user.name} />
+                          <AvatarFallback className="bg-blue-100 text-blue-800">
+                            {getUserInitials(user.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </TableCell>
+                      <TableCell className="font-medium">{user.name}</TableCell>
+                      <TableCell className="max-w-[180px] truncate">
+                        <div className="flex items-center">
+                          <Mail className="h-4 w-4 mr-1 text-gray-400" />
+                          <span className="truncate">{user.email}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {user.phone ? (
+                          <div className="flex items-center">
+                            <Phone className="h-4 w-4 mr-1 text-gray-400" />
+                            {user.phone}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">N/A</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 mr-1 text-gray-400" />
+                          {formatDate(user.createdAt)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {user.status === "active" && (
+                          <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Đang hoạt động
+                          </Badge>
+                        )}
+                        {user.status === "pending" && (
+                          <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Chờ xác thực
+                          </Badge>
+                        )}
+                        {user.status === "blocked" && (
+                          <Badge className="bg-red-100 text-red-800 hover:bg-red-200">
+                            <XCircle className="h-3 w-3 mr-1" />
+                            Đã khóa
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {user.role?.admin ? (
+                          <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">
+                            <ShieldCheck className="h-3 w-3 mr-1" />
+                            Admin
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                            <UserIcon className="h-3 w-3 mr-1" />
+                            Khách hàng
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => handleEditUser(user)}
+                            >
+                              <Edit className="mr-2 h-4 w-4" />
+                              Chỉnh sửa
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              onClick={() => toggleAdminStatus(user)}
+                            >
+                              {user.role?.admin ? (
+                                <>
+                                  <ShieldX className="mr-2 h-4 w-4 text-red-500" />
+                                  <span className="text-red-500">
+                                    Thu hồi quyền Admin
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <ShieldAlert className="mr-2 h-4 w-4 text-purple-500" />
+                                  <span className="text-purple-500">
+                                    Cấp quyền Admin
+                                  </span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              onClick={() => toggleUserStatus(user)}
+                            >
+                              {user.status === "blocked" ? (
+                                <>
+                                  <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                                  <span className="text-green-500">
+                                    Kích hoạt tài khoản
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle className="mr-2 h-4 w-4 text-red-500" />
+                                  <span className="text-red-500">
+                                    Khóa tài khoản
+                                  </span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteUser(user)}
+                              className="text-red-600"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Xóa người dùng
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {filteredUsers.map((user) => (
+                <div
+                  key={user.id}
+                  className="bg-white rounded-md border overflow-hidden"
+                >
+                  <div className="p-4 flex items-center gap-3 border-b">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={user.photoURL} alt={user.name} />
+                      <AvatarFallback className="bg-blue-100 text-blue-800 text-lg">
+                        {getUserInitials(user.name)}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-base truncate">
+                        {user.name}
+                      </div>
+                      <div className="flex items-center text-sm text-gray-500 truncate">
+                        <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
                         <span className="truncate">{user.email}</span>
                       </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      {user.phone ? (
-                        <div className="flex items-center">
-                          <Phone className="h-4 w-4 mr-1 text-gray-400" />
-                          {user.phone}
+
+                      {user.phone && (
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
+                          <span>{user.phone}</span>
                         </div>
-                      ) : (
-                        <span className="text-gray-400">N/A</span>
                       )}
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1 text-gray-400" />
-                        {formatDate(user.createdAt)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
+                    </div>
+                  </div>
+
+                  <div className="px-4 py-3 bg-gray-50 flex items-center justify-between border-b">
+                    <div className="flex gap-2">
                       {user.status === "active" && (
-                        <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                        <Badge className="bg-green-100 text-green-800 hover:bg-green-200 whitespace-nowrap">
                           <CheckCircle className="h-3 w-3 mr-1" />
-                          Đang hoạt động
+                          Hoạt động
                         </Badge>
                       )}
                       {user.status === "pending" && (
-                        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
+                        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 whitespace-nowrap">
                           <AlertCircle className="h-3 w-3 mr-1" />
                           Chờ xác thực
                         </Badge>
                       )}
                       {user.status === "blocked" && (
-                        <Badge className="bg-red-100 text-red-800 hover:bg-red-200">
+                        <Badge className="bg-red-100 text-red-800 hover:bg-red-200 whitespace-nowrap">
                           <XCircle className="h-3 w-3 mr-1" />
                           Đã khóa
                         </Badge>
                       )}
-                    </TableCell>
-                    <TableCell>
+
                       {user.role?.admin ? (
-                        <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">
+                        <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200 whitespace-nowrap">
                           <ShieldCheck className="h-3 w-3 mr-1" />
                           Admin
                         </Badge>
                       ) : (
-                        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 whitespace-nowrap">
                           <UserIcon className="h-3 w-3 mr-1" />
                           Khách hàng
                         </Badge>
                       )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleEditUser(user)}
-                          >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Chỉnh sửa
-                          </DropdownMenuItem>
+                    </div>
 
-                          <DropdownMenuItem
-                            onClick={() => toggleAdminStatus(user)}
-                          >
-                            {user.role?.admin ? (
-                              <>
-                                <ShieldX className="mr-2 h-4 w-4 text-red-500" />
-                                <span className="text-red-500">
-                                  Thu hồi quyền Admin
-                                </span>
-                              </>
-                            ) : (
-                              <>
-                                <ShieldAlert className="mr-2 h-4 w-4 text-purple-500" />
-                                <span className="text-purple-500">
-                                  Cấp quyền Admin
-                                </span>
-                              </>
-                            )}
-                          </DropdownMenuItem>
+                    <div className="text-xs text-gray-500 flex items-center">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      {formatDate(user.createdAt)}
+                    </div>
+                  </div>
 
-                          <DropdownMenuItem
-                            onClick={() => toggleUserStatus(user)}
-                          >
-                            {user.status === "blocked" ? (
-                              <>
-                                <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                                <span className="text-green-500">
-                                  Kích hoạt tài khoản
-                                </span>
-                              </>
-                            ) : (
-                              <>
-                                <XCircle className="mr-2 h-4 w-4 text-red-500" />
-                                <span className="text-red-500">
-                                  Khóa tài khoản
-                                </span>
-                              </>
-                            )}
-                          </DropdownMenuItem>
+                  <div className="p-3 flex justify-between">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditUser(user)}
+                      className="h-9"
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
+                      Sửa
+                    </Button>
 
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteUser(user)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Xóa người dùng
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="sm" className="h-9">
+                          <MoreHorizontal className="h-4 w-4 mr-1" />
+                          Thao tác
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => toggleAdminStatus(user)}
+                        >
+                          {user.role?.admin ? (
+                            <>
+                              <ShieldX className="mr-2 h-4 w-4 text-red-500" />
+                              <span className="text-red-500">
+                                Thu hồi Admin
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <ShieldAlert className="mr-2 h-4 w-4 text-purple-500" />
+                              <span className="text-purple-500">
+                                Cấp quyền Admin
+                              </span>
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => toggleUserStatus(user)}
+                        >
+                          {user.status === "blocked" ? (
+                            <>
+                              <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                              <span className="text-green-500">Kích hoạt</span>
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="mr-2 h-4 w-4 text-red-500" />
+                              <span className="text-red-500">Khóa</span>
+                            </>
+                          )}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteUser(user)}
+                          className="text-red-600"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Xóa người dùng
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Edit User Dialog */}
