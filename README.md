@@ -66,17 +66,6 @@ npm start
 yarn build
 yarn start
 ```
-
-### Tạo tài nguyên
-
-Để tạo hình ảnh OG và favicon:
-
-```bash
-npm run generate-assets
-# hoặc
-yarn generate-assets
-```
-
 ## Cấu trúc thư mục
 
 ```
