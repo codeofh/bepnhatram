@@ -177,7 +177,7 @@ export default function AdminSettingsPage() {
         if (settingsError) {
           showError(settingsError);
         } else {
-          showError("Không thể cập nhật cài đặt. Vui lòng thử lại.");
+          showError("Không thể cập nhật cài đặt. Vui lòng thử l���i.");
         }
       }
     } catch (error: any) {
@@ -238,7 +238,7 @@ export default function AdminSettingsPage() {
   return (
     <>
       <Head>
-        <title>Cài ��ặt hệ thống - Admin</title>
+        <title>Cài đặt hệ thống - Admin</title>
         <meta name="description" content="Quản lý cài đặt hệ thống" />
       </Head>
 
@@ -653,6 +653,146 @@ export default function AdminSettingsPage() {
                                   }
                                   className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
                                   placeholder="%s - Tên trang web"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="defaultTitle"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Tiêu đề mặc định
+                                </Label>
+                                <Input
+                                  id="defaultTitle"
+                                  value={formData.seo?.defaultTitle || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "defaultTitle",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="Tiêu đề trang chủ mặc định"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="defaultDescription"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Mô tả mặc định
+                                </Label>
+                                <Textarea
+                                  id="defaultDescription"
+                                  value={formData.seo?.defaultDescription || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "defaultDescription",
+                                      e.target.value,
+                                    )
+                                  }
+                                  rows={3}
+                                  className="text-sm p-3 border border-gray-200 rounded-md min-h-[80px] w-full max-w-full box-border resize-y"
+                                  placeholder="Mô tả mặc định cho trang web"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="ogImageUrl"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  URL hình ảnh OpenGraph
+                                </Label>
+                                <Input
+                                  id="ogImageUrl"
+                                  value={formData.seo?.ogImageUrl || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "ogImageUrl",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="/logo.png hoặc URL đầy đủ"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Hình ảnh hiển thị khi chia sẻ trên mạng xã hội
+                                </p>
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="twitterHandle"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Tài khoản Twitter
+                                </Label>
+                                <Input
+                                  id="twitterHandle"
+                                  value={formData.seo?.twitterHandle || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "twitterHandle",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="@taikhoan"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="keywords"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Từ khóa
+                                </Label>
+                                <Textarea
+                                  id="keywords"
+                                  value={formData.seo?.keywords || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "keywords",
+                                      e.target.value,
+                                    )
+                                  }
+                                  rows={2}
+                                  className="text-sm p-3 border border-gray-200 rounded-md min-h-[60px] w-full max-w-full box-border resize-y"
+                                  placeholder="từ khóa 1, từ khóa 2, từ khóa 3"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Các từ khóa cách nhau bằng dấu phẩy
+                                </p>
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="homePageTitle"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Tiêu đề trang chủ
+                                </Label>
+                                <Input
+                                  id="homePageTitle"
+                                  value={formData.seo?.homePageTitle || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "homePageTitle",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="Trang chủ"
                                 />
                               </div>
                             </div>
