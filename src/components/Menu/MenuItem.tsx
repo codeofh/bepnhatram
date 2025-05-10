@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Star, Plus, ShoppingCart, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MenuItem as MenuItemType } from "@/data/menuItems";
-import { toast } from "sonner";
+import { useCartContext } from "@/contexts/CartContext";
 import {
   Tooltip,
   TooltipContent,
@@ -26,7 +26,7 @@ export function MenuItem({ item }: MenuItemProps) {
   const { name, description, price, image, rating, sizes, category } = item;
   const [isHovered, setIsHovered] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(
-    sizes && sizes.length > 0 ? sizes[0].name : null
+    sizes && sizes.length > 0 ? sizes[0].name : null,
   );
 
   // Get current price based on selected size or default price
@@ -69,46 +69,13 @@ export function MenuItem({ item }: MenuItemProps) {
     setSelectedSize(value);
   };
 
+  // Get the cart context
+  const { addItem } = useCartContext();
+
   // Function to handle adding item to cart
   const handleAddToCart = (item: MenuItemType) => {
-    // Get current price based on selected size
-    const finalPrice = selectedSize
-      ? sizes?.find((s) => s.name === selectedSize)?.price || price
-      : price;
-
-    // Create cart item
-    const cartItem = {
-      id: item.id,
-      name: item.name,
-      price: finalPrice,
-      image: item.image,
-      quantity: 1,
-      size: selectedSize || undefined,
-    };
-
-    // In a real app, this would dispatch to a cart context or store
-    // For now, we'll just show a toast notification
-    toast.success(
-      `Đã thêm ${item.name}${
-        selectedSize ? ` (${selectedSize})` : ""
-      } vào giỏ hàng!`,
-      {
-        position: "top-right",
-        duration: 3000,
-      }
-    );
-
-    // Log to console for debugging
-    console.log("Added to cart:", cartItem);
-
-    // You could also store in localStorage as a simple cart implementation
-    try {
-      const existingCart = JSON.parse(localStorage.getItem("cart") || "[]");
-      existingCart.push(cartItem);
-      localStorage.setItem("cart", JSON.stringify(existingCart));
-    } catch (error) {
-      console.error("Error updating cart:", error);
-    }
+    // Add the item to the cart using the context
+    addItem(item, 1, selectedSize || undefined);
   };
 
   return (
@@ -121,7 +88,7 @@ export function MenuItem({ item }: MenuItemProps) {
       <div className="absolute top-0 left-0 z-10">
         <div
           className={`px-3 py-1 rounded-br-lg text-white font-medium text-sm ${getCategoryBgColor(
-            category
+            category,
           )}`}
         >
           {getCategoryName(category)}
@@ -158,6 +125,7 @@ export function MenuItem({ item }: MenuItemProps) {
                 size="icon"
                 variant="secondary"
                 className="h-8 w-8 bg-white/80 backdrop-blur-sm"
+                onClick={() => handleAddToCart(item)}
               >
                 <ShoppingCart className="h-4 w-4" />
               </Button>
@@ -227,6 +195,7 @@ export function MenuItem({ item }: MenuItemProps) {
                   size="icon"
                   variant="outline"
                   className="rounded-full h-9 w-9"
+                  onClick={() => handleAddToCart(item)}
                 >
                   <Plus className="h-5 w-5" />
                 </Button>
