@@ -125,8 +125,6 @@ const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
 
 ### Cấu hình Cloudinary
 
-Để sử dụng Cloudinary, bạn cần cập nhật các biến môi trường trong file `.env.local`, `.env.development` hoặc `.env.production`:
-
 ```
 NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud-name
 NEXT_PUBLIC_CLOUDINARY_API_KEY=your-api-key
