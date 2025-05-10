@@ -22,7 +22,7 @@ export function MediaItemCard({
   onSelect,
   onToggleSelect,
   isSelectable = false,
-  showExternalLink = true
+  showExternalLink = true,
 }: MediaItemCardProps) {
   const handleClick = () => {
     if (isSelectable && onToggleSelect) {
@@ -34,7 +34,7 @@ export function MediaItemCard({
 
   const handleOpenExternal = (e: React.MouseEvent) => {
     e.stopPropagation();
-    window.open(item.url, '_blank');
+    window.open(item.url, "_blank");
   };
 
   return (
@@ -68,25 +68,24 @@ export function MediaItemCard({
             if (onToggleSelect) onToggleSelect(item.id);
           }}
         >
-            {selected && (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 12 12"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M10 3L4.5 8.5L2 6"
-                  stroke="white"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            )}
-          </div>
-        )}
+          {selected && (
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M10 3L4.5 8.5L2 6"
+                stroke="white"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </div>
 
         {/* External link button */}
         {showExternalLink && (
@@ -110,10 +109,7 @@ export function MediaItemCard({
         </Badge>
       </div>
       <CardContent className="p-3">
-        <div
-          className="text-sm font-medium line-clamp-1"
-          title={item.name}
-        >
+        <div className="text-sm font-medium line-clamp-1" title={item.name}>
           {item.name}
         </div>
         <div className="text-xs text-gray-500 mt-1">
