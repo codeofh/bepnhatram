@@ -1106,7 +1106,64 @@ export default function AdminSettingsPage() {
                                     )
                                   }
                                   className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="VND"
                                 />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Mã tiền tệ (Ví dụ: VND, USD)
+                                </p>
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="currencySymbol"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Ký hiệu tiền tệ
+                                </Label>
+                                <Input
+                                  id="currencySymbol"
+                                  value={
+                                    formData.settings?.currencySymbol || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "settings",
+                                      "currencySymbol",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="₫"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Biểu tượng tiền tệ (Ví dụ: ₫, $)
+                                </p>
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="locale"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Ngôn ngữ
+                                </Label>
+                                <Input
+                                  id="locale"
+                                  value={formData.settings?.locale || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "settings",
+                                      "locale",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="vi-VN"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Định dạng ngôn ngữ và vùng (Ví dụ: vi-VN,
+                                  en-US)
+                                </p>
                               </div>
                             </div>
                           </div>
