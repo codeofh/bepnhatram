@@ -1,8 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { deleteLocalFile } from "@/lib/mediaLibraryServer";
 import path from "path";
 import fs from "fs";
 
-// Set upload directory
+// Constants
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "library");
 
 export default async function handler(

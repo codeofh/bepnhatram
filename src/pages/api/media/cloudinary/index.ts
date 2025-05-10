@@ -22,7 +22,12 @@ interface CloudinaryMediaItem {
 }
 
 // Đường dẫn đến file JSON lưu trữ thông tin media
-const MEDIA_DB_PATH = path.join(process.cwd(), "public", "uploads", "media-db.json");
+const MEDIA_DB_PATH = path.join(
+  process.cwd(),
+  "public",
+  "uploads",
+  "media-db.json",
+);
 
 // Đảm bảo file JSON tồn tại
 const ensureMediaDbExists = () => {
@@ -46,7 +51,7 @@ const writeMediaDb = (data: { items: CloudinaryMediaItem[] }) => {
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse,
 ) {
   // Xử lý các phương thức HTTP khác nhau
   switch (req.method) {
@@ -62,7 +67,10 @@ export default async function handler(
 }
 
 // Lấy tất cả các item media từ Cloudinary
-async function getCloudinaryMediaItems(req: NextApiRequest, res: NextApiResponse) {
+async function getCloudinaryMediaItems(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   try {
     const db = readMediaDb();
     return res.status(200).json({ items: db.items });
@@ -77,21 +85,39 @@ async function getCloudinaryMediaItems(req: NextApiRequest, res: NextApiResponse
 // Lưu thông tin media từ Cloudinary
 async function saveCloudinaryMedia(req: NextApiRequest, res: NextApiResponse) {
   try {
+    console.log("Request body:", req.body);
+
     // Lấy thông tin từ form data
-    const { name, url, thumbnail, type, source, size, width, height, cloudinaryPublicId } = req.body;
+    const {
+      name,
+      url,
+      thumbnail,
+      type,
+      source,
+      size,
+      width,
+      height,
+      cloudinaryPublicId,
+    } = req.body;
+
+    if (!url || !cloudinaryPublicId) {
+      return res
+        .status(400)
+        .json({ error: "Missing required fields url or cloudinaryPublicId" });
+    }
 
     // Tạo item media mới
     const newItem: CloudinaryMediaItem = {
       id: `cloudinary-${uuidv4()}`,
-      name,
+      name: name || "Unnamed file",
       url,
-      thumbnail,
-      type: type as "image" | "video",
+      thumbnail: thumbnail || url,
+      type: (type as "image" | "video") || "image",
       source: "cloudinary",
-      size: parseInt(size, 10),
+      size: parseInt(size, 10) || 0,
       dimensions: {
-        width: parseInt(width, 10),
-        height: parseInt(height, 10),
+        width: parseInt(width, 10) || 0,
+        height: parseInt(height, 10) || 0,
       },
       cloudinaryPublicId,
       createdAt: new Date(),
@@ -118,7 +144,10 @@ async function saveCloudinaryMedia(req: NextApiRequest, res: NextApiResponse) {
 }
 
 // Xóa media từ Cloudinary
-async function deleteCloudinaryMedia(req: NextApiRequest, res: NextApiResponse) {
+async function deleteCloudinaryMedia(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
   try {
     const { id } = req.query;
 
@@ -130,7 +159,7 @@ async function deleteCloudinaryMedia(req: NextApiRequest, res: NextApiResponse) 
     const db = readMediaDb();
 
     // Tìm item cần xóa
-    const itemIndex = db.items.findIndex(item => item.id === id);
+    const itemIndex = db.items.findIndex((item) => item.id === id);
 
     if (itemIndex === -1) {
       return res.status(404).json({ error: "Item not found" });
