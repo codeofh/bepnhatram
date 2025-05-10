@@ -269,46 +269,46 @@ export default function AdminSettingsPage() {
                     </p>
                   </div>
 
-                  <div className="flex lg:flex-col flex-row overflow-x-auto lg:overflow-visible -mx-1 lg:mx-0 pb-2 lg:pb-0">
+                  <div className="flex lg:flex-col flex-wrap gap-2 lg:gap-0 pb-2 lg:pb-0">
                     <button
                       onClick={() => setActiveTab("general")}
-                      className={`px-3 py-2 text-sm rounded-md flex items-center whitespace-nowrap mx-1 lg:mx-0 lg:mb-1 ${activeTab === "general" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
+                      className={`px-3 py-2 text-sm rounded-md flex items-center lg:mb-1 ${activeTab === "general" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
                     >
                       Cài đặt chung
                     </button>
                     <button
                       onClick={() => setActiveTab("contact")}
-                      className={`px-3 py-2 text-sm rounded-md flex items-center whitespace-nowrap mx-1 lg:mx-0 lg:mb-1 ${activeTab === "contact" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
+                      className={`px-3 py-2 text-sm rounded-md flex items-center lg:mb-1 ${activeTab === "contact" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
                     >
                       Liên hệ
                     </button>
                     <button
                       onClick={() => setActiveTab("social")}
-                      className={`px-3 py-2 text-sm rounded-md flex items-center whitespace-nowrap mx-1 lg:mx-0 lg:mb-1 ${activeTab === "social" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
+                      className={`px-3 py-2 text-sm rounded-md flex items-center lg:mb-1 ${activeTab === "social" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
                     >
                       Mạng xã hội
                     </button>
                     <button
                       onClick={() => setActiveTab("ordering")}
-                      className={`px-3 py-2 text-sm rounded-md flex items-center whitespace-nowrap mx-1 lg:mx-0 lg:mb-1 ${activeTab === "ordering" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
+                      className={`px-3 py-2 text-sm rounded-md flex items-center lg:mb-1 ${activeTab === "ordering" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
                     >
                       Đặt hàng
                     </button>
                     <button
                       onClick={() => setActiveTab("maps")}
-                      className={`px-3 py-2 text-sm rounded-md flex items-center whitespace-nowrap mx-1 lg:mx-0 lg:mb-1 ${activeTab === "maps" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
+                      className={`px-3 py-2 text-sm rounded-md flex items-center lg:mb-1 ${activeTab === "maps" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
                     >
                       Bản đồ
                     </button>
                     <button
                       onClick={() => setActiveTab("seo")}
-                      className={`px-3 py-2 text-sm rounded-md flex items-center whitespace-nowrap mx-1 lg:mx-0 lg:mb-1 ${activeTab === "seo" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
+                      className={`px-3 py-2 text-sm rounded-md flex items-center lg:mb-1 ${activeTab === "seo" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
                     >
                       SEO
                     </button>
                     <button
                       onClick={() => setActiveTab("other")}
-                      className={`px-3 py-2 text-sm rounded-md flex items-center whitespace-nowrap mx-1 lg:mx-0 lg:mb-1 ${activeTab === "other" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
+                      className={`px-3 py-2 text-sm rounded-md flex items-center lg:mb-1 ${activeTab === "other" ? "bg-gray-100 text-gray-900 font-medium" : "text-gray-700 hover:bg-gray-50"}`}
                     >
                       Khác
                     </button>
