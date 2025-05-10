@@ -504,6 +504,160 @@ export default function AdminSettingsPage() {
                                   placeholder="https://facebook.com/your-page"
                                 />
                               </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="facebookHandle"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Facebook Handle
+                                </Label>
+                                <Input
+                                  id="facebookHandle"
+                                  value={formData.social?.facebookHandle || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "facebookHandle",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="fb.com/your-page"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="instagram"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Instagram
+                                </Label>
+                                <Input
+                                  id="instagram"
+                                  value={formData.social?.instagram || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "instagram",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://instagram.com/your-handle"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="twitter"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Twitter
+                                </Label>
+                                <Input
+                                  id="twitter"
+                                  value={formData.social?.twitter || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "twitter",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://twitter.com/your-handle"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="zalo"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Zalo
+                                </Label>
+                                <Input
+                                  id="zalo"
+                                  value={formData.social?.zalo || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "zalo",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://zalo.me/your-phone"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="tiktok"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  TikTok
+                                </Label>
+                                <Input
+                                  id="tiktok"
+                                  value={formData.social?.tiktok || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "tiktok",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://www.tiktok.com/@your-handle"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="tiktokHandle"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  TikTok Handle
+                                </Label>
+                                <Input
+                                  id="tiktokHandle"
+                                  value={formData.social?.tiktokHandle || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "tiktokHandle",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="@your-handle"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="messenger"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Messenger
+                                </Label>
+                                <Input
+                                  id="messenger"
+                                  value={formData.social?.messenger || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "messenger",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://m.me/your-page"
+                                />
+                              </div>
                             </div>
                           </div>
                         )}
