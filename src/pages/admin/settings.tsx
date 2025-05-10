@@ -365,6 +365,7 @@ export default function AdminSettingsPage() {
                                     handleChange("name", "", e.target.value)
                                   }
                                   className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full max-w-full box-border"
+                                  placeholder="Tên trang web của bạn"
                                 />
                               </div>
 
@@ -387,6 +388,7 @@ export default function AdminSettingsPage() {
                                   }
                                   rows={3}
                                   className="text-sm p-3 border border-gray-200 rounded-md min-h-[80px] w-full max-w-full box-border resize-y"
+                                  placeholder="Mô tả ngắn gọn về trang web của bạn"
                                 />
                               </div>
 
@@ -404,6 +406,7 @@ export default function AdminSettingsPage() {
                                     handleChange("url", "", e.target.value)
                                   }
                                   className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://example.com"
                                 />
                               </div>
                             </div>
@@ -476,6 +479,113 @@ export default function AdminSettingsPage() {
                                   className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
                                 />
                               </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="openingHours"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Giờ mở cửa
+                                </Label>
+                                <Input
+                                  id="openingHours"
+                                  value={formData.contact?.openingHours || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "contact",
+                                      "openingHours",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="Ví dụ: 10:00 - 22:00 (Thứ 2 - Chủ nhật)"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="city"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Thành phố
+                                </Label>
+                                <Input
+                                  id="city"
+                                  value={formData.contact?.city || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "contact",
+                                      "city",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="region"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Tỉnh/Thành
+                                </Label>
+                                <Input
+                                  id="region"
+                                  value={formData.contact?.region || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "contact",
+                                      "region",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="postalCode"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Mã bưu điện
+                                </Label>
+                                <Input
+                                  id="postalCode"
+                                  value={formData.contact?.postalCode || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "contact",
+                                      "postalCode",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="countryCode"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Mã quốc gia
+                                </Label>
+                                <Input
+                                  id="countryCode"
+                                  value={formData.contact?.countryCode || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "contact",
+                                      "countryCode",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="Ví dụ: VN"
+                                />
+                              </div>
                             </div>
                           </div>
                         )}
@@ -504,6 +614,160 @@ export default function AdminSettingsPage() {
                                   placeholder="https://facebook.com/your-page"
                                 />
                               </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="facebookHandle"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Facebook Handle
+                                </Label>
+                                <Input
+                                  id="facebookHandle"
+                                  value={formData.social?.facebookHandle || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "facebookHandle",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="fb.com/your-page"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="instagram"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Instagram
+                                </Label>
+                                <Input
+                                  id="instagram"
+                                  value={formData.social?.instagram || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "instagram",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://instagram.com/your-handle"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="twitter"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Twitter
+                                </Label>
+                                <Input
+                                  id="twitter"
+                                  value={formData.social?.twitter || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "twitter",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://twitter.com/your-handle"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="zalo"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Zalo
+                                </Label>
+                                <Input
+                                  id="zalo"
+                                  value={formData.social?.zalo || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "zalo",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://zalo.me/your-phone"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="tiktok"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  TikTok
+                                </Label>
+                                <Input
+                                  id="tiktok"
+                                  value={formData.social?.tiktok || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "tiktok",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://www.tiktok.com/@your-handle"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="tiktokHandle"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  TikTok Handle
+                                </Label>
+                                <Input
+                                  id="tiktokHandle"
+                                  value={formData.social?.tiktokHandle || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "tiktokHandle",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="@your-handle"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="messenger"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Messenger
+                                </Label>
+                                <Input
+                                  id="messenger"
+                                  value={formData.social?.messenger || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "social",
+                                      "messenger",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://m.me/your-page"
+                                />
+                              </div>
                             </div>
                           </div>
                         )}
@@ -530,6 +794,28 @@ export default function AdminSettingsPage() {
                                   }
                                   className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
                                   placeholder="https://shopeefood.vn/..."
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="grabFood"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  GrabFood
+                                </Label>
+                                <Input
+                                  id="grabFood"
+                                  value={formData.ordering?.grabFood || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "ordering",
+                                      "grabFood",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://food.grab.com/..."
                                 />
                               </div>
                             </div>
@@ -561,6 +847,72 @@ export default function AdminSettingsPage() {
                                   placeholder="https://www.google.com/maps/embed?..."
                                 />
                               </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="directionsUrl"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  URL chỉ đường
+                                </Label>
+                                <Input
+                                  id="directionsUrl"
+                                  value={formData.maps?.directionsUrl || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "maps",
+                                      "directionsUrl",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://maps.app.goo.gl/..."
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="latitude"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Vĩ độ (Latitude)
+                                </Label>
+                                <Input
+                                  id="latitude"
+                                  value={formData.maps?.latitude || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "maps",
+                                      "latitude",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="Ví dụ: 16.462158199999998"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="longitude"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Kinh độ (Longitude)
+                                </Label>
+                                <Input
+                                  id="longitude"
+                                  value={formData.maps?.longitude || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "maps",
+                                      "longitude",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="Ví dụ: 107.59194319999999"
+                                />
+                              </div>
                             </div>
                           </div>
                         )}
@@ -589,6 +941,146 @@ export default function AdminSettingsPage() {
                                   placeholder="%s - Tên trang web"
                                 />
                               </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="defaultTitle"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Tiêu đề mặc định
+                                </Label>
+                                <Input
+                                  id="defaultTitle"
+                                  value={formData.seo?.defaultTitle || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "defaultTitle",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="Tiêu đề trang chủ mặc định"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="defaultDescription"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Mô tả mặc định
+                                </Label>
+                                <Textarea
+                                  id="defaultDescription"
+                                  value={formData.seo?.defaultDescription || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "defaultDescription",
+                                      e.target.value,
+                                    )
+                                  }
+                                  rows={3}
+                                  className="text-sm p-3 border border-gray-200 rounded-md min-h-[80px] w-full max-w-full box-border resize-y"
+                                  placeholder="Mô tả mặc định cho trang web"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="ogImageUrl"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  URL hình ảnh OpenGraph
+                                </Label>
+                                <Input
+                                  id="ogImageUrl"
+                                  value={formData.seo?.ogImageUrl || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "ogImageUrl",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="/logo.png hoặc URL đầy đủ"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Hình ảnh hiển thị khi chia sẻ trên mạng xã hội
+                                </p>
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="twitterHandle"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Tài khoản Twitter
+                                </Label>
+                                <Input
+                                  id="twitterHandle"
+                                  value={formData.seo?.twitterHandle || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "twitterHandle",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="@taikhoan"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="keywords"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Từ khóa
+                                </Label>
+                                <Textarea
+                                  id="keywords"
+                                  value={formData.seo?.keywords || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "keywords",
+                                      e.target.value,
+                                    )
+                                  }
+                                  rows={2}
+                                  className="text-sm p-3 border border-gray-200 rounded-md min-h-[60px] w-full max-w-full box-border resize-y"
+                                  placeholder="từ khóa 1, từ khóa 2, từ khóa 3"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Các từ khóa cách nhau bằng dấu phẩy
+                                </p>
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="homePageTitle"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Tiêu đề trang chủ
+                                </Label>
+                                <Input
+                                  id="homePageTitle"
+                                  value={formData.seo?.homePageTitle || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "seo",
+                                      "homePageTitle",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="Trang chủ"
+                                />
+                              </div>
                             </div>
                           </div>
                         )}
@@ -614,7 +1106,64 @@ export default function AdminSettingsPage() {
                                     )
                                   }
                                   className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="VND"
                                 />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Mã tiền tệ (Ví dụ: VND, USD)
+                                </p>
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="currencySymbol"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Ký hiệu tiền tệ
+                                </Label>
+                                <Input
+                                  id="currencySymbol"
+                                  value={
+                                    formData.settings?.currencySymbol || ""
+                                  }
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "settings",
+                                      "currencySymbol",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="₫"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Biểu tượng tiền tệ (Ví dụ: ₫, $)
+                                </p>
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="locale"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Ngôn ngữ
+                                </Label>
+                                <Input
+                                  id="locale"
+                                  value={formData.settings?.locale || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "settings",
+                                      "locale",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="vi-VN"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Định dạng ngôn ngữ và vùng (Ví dụ: vi-VN,
+                                  en-US)
+                                </p>
                               </div>
                             </div>
                           </div>
