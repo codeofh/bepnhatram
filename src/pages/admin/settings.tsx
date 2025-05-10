@@ -257,42 +257,71 @@ export default function AdminSettingsPage() {
           </Alert>
         ) : (
           <form onSubmit={handleSubmit}>
-            <div className="space-y-6">
-              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <div className="space-y-5 pb-16 md:pb-0">
+              <div className="mb-5">
+                <h2 className="text-base font-medium">Cài đặt trang web</h2>
+                <p className="text-xs text-gray-500 mt-1">
+                  Quản lý cài đặt chung cho toàn bộ trang web
+                </p>
+              </div>
+
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 z-40 flex gap-3 md:hidden">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  className="flex-1 h-10 text-sm"
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  <span>Mặc định</span>
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 h-10 text-sm bg-black text-white"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <span>Lưu...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      <span>Lưu</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <div className="hidden md:flex md:justify-between md:items-center md:mb-6">
                 <div>
                   <h2 className="text-lg font-medium">Cài đặt trang web</h2>
                   <p className="text-sm text-muted-foreground">
                     Quản lý cài đặt chung cho toàn bộ trang web
                   </p>
                 </div>
-                <div className="flex gap-2 w-full md:w-auto">
+                <div className="flex gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    className="flex-1 md:flex-initial"
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    <span className="md:inline hidden">Khôi phục mặc định</span>
-                    <span className="md:hidden inline">Mặc định</span>
+                    <span>Khôi phục mặc định</span>
                   </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 md:flex-initial"
-                  >
+                  <Button type="submit" disabled={isSubmitting}>
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        <span className="md:inline hidden">Đang lưu...</span>
-                        <span className="md:hidden inline">Lưu...</span>
+                        <span>Đang lưu...</span>
                       </>
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        <span className="md:inline hidden">Lưu thay đổi</span>
-                        <span className="md:hidden inline">Lưu</span>
+                        <span>Lưu thay đổi</span>
                       </>
                     )}
                   </Button>
@@ -300,36 +329,64 @@ export default function AdminSettingsPage() {
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <div className="overflow-x-auto pb-2">
-                  <TabsList className="inline-flex min-w-max w-full md:w-auto">
-                    <TabsTrigger value="general">Cài đặt chung</TabsTrigger>
-                    <TabsTrigger value="contact">Liên hệ</TabsTrigger>
-                    <TabsTrigger value="social">Mạng xã hội</TabsTrigger>
-                    <TabsTrigger value="ordering">Đặt hàng</TabsTrigger>
-                    <TabsTrigger value="maps">Bản đồ</TabsTrigger>
-                    <TabsTrigger value="seo">SEO</TabsTrigger>
-                    <TabsTrigger value="other">Khác</TabsTrigger>
+                <div className="overflow-x-auto mb-4 -mx-4 px-4">
+                  <TabsList className="flex w-auto whitespace-nowrap">
+                    <TabsTrigger
+                      value="general"
+                      className="px-3 py-1.5 text-xs"
+                    >
+                      Cài đặt chung
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="contact"
+                      className="px-3 py-1.5 text-xs"
+                    >
+                      Liên hệ
+                    </TabsTrigger>
+                    <TabsTrigger value="social" className="px-3 py-1.5 text-xs">
+                      Mạng xã hội
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="ordering"
+                      className="px-3 py-1.5 text-xs"
+                    >
+                      Đặt hàng
+                    </TabsTrigger>
+                    <TabsTrigger value="maps" className="px-3 py-1.5 text-xs">
+                      Bản đồ
+                    </TabsTrigger>
+                    <TabsTrigger value="seo" className="px-3 py-1.5 text-xs">
+                      SEO
+                    </TabsTrigger>
+                    <TabsTrigger value="other" className="px-3 py-1.5 text-xs">
+                      Khác
+                    </TabsTrigger>
                   </TabsList>
                 </div>
 
                 <TabsContent value="general">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Thông tin cơ bản</CardTitle>
-                      <CardDescription>
+                  <Card className="rounded-lg border shadow-sm">
+                    <CardHeader className="px-4 py-3 sm:px-5 sm:py-4">
+                      <CardTitle className="text-base">
+                        Thông tin cơ bản
+                      </CardTitle>
+                      <CardDescription className="text-xs">
                         Cài đặt thông tin chung cho website
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-3 px-4 pb-4 pt-0 sm:px-5 sm:pb-5 sm:pt-0">
                       <div className="grid gap-4">
-                        <div className="grid gap-2">
-                          <Label htmlFor="name">Tên website</Label>
+                        <div className="grid gap-1.5 pb-1">
+                          <Label htmlFor="name" className="text-sm">
+                            Tên website
+                          </Label>
                           <Input
                             id="name"
                             value={formData.name}
                             onChange={(e) =>
                               handleChange("name", "", e.target.value)
                             }
+                            className="h-9 text-sm"
                           />
                         </div>
 
@@ -885,36 +942,33 @@ export default function AdminSettingsPage() {
               </Tabs>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-6 hidden md:block">
               <Card>
-                <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-3 pt-6">
+                <CardFooter className="flex justify-between gap-3 p-4 pt-3 sm:p-5">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto"
+                    className="h-10 text-sm"
                   >
                     <RefreshCw className="mr-2 h-4 w-4" />
-                    <span className="md:inline hidden">Khôi phục mặc định</span>
-                    <span className="md:hidden inline">Mặc định</span>
+                    <span>Khôi phục mặc định</span>
                   </Button>
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full sm:w-auto"
+                    className="h-10 text-sm"
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        <span className="md:inline hidden">Đang lưu...</span>
-                        <span className="md:hidden inline">Lưu...</span>
+                        <span>Đang lưu...</span>
                       </>
                     ) : (
                       <>
                         <Save className="mr-2 h-4 w-4" />
-                        <span className="md:inline hidden">Lưu thay đổi</span>
-                        <span className="md:hidden inline">Lưu</span>
+                        <span>Lưu thay đổi</span>
                       </>
                     )}
                   </Button>
