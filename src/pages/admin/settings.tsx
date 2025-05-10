@@ -177,7 +177,7 @@ export default function AdminSettingsPage() {
         if (settingsError) {
           showError(settingsError);
         } else {
-          showError("Không thể cập nhật cài đặt. Vui lòng thử l���i.");
+          showError("Không thể cập nhật cài đặt. Vui lòng thử lại.");
         }
       }
     } catch (error: any) {
@@ -530,6 +530,28 @@ export default function AdminSettingsPage() {
                                   }
                                   className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
                                   placeholder="https://shopeefood.vn/..."
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="grabFood"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  GrabFood
+                                </Label>
+                                <Input
+                                  id="grabFood"
+                                  value={formData.ordering?.grabFood || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "ordering",
+                                      "grabFood",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://food.grab.com/..."
                                 />
                               </div>
                             </div>
