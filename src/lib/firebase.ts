@@ -118,28 +118,15 @@ try {
 
     storage = getStorage(app);
 
-    // Enable Firebase emulators in development environment
+    // Firebase emulators configuration (currently disabled)
     if (
       process.env.NODE_ENV === "development" &&
       process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true"
     ) {
-      try {
-        const emulatorHost =
-          process.env.NEXT_PUBLIC_FIREBASE_EMULATOR_HOST || "localhost";
-        if (auth)
-          connectAuthEmulator(auth, `http://${emulatorHost}:9099`, {
-            disableWarnings: true,
-          });
-        if (db) connectFirestoreEmulator(db, emulatorHost, 8080);
-        if (storage) connectStorageEmulator(storage, emulatorHost, 9199);
-        console.log("Firebase emulators connected at:");
-        console.log(`- Auth: http://${emulatorHost}:9099`);
-        console.log(`- Firestore: http://${emulatorHost}:8080`);
-        console.log(`- Storage: http://${emulatorHost}:9199`);
-        console.log(`- Emulator UI: http://${emulatorHost}:4000/`);
-      } catch (emulatorError) {
-        console.error("Error connecting to Firebase emulators:", emulatorError);
-      }
+      console.log(
+        "Firebase emulators are disabled. Using production Firebase.",
+      );
+      // Emulator connection code is disabled
     }
   }
 } catch (error) {
