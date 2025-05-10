@@ -241,7 +241,6 @@ export default function MediaLibraryPage() {
                   size: data.item.size,
                   createdAt: new Date(),
                   tags: [],
-                  path: data.item.path || data.item.url,
                 };
                 
                 // Lưu vào Firebase

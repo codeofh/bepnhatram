@@ -29,7 +29,7 @@ export const ensureUploadDirectory = () => {
 // Function to upload file to local storage (SERVER SIDE ONLY)
 export const uploadFileToLocal = async (file: {
   filepath: string;
-  originalFilename?: string;
+  originalFilename?: string | null;
   size: number;
 }): Promise<MediaItem | null> => {
   try {
