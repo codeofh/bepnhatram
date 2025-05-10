@@ -1,32 +1,19 @@
 import { Html, Head, Main, NextScript } from "next/document";
+import { siteConfig } from "@/config/siteConfig";
 
 export default function Document() {
   return (
     <Html lang="vi">
       <Head>
-        {/* Softgen AI monitoring script */}
-
-        {/* <script 
-          src="https://cdn.softgen.ai/script.js" 
-          async 
-          data-softgen-monitoring="true"
-        /> */}
-
-        {/* Character Set */}
-        <meta charSet="utf-8" />
-
-        {/* IE Compatibility */}
-        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-
-        {/* Preconnect to important domains */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        <meta name="application-name" content={siteConfig.name} />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content={siteConfig.name} />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="theme-color" content="#FFFFFF" />
       </Head>
-      <body className="antialiased">
+      <body>
         <Main />
         <NextScript />
       </body>

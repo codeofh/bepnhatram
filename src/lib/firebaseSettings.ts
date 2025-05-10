@@ -228,7 +228,11 @@ export async function getSiteSettings(): Promise<{
 }> {
   try {
     if (!isFirebaseInitialized() || !db) {
-      return { settings: defaultSiteConfig };
+      console.log("Firebase not initialized, using default settings");
+      return {
+        settings: defaultSiteConfig,
+        error: "Firebase không được khởi tạo",
+      };
     }
 
     const docRef = doc(db, SETTINGS_COLLECTION, SETTINGS_DOC_ID);

@@ -51,7 +51,11 @@ export default function AuthLoginPage() {
     <>
       <Head>
         <title>Đăng nhập - {settings.name}</title>
-        <meta name="description" content="Trang đăng nhập" />
+        <meta
+          name="description"
+          content={`Đăng nhập vào trang quản trị ${settings.name}`}
+        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
       <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center p-4">

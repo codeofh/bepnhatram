@@ -44,7 +44,7 @@ const registerSchema = z
       .min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "Mật khẩu không khớp",
+    message: "M��t khẩu không khớp",
     path: ["confirmPassword"],
   });
 
