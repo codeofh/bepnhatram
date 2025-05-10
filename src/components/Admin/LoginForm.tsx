@@ -44,7 +44,7 @@ const registerSchema = z
       .min(6, { message: "Mật khẩu phải có ít nhất 6 ký tự" }),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: "M��t khẩu không khớp",
+    message: "Mật khẩu không khớp",
     path: ["confirmPassword"],
   });
 
@@ -127,7 +127,7 @@ export function LoginForm({ siteSettings = siteConfig }: LoginFormProps) {
         );
         forgotPasswordForm.reset();
       } else {
-        setError("Không thể gửi email đặt lại mật khẩu");
+        setError("Không thể g��i email đặt lại mật khẩu");
       }
     } catch (err: any) {
       setError(err.message || "Đã xảy ra lỗi khi đặt lại mật khẩu");
@@ -177,7 +177,9 @@ export function LoginForm({ siteSettings = siteConfig }: LoginFormProps) {
   return (
     <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
       <div className="text-center">
-        <h1 className="text-2xl font-bold">{siteSettings.name}</h1>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {siteSettings.name}
+        </h1>
         <p className="mt-2 text-gray-600">Trang quản trị</p>
       </div>
 

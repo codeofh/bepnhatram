@@ -20,6 +20,7 @@ export default function AuthLoginPage() {
     async function loadSettings() {
       try {
         const { settings: firebaseSettings } = await getSiteSettings();
+        console.log("Loaded settings from Firebase:", firebaseSettings.name);
         setSettings(firebaseSettings);
       } catch (err) {
         console.error("Error loading settings from Firebase:", err);
