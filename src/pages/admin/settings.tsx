@@ -365,6 +365,7 @@ export default function AdminSettingsPage() {
                                     handleChange("name", "", e.target.value)
                                   }
                                   className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full max-w-full box-border"
+                                  placeholder="Tên trang web của bạn"
                                 />
                               </div>
 
@@ -387,6 +388,7 @@ export default function AdminSettingsPage() {
                                   }
                                   rows={3}
                                   className="text-sm p-3 border border-gray-200 rounded-md min-h-[80px] w-full max-w-full box-border resize-y"
+                                  placeholder="Mô tả ngắn gọn về trang web của bạn"
                                 />
                               </div>
 
@@ -404,6 +406,7 @@ export default function AdminSettingsPage() {
                                     handleChange("url", "", e.target.value)
                                   }
                                   className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://example.com"
                                 />
                               </div>
                             </div>
