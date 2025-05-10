@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
-import fs from "fs";
-import path from "path";
 import { toast } from "sonner";
 
 // Define types for media items
@@ -27,59 +25,8 @@ export const CLOUDINARY_CONFIG = {
     process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default",
 };
 
-// Local storage paths
+// Upload path constants - these are safe to use on client side as they're just strings
 export const UPLOAD_DIRECTORY = "/uploads/library";
-export const UPLOAD_PATH = path.join(process.cwd(), "public", UPLOAD_DIRECTORY);
-
-// Function to ensure upload directory exists
-export const ensureUploadDirectory = () => {
-  try {
-    if (!fs.existsSync(UPLOAD_PATH)) {
-      fs.mkdirSync(UPLOAD_PATH, { recursive: true });
-    }
-    return true;
-  } catch (error) {
-    console.error("Error creating upload directory:", error);
-    return false;
-  }
-};
-
-// Function to upload file to local storage
-export const uploadFileToLocal = async (
-  file: File,
-): Promise<MediaItem | null> => {
-  try {
-    ensureUploadDirectory();
-
-    const fileExtension = path.extname(file.name);
-    const fileName = `${uuidv4()}${fileExtension}`;
-    const filePath = path.join(UPLOAD_PATH, fileName);
-
-    // In a real server-side function, we would use fs.writeFile
-    // For client-side, you would use FormData and fetch to an API
-    // This is a simplified version that would need to be implemented server-side
-
-    // Create a MediaItem object
-    const isImage = file.type.startsWith("image/");
-
-    const newItem: MediaItem = {
-      id: `local-${uuidv4()}`,
-      name: file.name,
-      url: `${UPLOAD_DIRECTORY}/${fileName}`,
-      thumbnail: isImage ? `${UPLOAD_DIRECTORY}/${fileName}` : undefined,
-      type: isImage ? "image" : "video",
-      source: "local",
-      size: file.size,
-      createdAt: new Date(),
-      tags: [],
-    };
-
-    return newItem;
-  } catch (error) {
-    console.error("Error uploading file to local storage:", error);
-    return null;
-  }
-};
 
 // Function to upload file to Cloudinary
 export const uploadToCloudinary = async (
@@ -130,43 +77,6 @@ export const uploadToCloudinary = async (
   }
 };
 
-// Function to delete file from local storage
-export const deleteLocalFile = async (filePath: string): Promise<boolean> => {
-  try {
-    const fullPath = path.join(process.cwd(), "public", filePath);
-
-    // Check if file exists
-    if (!fs.existsSync(fullPath)) {
-      console.warn("File does not exist:", fullPath);
-      return true;
-    }
-
-    // Delete file
-    fs.unlinkSync(fullPath);
-    return true;
-  } catch (error) {
-    console.error("Error deleting local file:", error);
-    return false;
-  }
-};
-
-// Function to delete file from Cloudinary
-export const deleteCloudinaryFile = async (
-  publicId: string,
-): Promise<boolean> => {
-  try {
-    // In a real app, this would be a server-side API call using the Cloudinary SDK
-    // For client-side, you would typically call a serverless function or API endpoint
-
-    // This is a placeholder for the actual implementation
-    console.log("Would delete from Cloudinary:", publicId);
-    return true;
-  } catch (error) {
-    console.error("Error deleting from Cloudinary:", error);
-    return false;
-  }
-};
-
 // Custom hook for managing media items
 export function useMediaLibrary() {
   const [isLoading, setIsLoading] = useState(true);
@@ -179,39 +89,26 @@ export function useMediaLibrary() {
       setIsLoading(true);
       setError(null);
 
-      // Fetch local files and Cloudinary files
-      // This would be an API call in a real application
-      // For now, we'll use placeholder data
+      // Fetch media items from API
+      const response = await fetch("/api/media");
+      if (!response.ok) {
+        throw new Error("Failed to fetch media items");
+      }
 
-      const mockItems: MediaItem[] = [
-        {
-          id: "local-1",
-          name: "banner.jpg",
-          url: "/uploads/library/banner.jpg",
-          thumbnail: "/uploads/library/banner.jpg",
-          type: "image",
-          source: "local",
-          size: 254000,
-          dimensions: { width: 1920, height: 1080 },
-          createdAt: new Date("2023-08-15"),
-          tags: ["banner", "homepage"],
-        },
-        {
-          id: "cloudinary-1",
-          name: "product-photo.jpg",
-          url: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
-          thumbnail:
-            "https://res.cloudinary.com/demo/image/upload/c_thumb,w_200,g_face/v1312461204/sample.jpg",
-          type: "image",
-          source: "cloudinary",
-          size: 124000,
-          dimensions: { width: 1200, height: 800 },
-          createdAt: new Date("2023-09-05"),
-          tags: ["product", "food"],
-        },
-      ];
+      const data = await response.json();
 
-      setMediaItems(mockItems);
+      if (data.items && Array.isArray(data.items)) {
+        // Transform dates from string to Date objects
+        const items = data.items.map((item: any) => ({
+          ...item,
+          createdAt: new Date(item.createdAt),
+        }));
+
+        setMediaItems(items);
+      } else {
+        // If API returns no items, use empty array
+        setMediaItems([]);
+      }
     } catch (err: any) {
       console.error("Error loading media items:", err);
       setError(err.message || "Failed to load media");
@@ -220,7 +117,7 @@ export function useMediaLibrary() {
     }
   };
 
-  // Upload file (to either local or Cloudinary)
+  // Upload file to local API endpoint
   const uploadFile = async (
     file: File,
     destination: "local" | "cloudinary" = "local",
@@ -229,9 +126,68 @@ export function useMediaLibrary() {
       let newItem: MediaItem | null = null;
 
       if (destination === "local") {
-        newItem = await uploadFileToLocal(file);
+        // Create FormData and append file
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Send to server API
+        const response = await fetch("/api/media", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload to server failed");
+        }
+
+        const data = await response.json();
+        newItem = {
+          ...data.item,
+          createdAt: new Date(data.item.createdAt),
+        };
       } else {
+        // Upload to Cloudinary
         newItem = await uploadToCloudinary(file);
+
+        if (newItem) {
+          // Save Cloudinary info to our API
+          const formData = new FormData();
+          formData.append("name", newItem.name);
+          formData.append("url", newItem.url);
+          formData.append("thumbnail", newItem.thumbnail || newItem.url);
+          formData.append("type", newItem.type);
+          formData.append("source", "cloudinary");
+          formData.append("size", newItem.size?.toString() || "0");
+          formData.append(
+            "width",
+            newItem.dimensions?.width?.toString() || "0",
+          );
+          formData.append(
+            "height",
+            newItem.dimensions?.height?.toString() || "0",
+          );
+          formData.append(
+            "cloudinaryPublicId",
+            newItem.id.replace("cloudinary-", ""),
+          );
+
+          const apiResponse = await fetch("/api/media/cloudinary", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!apiResponse.ok) {
+            console.warn(
+              "Failed to save Cloudinary info to API, but upload succeeded",
+            );
+          } else {
+            const apiData = await apiResponse.json();
+            newItem = {
+              ...apiData.item,
+              createdAt: new Date(apiData.item.createdAt),
+            };
+          }
+        }
       }
 
       if (newItem) {
@@ -256,11 +212,22 @@ export function useMediaLibrary() {
       let success = false;
 
       if (item.source === "local") {
-        success = await deleteLocalFile(item.url);
+        // Extract filename from URL
+        const filename = item.url.split("/").pop();
+
+        // Call API to delete the file
+        const response = await fetch(`/api/media?filename=${filename}`, {
+          method: "DELETE",
+        });
+
+        success = response.ok;
       } else {
-        // Extract public ID from Cloudinary URL or ID
-        const publicId = item.id.replace("cloudinary-", "");
-        success = await deleteCloudinaryFile(publicId);
+        // Delete Cloudinary reference from our DB
+        const response = await fetch(`/api/media/cloudinary?id=${item.id}`, {
+          method: "DELETE",
+        });
+
+        success = response.ok;
       }
 
       if (success) {
@@ -314,18 +281,10 @@ export function useMediaLibrary() {
 
 // Helper functions
 export const getFileType = (filename: string): "image" | "video" | "other" => {
-  const ext = path.extname(filename).toLowerCase();
+  const ext = filename.split(".").pop()?.toLowerCase() || "";
 
-  const imageExtensions = [
-    ".jpg",
-    ".jpeg",
-    ".png",
-    ".gif",
-    ".webp",
-    ".svg",
-    ".bmp",
-  ];
-  const videoExtensions = [".mp4", ".webm", ".ogg", ".mov", ".avi", ".wmv"];
+  const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp", "svg", "bmp"];
+  const videoExtensions = ["mp4", "webm", "ogg", "mov", "avi", "wmv"];
 
   if (imageExtensions.includes(ext)) {
     return "image";

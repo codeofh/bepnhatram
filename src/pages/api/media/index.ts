@@ -1,8 +1,10 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import formidable from "formidable";
-import path from "path";
-import fs from "fs";
-import { v4 as uuidv4 } from "uuid";
+import {
+  getLocalMediaItems,
+  uploadFileToLocal,
+  deleteLocalFile,
+} from "@/lib/mediaLibraryServer";
 import { getFileType } from "@/lib/mediaLibrary";
 
 // Disable body parsing, we'll handle it with formidable
@@ -12,14 +14,11 @@ export const config = {
   },
 };
 
-// Set upload directory
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "library");
-
-// Ensure upload directory exists
-const ensureUploadDir = () => {
-  if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-  }
+// Disable body parsing, we'll handle it with formidable
+export const config = {
+  api: {
+    bodyParser: false,
+  },
 };
 
 export default async function handler(
@@ -42,35 +41,7 @@ export default async function handler(
 // Get all media items
 async function getMediaItems(req: NextApiRequest, res: NextApiResponse) {
   try {
-    ensureUploadDir();
-
-    // Read all files in the directory
-    const files = fs.readdirSync(UPLOAD_DIR);
-
-    const mediaItems = files
-      .map((file) => {
-        const filePath = path.join(UPLOAD_DIR, file);
-        const stats = fs.statSync(filePath);
-        const type = getFileType(file);
-
-        if (type === "other") {
-          return null; // Skip non-image/video files
-        }
-
-        const relativePath = `/uploads/library/${file}`;
-
-        return {
-          id: `local-${file}`,
-          name: file,
-          url: relativePath,
-          thumbnail: type === "image" ? relativePath : null,
-          type,
-          source: "local",
-          size: stats.size,
-          createdAt: stats.birthtime,
-        };
-      })
-      .filter(Boolean); // Remove nulls
+    const mediaItems = await getLocalMediaItems();
 
     return res.status(200).json({ items: mediaItems });
   } catch (error: any) {
@@ -84,12 +55,8 @@ async function getMediaItems(req: NextApiRequest, res: NextApiResponse) {
 // Upload media file
 async function uploadMedia(req: NextApiRequest, res: NextApiResponse) {
   try {
-    ensureUploadDir();
-
     const form = formidable({
-      uploadDir: UPLOAD_DIR,
-      keepExtensions: true,
-      maxFiles: 1,
+      multiples: false,
       maxFileSize: 10 * 1024 * 1024, // 10MB limit
     });
 
@@ -108,35 +75,15 @@ async function uploadMedia(req: NextApiRequest, res: NextApiResponse) {
           return resolve(null);
         }
 
-        // Get file type
-        const fileType = getFileType(file.originalFilename || "");
+        // Upload the file using our server-side function
+        const mediaItem = await uploadFileToLocal(file);
 
-        if (fileType === "other") {
-          res.status(400).json({ error: "Unsupported file type" });
+        if (!mediaItem) {
+          res
+            .status(400)
+            .json({ error: "Failed to process file. Unsupported file type." });
           return resolve(null);
         }
-
-        // Generate a unique filename
-        const fileName = `${uuidv4()}${path.extname(file.originalFilename || "")}`;
-        const newPath = path.join(UPLOAD_DIR, fileName);
-
-        // Rename the file (if it has a temporary name)
-        if (file.filepath !== newPath) {
-          fs.renameSync(file.filepath, newPath);
-        }
-
-        // Create response data
-        const mediaItem = {
-          id: `local-${fileName}`,
-          name: file.originalFilename || fileName,
-          url: `/uploads/library/${fileName}`,
-          thumbnail:
-            fileType === "image" ? `/uploads/library/${fileName}` : null,
-          type: fileType,
-          source: "local",
-          size: file.size,
-          createdAt: new Date(),
-        };
 
         res.status(201).json({ item: mediaItem });
         return resolve(null);
@@ -154,21 +101,20 @@ async function uploadMedia(req: NextApiRequest, res: NextApiResponse) {
 async function deleteMedia(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { filename } = req.query;
-    
+
     if (!filename || typeof filename !== "string") {
       return res.status(400).json({ error: "Filename is required" });
     }
-    
-    const filePath = path.join(UPLOAD_DIR, filename);
-    
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ error: "File not found" });
+
+    const filePath = `/uploads/library/${filename}`;
+
+    // Delete the file using our server-side function
+    const success = await deleteLocalFile(filePath);
+
+    if (!success) {
+      return res.status(500).json({ error: "Failed to delete file" });
     }
-    
-    // Delete file
-    fs.unlinkSync(filePath);
-    
+
     return res.status(200).json({ success: true });
   } catch (error: any) {
     console.error("Error deleting media:", error);
