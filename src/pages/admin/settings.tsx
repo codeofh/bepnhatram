@@ -265,13 +265,13 @@ export default function AdminSettingsPage() {
                 </p>
               </div>
 
-              <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 z-40 flex gap-3 md:hidden">
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 z-40 flex gap-3 md:hidden shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  className="flex-1 h-10 text-sm"
+                  className="flex-1 h-11 text-sm font-medium border-gray-300"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   <span>Mặc định</span>
@@ -279,7 +279,7 @@ export default function AdminSettingsPage() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 h-10 text-sm bg-black text-white"
+                  className="flex-1 h-11 text-sm font-medium bg-black text-white"
                 >
                   {isSubmitting ? (
                     <>
@@ -312,7 +312,10 @@ export default function AdminSettingsPage() {
                     <RefreshCw className="mr-2 h-4 w-4" />
                     <span>Khôi phục mặc định</span>
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -329,57 +332,36 @@ export default function AdminSettingsPage() {
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <div className="overflow-x-auto mb-4 -mx-4 px-4">
-                  <TabsList className="flex w-auto whitespace-nowrap">
-                    <TabsTrigger
-                      value="general"
-                      className="px-3 py-1.5 text-xs"
-                    >
-                      Cài đặt chung
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="contact"
-                      className="px-3 py-1.5 text-xs"
-                    >
-                      Liên hệ
-                    </TabsTrigger>
-                    <TabsTrigger value="social" className="px-3 py-1.5 text-xs">
-                      Mạng xã hội
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="ordering"
-                      className="px-3 py-1.5 text-xs"
-                    >
-                      Đặt hàng
-                    </TabsTrigger>
-                    <TabsTrigger value="maps" className="px-3 py-1.5 text-xs">
-                      Bản đồ
-                    </TabsTrigger>
-                    <TabsTrigger value="seo" className="px-3 py-1.5 text-xs">
-                      SEO
-                    </TabsTrigger>
-                    <TabsTrigger value="other" className="px-3 py-1.5 text-xs">
-                      Khác
-                    </TabsTrigger>
-                  </TabsList>
+                <div className="bg-gray-50 -mx-4 px-2 py-2 mb-4">
+                  <div className="overflow-x-auto">
+                    <TabsList className="flex w-auto bg-gray-200/70 p-1 rounded-md">
+                      <TabsTrigger value="general" className="px-3 py-2 text-xs rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Cài đặt chung</TabsTrigger>
+                      <TabsTrigger value="contact" className="px-3 py-2 text-xs rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Liên hệ</TabsTrigger>
+                      <TabsTrigger value="social" className="px-3 py-2 text-xs rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Mạng xã hội</TabsTrigger>
+                      <TabsTrigger value="ordering" className="px-3 py-2 text-xs rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Đặt hàng</TabsTrigger>
+                      <TabsTrigger value="maps" className="px-3 py-2 text-xs rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Bản đồ</TabsTrigger>
+                      <TabsTrigger value="seo" className="px-3 py-2 text-xs rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">SEO</TabsTrigger>
+                      <TabsTrigger value="other" className="px-3 py-2 text-xs rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Khác</TabsTrigger>
+                    </TabsList>
+                  </div>
                 </div>
 
                 <TabsContent value="general">
+                  <div className="mb-3 mt-2">
+                    <h3 className="text-sm font-medium text-gray-500">Thông tin cơ bản</h3>
+                    <p className="text-xs text-gray-400">Cài đặt thông tin chung cho website</p>
+                  </div>
                   <Card className="rounded-lg border shadow-sm">
-                    <CardHeader className="px-4 py-3 sm:px-5 sm:py-4">
-                      <CardTitle className="text-base">
-                        Thông tin cơ bản
-                      </CardTitle>
-                      <CardDescription className="text-xs">
+                    <CardHeader className="px-4 py-4 border-b bg-gray-50">
+                      <CardTitle className="text-base font-medium">Thông tin cơ bản</CardTitle>
+                      <CardDescription className="text-xs mt-1">
                         Cài đặt thông tin chung cho website
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3 px-4 pb-4 pt-0 sm:px-5 sm:pb-5 sm:pt-0">
                       <div className="grid gap-4">
                         <div className="grid gap-1.5 pb-1">
-                          <Label htmlFor="name" className="text-sm">
-                            Tên website
-                          </Label>
+                          <Label htmlFor="name" className="text-sm">Tên website</Label>
                           <Input
                             id="name"
                             value={formData.name}
@@ -399,6 +381,7 @@ export default function AdminSettingsPage() {
                               handleChange("description", "", e.target.value)
                             }
                             rows={3}
+                            className="text-sm p-3 border border-gray-200 rounded-md min-h-[80px]"
                           />
                         </div>
 
@@ -781,37 +764,18 @@ export default function AdminSettingsPage() {
                         Cài đặt thông tin SEO cho trang web
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid gap-4">
-                        <div className="grid gap-2">
-                          <Label htmlFor="titleTemplate">Mẫu tiêu đề</Label>
+                <CardContent className="space-y-4 px-4 pb-4 pt-0">
+                        <div className="grid gap-2 pb-1">
+                          <Label htmlFor="name" className="text-sm font-medium">Tên website</Label>
                           <Input
-                            id="titleTemplate"
-                            value={formData.seo?.titleTemplate || ""}
+                            id="name"
+                            value={formData.name}
                             onChange={(e) =>
-                              handleChange(
-                                "seo",
-                                "titleTemplate",
-                                e.target.value,
-                              )
+                              handleChange("name", "", e.target.value)
                             }
-                            placeholder="%s - Tên trang web"
+                            className="h-10 text-sm px-3 border border-gray-200 rounded-md"
                           />
-                          <p className="text-xs text-muted-foreground">
-                            Sử dụng %s để đặt vị trí tiêu đề trang
-                          </p>
                         </div>
-
-                        <div className="grid gap-2">
-                          <Label htmlFor="defaultTitle">Tiêu đề mặc định</Label>
-                          <Input
-                            id="defaultTitle"
-                            value={formData.seo?.defaultTitle || ""}
-                            onChange={(e) =>
-                              handleChange(
-                                "seo",
-                                "defaultTitle",
-                                e.target.value,
                               )
                             }
                           />
