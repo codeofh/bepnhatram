@@ -1,35 +1,10 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
+import Head from "next/head";
 import Link from "next/link";
-import Image from "next/image";
-import { useRouter } from "next/router";
-import {
-  LayoutDashboard,
-  UtensilsCrossed,
-  Tags,
-  Settings,
-  Users,
-  LogOut,
-  ChevronDown,
-  Menu,
-  X,
-  Lock,
-  Globe,
-  User,
-  ShoppingBag,
-  ImageIcon,
-  Layers,
-} from "lucide-react";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { signOut } from "firebase/auth";
+import { ArrowLeft, LogOut, User, Bell, Settings, Menu } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetClose,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,26 +13,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { siteConfig } from "@/config/siteConfig";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+import { auth } from "@/lib/firebase";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { AdminSidebar } from "@/components/Admin/AdminSidebar";
 
 interface AdminLayoutProps {
   children: ReactNode;
-  title: string;
+  title?: string;
+  backHref?: string;
 }
 
-export function AdminLayout({ children, title }: AdminLayoutProps) {
-  const router = useRouter();
-  const { user, logout } = useAuthContext();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-
-  const handleLogout = async () => {
-    await logout();
-    router.push("/admin");
-  };
-
-  const isActive = (path: string) => {
-    return router.pathname === path;
-  };
+export function AdminLayout({
+  children,
+  title = "Admin Dashboard",
+  backHref,
+}: AdminLayoutProps) {
+  const { user } = useAuthContext();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Get user initials for avatar fallback
   const getUserInitials = (): string => {
@@ -71,220 +45,88 @@ export function AdminLayout({ children, title }: AdminLayoutProps) {
     ).toUpperCase();
   };
 
-  const navItems = [
-    {
-      name: "Dashboard",
-      path: "/admin/dashboard",
-      icon: <LayoutDashboard size={20} />,
-    },
-    {
-      name: "Đơn hàng",
-      path: "/admin/orders",
-      icon: <ShoppingBag size={20} />,
-    },
-    {
-      name: "Menu",
-      path: "/admin/menu",
-      icon: <UtensilsCrossed size={20} />,
-    },
-    {
-      name: "Danh mục",
-      path: "/admin/categories",
-      icon: <Tags size={20} />,
-    },
-    {
-      name: "Slider",
-      path: "/admin/sliders",
-      icon: <Layers size={20} />,
-    },
-    {
-      name: "Người dùng",
-      path: "/admin/users",
-      icon: <Users size={20} />,
-    },
-    {
-      name: "Cài đặt",
-      path: "/admin/settings",
-      icon: <Settings size={20} />,
-    },
-  ];
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="h-16 px-4 flex items-center justify-between">
-          <div className="flex items-center">
-            {/* Mobile menu trigger */}
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild className="mr-2">
-                <Button variant="ghost" size="icon">
-                  <Menu size={20} />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="p-0 w-64 [&>button]:hidden">
-                <SheetHeader className="sr-only">
-                  <SheetTitle>Admin Navigation</SheetTitle>
-                </SheetHeader>
-                <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-                  <Link href="/" className="flex items-center">
-                    <Image
-                      src="/logo-removebg.png"
-                      alt={siteConfig.name}
-                      width={120}
-                      height={40}
-                      className="h-8 w-auto object-contain"
-                      priority
-                    />
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <AdminSidebar
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
+        <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
+          <div className="flex h-16 items-center px-4 md:px-6 gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+
+            <div className="flex-1 flex items-center">
+              {backHref && (
+                <Button variant="ghost" size="icon" asChild className="mr-2">
+                  <Link href={backHref}>
+                    <ArrowLeft className="h-5 w-5" />
                   </Link>
-                </div>
-                <nav className="flex flex-col p-2">
-                  {navItems.map((item) => (
-                    <SheetClose asChild key={item.path}>
-                      <Link
-                        href={item.path}
-                        className={`flex items-center p-3 mb-1 rounded-md hover:bg-gray-100 ${
-                          isActive(item.path)
-                            ? "bg-blue-50 text-blue-600 font-medium"
-                            : "text-gray-700"
-                        }`}
-                      >
-                        <span className="mr-3">{item.icon}</span>
-                        <span>{item.name}</span>
-                      </Link>
-                    </SheetClose>
-                  ))}
-                </nav>
-              </SheetContent>
-            </Sheet>
-
-            {/* Logo */}
-            <Link href="/admin/dashboard" className="flex items-center">
-              <div className="flex items-center">
-                <Image
-                  src="/logo-removebg.png"
-                  alt={siteConfig.name}
-                  width={180}
-                  height={60}
-                  className="h-10 w-auto object-contain"
-                  priority
-                />
-              </div>
-            </Link>
-          </div>
-
-          {/* User menu */}
-          {user && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8 bg-green-600 text-white">
-                    <AvatarImage
-                      src={user.photoURL || undefined}
-                      alt={user.displayName || "User"}
-                    />
-                    <AvatarFallback>{getUserInitials()}</AvatarFallback>
-                  </Avatar>
-                  <span className="mr-1 hidden sm:inline-block">
-                    {user.email?.split("@")[0]}
-                  </span>
-                  <ChevronDown size={16} />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-60 p-0">
-                {/* User Profile Display */}
-                <div className="p-3 flex flex-col items-start">
-                  <div className="flex items-center mb-2">
-                    <Avatar className="h-10 w-10 bg-green-600 text-white mr-3">
+              )}
+              <h1 className="font-semibold text-lg">{title}</h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon">
+                <Bell className="h-5 w-5" />
+              </Button>
+
+              <div className="items-center gap-2 hidden md:flex">
+                <span className="text-sm text-gray-600">
+                  {user?.displayName || "Admin User"}
+                </span>
+              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Avatar className="h-8 w-8">
                       <AvatarImage
-                        src={user.photoURL || undefined}
-                        alt={user.displayName || "User"}
+                        src={user?.photoURL || undefined}
+                        alt={user?.displayName || "Admin User"}
                       />
                       <AvatarFallback>{getUserInitials()}</AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        {user.displayName || user.email?.split("@")[0]}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {user.email}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-t border-gray-100 py-1">
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/account" className="w-full flex items-center">
-                      <User className="h-4 w-4 mr-2" />
-                      Tài khoản của tôi
+                    <Link href="/admin/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/account/settings"
-                      className="w-full flex items-center"
-                    >
-                      <Lock className="h-4 w-4 mr-2" />
-                      Đổi mật khẩu
-                    </Link>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full flex items-center"
-                    >
-                      <Globe className="h-4 w-4 mr-2" />
-                      Xem trang web
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="my-1" />
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="w-full flex items-center"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Đăng xuất
-                  </DropdownMenuItem>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </header>
-
-      {/* Main container */}
-      <div className="flex flex-1">
-        {/* Sidebar - Desktop */}
-        <aside
-          className={`w-64 border-r border-gray-200 bg-white ${isMobileMenuOpen ? "hidden" : "hidden lg:block"}`}
-        >
-          <nav className="p-4 space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`flex items-center p-3 rounded-md hover:bg-gray-100 ${
-                  isActive(item.path)
-                    ? "bg-blue-50 text-blue-600 font-medium"
-                    : "text-gray-700"
-                }`}
-                aria-current={isActive(item.path) ? "page" : undefined}
-              >
-                <span className="mr-3">{item.icon}</span>
-                <span>{item.name}</span>
-              </Link>
-            ))}
-          </nav>
-        </aside>
-
-        {/* Main content */}
-        <main className="flex-1 p-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
+        </div>
+        <main className="flex-1 container mx-auto py-6 px-4 md:px-6 lg:px-8">
           {children}
         </main>
       </div>
