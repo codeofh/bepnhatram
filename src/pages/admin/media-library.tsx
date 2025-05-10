@@ -15,11 +15,13 @@ import {
   ExternalLink,
   Filter,
   HelpCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { CloudinaryContext, Image as CloudinaryImage } from "cloudinary-react";
 
 import { AdminLayout } from "@/components/Admin/AdminLayout";
 import { MediaLibraryHelp } from "@/components/Admin/MediaLibraryHelp";
+import { MediaLibraryError } from "@/components/Admin/MediaLibraryError";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -335,10 +337,16 @@ export default function MediaLibraryPage() {
       }
 
       const cloudinaryData = await cloudinaryResponse.json();
+      console.log("Cloudinary response:", cloudinaryData);
 
       // Bước 2: Lưu thông tin vào API của chúng ta
       const apiFormData = new FormData();
-      apiFormData.append("name", file.name);
+      apiFormData.append(
+        "name",
+        file.name ||
+          cloudinaryData.original_filename ||
+          cloudinaryData.public_id,
+      );
       apiFormData.append("url", cloudinaryData.secure_url);
       apiFormData.append(
         "thumbnail",
@@ -351,38 +359,112 @@ export default function MediaLibraryPage() {
         cloudinaryData.resource_type === "image" ? "image" : "video",
       );
       apiFormData.append("source", "cloudinary");
-      apiFormData.append("size", cloudinaryData.bytes.toString());
+      apiFormData.append("size", (cloudinaryData.bytes || 0).toString());
       apiFormData.append("width", (cloudinaryData.width || 0).toString());
       apiFormData.append("height", (cloudinaryData.height || 0).toString());
       apiFormData.append("cloudinaryPublicId", cloudinaryData.public_id);
 
-      const apiResponse = await fetch("/api/media/cloudinary", {
-        method: "POST",
-        body: apiFormData,
-      });
+      try {
+        const apiResponse = await fetch("/api/media/cloudinary", {
+          method: "POST",
+          body: apiFormData,
+        });
 
-      if (!apiResponse.ok) {
-        throw new Error(`API storage failed: ${apiResponse.statusText}`);
+        if (!apiResponse.ok) {
+          console.error(`API storage failed: ${apiResponse.statusText}`);
+          // Nếu API lưu trữ thất bại, vẫn hiển thị hình ảnh đã tải lên Cloudinary
+          const fallbackItem: MediaItem = {
+            id: `cloudinary-temp-${Date.now()}`,
+            name:
+              file.name ||
+              cloudinaryData.original_filename ||
+              cloudinaryData.public_id,
+            url: cloudinaryData.secure_url,
+            thumbnail:
+              cloudinaryData.resource_type === "image"
+                ? cloudinaryData.secure_url
+                : cloudinaryData.thumbnail_url ||
+                  "/placeholder-video-thumb.jpg",
+            type: cloudinaryData.resource_type === "image" ? "image" : "video",
+            source: "cloudinary",
+            size: cloudinaryData.bytes || 0,
+            dimensions: {
+              width: cloudinaryData.width || 0,
+              height: cloudinaryData.height || 0,
+            },
+            createdAt: new Date(),
+            tags: [],
+          };
+
+          setMediaItems((prev) => [fallbackItem, ...prev]);
+
+          toast({
+            title: "Tải lên Cloudinary thành công",
+            description:
+              "Đã tải lên Cloudinary nhưng không thể lưu vào cơ sở dữ liệu. Bạn vẫn có thể sử dụng tệp này.",
+          });
+
+          return;
+        }
+
+        const apiData = await apiResponse.json();
+
+        // Tạo item mới từ dữ liệu API trả về
+        const newItem: MediaItem = {
+          id: apiData.item.id,
+          name: apiData.item.name,
+          url: apiData.item.url,
+          thumbnail: apiData.item.thumbnail,
+          type: apiData.item.type as "image" | "video",
+          source: "cloudinary",
+          size: apiData.item.size,
+          dimensions: {
+            width: apiData.item.dimensions?.width || 0,
+            height: apiData.item.dimensions?.height || 0,
+          },
+          createdAt: new Date(apiData.item.createdAt),
+          tags: apiData.item.tags || [],
+        };
+
+        setMediaItems((prev) => [newItem, ...prev]);
+
+        toast({
+          title: "Tải lên thành công",
+          description: `Đã tải lên ${file.name} lên Cloudinary thành công`,
+        });
+      } catch (error) {
+        console.error("Error saving to database:", error);
+        // Nếu có lỗi khi lưu vào cơ sở dữ liệu, vẫn hiển thị hình ảnh đã tải lên Cloudinary
+        const fallbackItem: MediaItem = {
+          id: `cloudinary-temp-${Date.now()}`,
+          name:
+            file.name ||
+            cloudinaryData.original_filename ||
+            cloudinaryData.public_id,
+          url: cloudinaryData.secure_url,
+          thumbnail:
+            cloudinaryData.resource_type === "image"
+              ? cloudinaryData.secure_url
+              : cloudinaryData.thumbnail_url || "/placeholder-video-thumb.jpg",
+          type: cloudinaryData.resource_type === "image" ? "image" : "video",
+          source: "cloudinary",
+          size: cloudinaryData.bytes || 0,
+          dimensions: {
+            width: cloudinaryData.width || 0,
+            height: cloudinaryData.height || 0,
+          },
+          createdAt: new Date(),
+          tags: [],
+        };
+
+        setMediaItems((prev) => [fallbackItem, ...prev]);
+
+        toast({
+          title: "Tải lên Cloudinary thành công",
+          description:
+            "Đã tải lên Cloudinary nhưng không thể lưu vào cơ sở dữ liệu. Bạn vẫn có thể sử dụng tệp này.",
+        });
       }
-
-      const apiData = await apiResponse.json();
-
-      // Tạo item mới từ dữ liệu API trả về
-      const newItem: MediaItem = {
-        id: apiData.item.id,
-        name: apiData.item.name,
-        url: apiData.item.url,
-        thumbnail: apiData.item.thumbnail,
-        type: apiData.item.type as "image" | "video",
-        source: "cloudinary",
-        size: apiData.item.size,
-        dimensions: {
-          width: apiData.item.dimensions?.width || 0,
-          height: apiData.item.dimensions?.height || 0,
-        },
-        createdAt: new Date(apiData.item.createdAt),
-        tags: apiData.item.tags || [],
-      };
 
       setMediaItems((prev) => [newItem, ...prev]);
 
@@ -548,7 +630,7 @@ export default function MediaLibraryPage() {
             throw new Error(`Delete failed: ${response.statusText}`);
           }
         } else if (item.source === "cloudinary") {
-          // Xóa thông tin tệp Cloudinary từ cơ sở dữ liệu của chúng ta
+          // Xóa thông tin tệp Cloudinary từ cơ s��� dữ liệu của chúng ta
           const response = await fetch(`/api/media/cloudinary?id=${item.id}`, {
             method: "DELETE",
           });
@@ -643,6 +725,15 @@ export default function MediaLibraryPage() {
       <AdminLayout title="Thư viện phương tiện">
         <div className="flex flex-col sm:flex-row gap-6">
           <div className="flex-1 space-y-6">
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Lỗi tải dữ liệu</AlertTitle>
+                <AlertDescription>
+                  {error}. Vui lòng thử làm mới trang.
+                </AlertDescription>
+              </Alert>
+            )}
             {/* Top bar with search and actions */}
             <div className="flex flex-col sm:flex-row justify-between gap-4">
               <div className="relative w-full sm:w-auto max-w-sm">
@@ -859,8 +950,12 @@ export default function MediaLibraryPage() {
               </div>
             )}
           </div>
-          <div className="w-full sm:w-1/3 lg:w-1/4">
-            <MediaLibraryHelp />
+          <div className="w-full sm:w-1/3 lg:w-1/4 space-y-6">
+            {error ? (
+              <MediaLibraryError onRefresh={() => fetchMediaItems()} />
+            ) : (
+              <MediaLibraryHelp />
+            )}
           </div>
         </div>
       </AdminLayout>
