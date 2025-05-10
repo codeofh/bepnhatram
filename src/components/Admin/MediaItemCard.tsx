@@ -22,7 +22,7 @@ export function MediaItemCard({
   onSelect,
   onToggleSelect,
   isSelectable = false,
-  showExternalLink = true,
+  showExternalLink = true
 }: MediaItemCardProps) {
   const handleClick = () => {
     if (isSelectable && onToggleSelect) {
@@ -34,7 +34,7 @@ export function MediaItemCard({
 
   const handleOpenExternal = (e: React.MouseEvent) => {
     e.stopPropagation();
-    window.open(item.url, "_blank");
+    window.open(item.url, '_blank');
   };
 
   return (
@@ -59,16 +59,15 @@ export function MediaItemCard({
         )}
 
         {/* Selection checkbox */}
-        {isSelectable && (
-          <div
-            className={`absolute top-2 left-2 h-5 w-5 rounded border border-gray-300 flex items-center justify-center ${
-              selected ? "bg-primary" : "bg-white"
-            } opacity-0 group-hover:opacity-100`}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onToggleSelect) onToggleSelect(item.id);
-            }}
-          >
+        <div
+          className={`absolute top-2 left-2 h-5 w-5 rounded border border-gray-300 flex items-center justify-center ${
+            selected ? "bg-primary" : "bg-white"
+          } ${isSelectable ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (onToggleSelect) onToggleSelect(item.id);
+          }}
+        >
             {selected && (
               <svg
                 width="12"
@@ -111,7 +110,10 @@ export function MediaItemCard({
         </Badge>
       </div>
       <CardContent className="p-3">
-        <div className="text-sm font-medium line-clamp-1" title={item.name}>
+        <div
+          className="text-sm font-medium line-clamp-1"
+          title={item.name}
+        >
           {item.name}
         </div>
         <div className="text-xs text-gray-500 mt-1">

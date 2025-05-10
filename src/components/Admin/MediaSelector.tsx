@@ -90,6 +90,11 @@ export function MediaSelector({
       if (activeTab === "images" && item.type !== "image") return false;
       if (activeTab === "videos" && item.type !== "video") return false;
 
+      // Log to ensure we have Cloudinary images in filteredMediaItems
+      if (item.source === "cloudinary") {
+        console.log("Found Cloudinary item:", item.name, item.url);
+      }
+
       return true;
     })
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());

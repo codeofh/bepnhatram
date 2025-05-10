@@ -868,16 +868,15 @@ export default function MediaLibraryPage() {
                     item={item}
                     selected={selectedItems.includes(item.id)}
                     onSelect={() => {
-                      if (!selectedItems.length) {
+                      if (selectedItems.length === 0) {
                         setSelectedItem(item);
                         setDetailsOpen(true);
+                      } else {
+                        toggleItemSelection(item.id);
                       }
                     }}
                     onToggleSelect={toggleItemSelection}
-                    isSelectable={
-                      selectedItems.length > 0 ||
-                      selectedItems.includes(item.id)
-                    }
+                    isSelectable={true}
                   />
                 ))}
               </div>

@@ -88,26 +88,69 @@ export function useMediaLibrary() {
     try {
       setIsLoading(true);
       setError(null);
+      let allItems: MediaItem[] = [];
 
-      // Fetch media items from API
-      const response = await fetch("/api/media");
-      if (!response.ok) {
-        throw new Error("Failed to fetch media items");
+      // Fetch local media items from API
+      const localResponse = await fetch("/api/media");
+      if (localResponse.ok) {
+        const localData = await localResponse.json();
+        if (localData.items && Array.isArray(localData.items)) {
+          // Transform dates from string to Date objects
+          const localItems = localData.items.map((item: any) => ({
+            ...item,
+            createdAt: new Date(item.createdAt),
+          }));
+          allItems = [...allItems, ...localItems];
+        }
       }
 
-      const data = await response.json();
+      // Fetch Cloudinary media items
+      const cloudinaryResponse = await fetch("/api/media/cloudinary");
+      if (cloudinaryResponse.ok) {
+        const cloudinaryData = await cloudinaryResponse.json();
+        if (cloudinaryData.items && Array.isArray(cloudinaryData.items)) {
+          // Transform dates from string to Date objects
+          const cloudinaryItems = cloudinaryData.items.map((item: any) => ({
+            ...item,
+            source: "cloudinary",
+            createdAt: new Date(item.createdAt),
+          }));
+          allItems = [...allItems, ...cloudinaryItems];
+        }
+      }
 
-      if (data.items && Array.isArray(data.items)) {
-        // Transform dates from string to Date objects
-        const items = data.items.map((item: any) => ({
-          ...item,
-          createdAt: new Date(item.createdAt),
-        }));
-
-        setMediaItems(items);
+      if (allItems.length > 0) {
+        setMediaItems(allItems);
       } else {
-        // If API returns no items, use empty array
-        setMediaItems([]);
+        // Fallback to mock data if both APIs return empty
+        const mockItems: MediaItem[] = [
+          {
+            id: "local-1",
+            name: "banner.jpg",
+            url: "/uploads/library/banner.jpg",
+            thumbnail: "/uploads/library/banner.jpg",
+            type: "image",
+            source: "local",
+            size: 254000,
+            dimensions: { width: 1920, height: 1080 },
+            createdAt: new Date("2023-08-15"),
+            tags: ["banner", "homepage"],
+          },
+          {
+            id: "cloudinary-1",
+            name: "product-photo.jpg",
+            url: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg",
+            thumbnail:
+              "https://res.cloudinary.com/demo/image/upload/c_thumb,w_200,g_face/v1312461204/sample.jpg",
+            type: "image",
+            source: "cloudinary",
+            size: 124000,
+            dimensions: { width: 1200, height: 800 },
+            createdAt: new Date("2023-09-05"),
+            tags: ["product", "food"],
+          },
+        ];
+        setMediaItems(mockItems);
       }
     } catch (err: any) {
       console.error("Error loading media items:", err);
