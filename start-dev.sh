@@ -3,9 +3,25 @@
 # Exit on error
 set -e
 
-# Load environment variables
-if [ -f .env.local ]; then
-  export $(cat .env.local | grep -v '^#' | xargs)
+# Load environment variables for development only
+if [ -f .env.development ]; then
+  echo "Loading development environment variables..."
+  set -a
+  source .env.development
+  set +a
+elif [ -f .env.local ]; then
+  echo "Loading local environment variables..."
+  set -a
+  source .env.local
+  set +a
+fi
+
+# Explicitly set NODE_ENV to development
+export NODE_ENV=development
+
+# Ensure we're not using production environment
+if [ -f .env.production ]; then
+  echo "Ignoring production environment for development..."
 fi
 
 # Install dependencies if needed

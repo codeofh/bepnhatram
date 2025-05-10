@@ -1,9 +1,24 @@
 @echo off
 
-REM Check if .env.local exists and load it
-if exist .env.local (
-  echo Loading environment variables...
-  for /F "tokens=*" %%i in (.env.local) do set %%i
+REM Load environment variables for development
+if exist .env.development (
+  echo Loading development environment variables...
+  for /F "usebackq tokens=1,2 delims==" %%G in (".env.development") do (
+    set "%%G=%%H"
+  )
+) else if exist .env.local (
+  echo Loading local environment variables...
+  for /F "usebackq tokens=1,2 delims==" %%G in (".env.local") do (
+    set "%%G=%%H"
+  )
+)
+
+REM Explicitly set NODE_ENV to development
+set NODE_ENV=development
+
+REM Ensure we're not using production environment
+if exist .env.production (
+  echo Ignoring production environment for development...
 )
 
 REM Install dependencies if needed
@@ -17,5 +32,5 @@ echo Starting development server...
 if "%1"=="--with-emulators" (
   call npm run dev:with-emulators
 ) else (
-  call npm run dev:windows
+  call npm run dev
 )
