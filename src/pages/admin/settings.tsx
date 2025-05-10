@@ -238,7 +238,7 @@ export default function AdminSettingsPage() {
   return (
     <>
       <Head>
-        <title>Cài đặt hệ thống - Admin</title>
+        <title>Cài ��ặt hệ thống - Admin</title>
         <meta name="description" content="Quản lý cài đặt hệ thống" />
       </Head>
 
@@ -559,6 +559,72 @@ export default function AdminSettingsPage() {
                                   rows={3}
                                   className="text-sm p-3 border border-gray-200 rounded-md w-full"
                                   placeholder="https://www.google.com/maps/embed?..."
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="directionsUrl"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  URL chỉ đường
+                                </Label>
+                                <Input
+                                  id="directionsUrl"
+                                  value={formData.maps?.directionsUrl || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "maps",
+                                      "directionsUrl",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="https://maps.app.goo.gl/..."
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="latitude"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Vĩ độ (Latitude)
+                                </Label>
+                                <Input
+                                  id="latitude"
+                                  value={formData.maps?.latitude || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "maps",
+                                      "latitude",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="Ví dụ: 16.462158199999998"
+                                />
+                              </div>
+
+                              <div>
+                                <Label
+                                  htmlFor="longitude"
+                                  className="text-sm font-medium block mb-1.5"
+                                >
+                                  Kinh độ (Longitude)
+                                </Label>
+                                <Input
+                                  id="longitude"
+                                  value={formData.maps?.longitude || ""}
+                                  onChange={(e) =>
+                                    handleChange(
+                                      "maps",
+                                      "longitude",
+                                      e.target.value,
+                                    )
+                                  }
+                                  className="h-10 text-sm px-3 border border-gray-200 rounded-md w-full"
+                                  placeholder="Ví dụ: 107.59194319999999"
                                 />
                               </div>
                             </div>
