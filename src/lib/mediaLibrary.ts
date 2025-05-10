@@ -20,9 +20,11 @@ export interface MediaItem {
 
 // Cloudinary configuration
 export const CLOUDINARY_CONFIG = {
-  cloudName: "YOUR_CLOUD_NAME", // Replace with your cloud name
-  apiKey: "bXR9eVM7TG5_KzVprFFApWilbdY",
-  uploadPreset: "ml_default", // Replace with your upload preset
+  cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "demo",
+  apiKey:
+    process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || "bXR9eVM7TG5_KzVprFFApWilbdY",
+  uploadPreset:
+    process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default",
 };
 
 // Local storage paths
